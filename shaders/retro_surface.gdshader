@@ -35,7 +35,7 @@ uniform vec2 snap_resolution = vec2(160.0, 120.0);
 // 1 = fully "affine" textures that swim and warp like a PlayStation 1.
 uniform float affine_amount : hint_range(0.0, 1.0) = 0.0;
 // Number of brightness steps a light is chopped into. 0 = smooth lighting.
-uniform float light_bands : hint_range(0.0, 16.0, 1.0) = 5.0;
+uniform float light_bands : hint_range(0.0, 16.0, 1.0) = 6.0;
 group_uniforms;
 
 // "Varyings" carry values from vertex() to fragment(). The graphics card

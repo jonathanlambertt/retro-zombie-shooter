@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
-[ext_resource type="PackedScene" path="res://levels/test_room.tscn" id="2_level"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_level"]
 [ext_resource type="Shader" path="res://shaders/color_quantize.gdshader" id="3_quantize"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_quantize"]

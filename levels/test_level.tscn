@@ -1,0 +1,271 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
+[ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="metal"]
+[ext_resource type="Material" path="res://assets/materials/tile.tres" id="tile"]
+[ext_resource type="Material" path="res://assets/materials/crate.tres" id="crate"]
+[ext_resource type="Material" path="res://assets/materials/ground.tres" id="ground"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
+size = Vector3(2, 0.2, 6.5)
+
+[node name="TestLevel" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("env")
+
+[node name="Player" parent="." instance=ExtResource("player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 8)
+
+[node name="World" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Solid" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, -5)
+size = Vector3(32, 10, 34)
+material = ExtResource("concrete")
+
+[node name="CarveRoomA" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.625, 5)
+operation = 2
+size = Vector3(10, 3.75, 10)
+material = ExtResource("concrete")
+
+[node name="CarveRoomB" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.875, -14)
+operation = 2
+size = Vector3(12, 6.25, 12)
+material = ExtResource("concrete")
+
+[node name="CarveRoomC" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.375, 5)
+operation = 2
+size = Vector3(6, 3.25, 8)
+material = ExtResource("metal")
+
+[node name="CarveCourtyard" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 4.875, -12)
+operation = 2
+size = Vector3(14, 10.25, 14)
+material = ExtResource("concrete")
+
+[node name="CarveCorridor" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, -4)
+operation = 2
+size = Vector3(2, 2.5, 8.5)
+material = ExtResource("metal")
+
+[node name="CarveDoorAC" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.25, 5)
+operation = 2
+size = Vector3(2.5, 2.5, 2)
+material = ExtResource("concrete")
+
+[node name="CarveDoorBCourtyard" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.25, -12)
+operation = 2
+size = Vector3(2.5, 2.5, 2)
+material = ExtResource("concrete")
+
+[node name="CarveLedgeWindow" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 3.5, -18.5)
+operation = 2
+size = Vector3(2.5, 2, 2)
+material = ExtResource("concrete")
+
+[node name="FloorRoomA" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 5)
+size = Vector3(10, 0.25, 10)
+material = ExtResource("tile")
+
+[node name="FloorRoomB" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, -14)
+size = Vector3(12, 0.25, 12)
+material = ExtResource("tile")
+
+[node name="FloorRoomC" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -0.125, 5)
+size = Vector3(6, 0.25, 8)
+material = ExtResource("concrete")
+
+[node name="FloorCourtyard" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -0.125, -12)
+size = Vector3(14, 0.25, 14)
+material = ExtResource("ground")
+
+[node name="Ledge" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, -18.5)
+size = Vector3(12, 2.5, 3)
+material = ExtResource("metal")
+
+[node name="Step1" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.125, -11.3)
+size = Vector3(2, 0.25, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step2" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.25, -11.9)
+size = Vector3(2, 0.5, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step3" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.375, -12.5)
+size = Vector3(2, 0.75, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step4" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, -13.1)
+size = Vector3(2, 1, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step5" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.625, -13.7)
+size = Vector3(2, 1.25, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step6" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.75, -14.3)
+size = Vector3(2, 1.5, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step7" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.875, -14.9)
+size = Vector3(2, 1.75, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step8" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, -15.5)
+size = Vector3(2, 2, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step9" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.125, -16.1)
+size = Vector3(2, 2.25, 0.6)
+material = ExtResource("concrete")
+
+[node name="Step10" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.25, -16.7)
+size = Vector3(2, 2.5, 0.6)
+material = ExtResource("concrete")
+
+[node name="StairRamp" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StairRamp"]
+transform = Transform3D(1, 0, 0, 0, 0.9231, -0.3846, 0, 0.3846, 0.9231, -5, 1.1577, -13.4385)
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="CrateA1" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0.5, 2)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateA2" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0.5, 3.1)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateA3" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 1.5, 2.5)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateC1" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, 2)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateC2" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, 8)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateC3" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.5, 8)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateB1" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, -11)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateYard1" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.5, -8)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateYard2" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.2, 0.5, -8.3)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="CrateYard3" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, -17)
+use_collision = true
+size = Vector3(1, 1, 1)
+material = ExtResource("crate")
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="RoomALight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 5)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 3.0
+omni_range = 8.0
+omni_attenuation = 0.5
+
+[node name="CorridorLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, -4)
+light_color = Color(1, 0.55, 0.3, 1)
+light_energy = 2.0
+omni_range = 4.5
+omni_attenuation = 0.5
+
+[node name="RoomBLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -12.5)
+light_color = Color(0.9, 0.95, 1, 1)
+light_energy = 4.0
+omni_range = 10.0
+omni_attenuation = 0.5
+
+[node name="LedgeLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4.2, -18.5)
+light_color = Color(0.6, 1, 0.7, 1)
+light_energy = 2.5
+omni_range = 5.0
+omni_attenuation = 0.5
+
+[node name="RoomCLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, 5)
+light_color = Color(0.55, 0.75, 1, 1)
+light_energy = 2.5
+omni_range = 6.0
+omni_attenuation = 0.5
+
+[node name="CourtyardLightA" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4, -9)
+light_color = Color(0.6, 0.7, 1, 1)
+light_energy = 4.0
+omni_range = 12.0
+omni_attenuation = 0.5
+
+[node name="CourtyardLightB" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 4, -15)
+light_color = Color(0.6, 0.7, 1, 1)
+light_energy = 4.0
+omni_range = 12.0
+omni_attenuation = 0.5
+
