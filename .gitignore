@@ -1,0 +1,17 @@
+# Godot 4+ specific ignores
+# .godot/ is the editor's cache (imported textures, shader cache, etc.).
+# It is rebuilt automatically, so it never belongs in git.
+.godot/
+/android/
+
+# Exported builds
+/build/
+/export/
+*.pck
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# NOTE: do NOT ignore *.uid or *.import files. Godot creates them next to
+# scripts/assets and they are meant to be committed.
