@@ -40,6 +40,7 @@ scenes/              Reusable scenes
   pistol.tscn          Hitscan pistol viewmodel
   machine_gun.tscn     Automatic gun that fires bullet.tscn projectiles
   bullet.tscn          One yellow machine gun bullet
+  bullet_hole.tscn     Mark left on walls and floors by shots
   enemy.tscn           Walking enemy that chases and hits you
   crawler.tscn         Small crawling enemy that leaps at your head
   hud.tscn             Health / ammo / crosshair
@@ -167,13 +168,16 @@ Crates live under `Props` and enemies under `Enemies`.
 - Lights cast no shadows, so a light with a large range shines through walls.
 - The player cannot step up ledges; the stairs use an invisible ramp
   (`StairRamp` in the level).
+- Bullet holes are flat squares, not true decals (Godot's `Decal` node needs
+  the Forward+ or Mobile renderer), so one that lands on a corner hangs over
+  the edge. At most 64 exist at once; the oldest is removed first.
 - No mipmaps, so fine texture detail shimmers in the distance (as it did in
   1996).
 
 ## Suggested next steps
 
 - **More weapons**: a shotgun (several rays with spread), ammo pickups,
-  bullet impact marks, and weapons you find in the level instead of start with.
+  and weapons you find in the level instead of starting with.
 - **Level tools**: build levels in TrenchBroom and import the `.map` files
   with an addon such as func_godot, instead of CSG.
 - **Audio**: real gunshot, footstep and enemy sounds; `AudioStreamPlayer3D`

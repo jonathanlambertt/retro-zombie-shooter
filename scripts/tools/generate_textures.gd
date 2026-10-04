@@ -26,6 +26,7 @@ func _init() -> void:
 	_save(_make_metal(), "metal")
 	_save(_make_tile(), "tile")
 	_save(_make_crate(), "crate")
+	_save(_make_bullet_hole(), "bullet_hole")
 	quit()
 
 
@@ -176,4 +177,24 @@ func _make_crate() -> Image:
 	# A nail in each corner of the frame.
 	for corner in [Vector2i(2, 2), Vector2i(SIZE - 3, 2), Vector2i(2, SIZE - 3), Vector2i(SIZE - 3, SIZE - 3)]:
 		image.set_pixel(corner.x, corner.y, Color(0.6, 0.58, 0.52))
+	return image
+
+
+## A tiny 8x8 bullet hole: black centre, dark scorched ring, a few stray
+## chips, and see-through everywhere else. (RGBA8 = it has transparency.)
+func _make_bullet_hole() -> Image:
+	var hole_size := 8
+	var image := Image.create_empty(hole_size, hole_size, false, Image.FORMAT_RGBA8)
+	var centre := Vector2(3.5, 3.5)
+	for y in hole_size:
+		for x in hole_size:
+			var distance := Vector2(x, y).distance_to(centre)
+			var color := Color(0, 0, 0, 0)  # fully transparent
+			if distance < 1.2:
+				color = Color(0.02, 0.02, 0.02)
+			elif distance < 2.6:
+				color = _shade(Color(0.13, 0.12, 0.1), rng.randf_range(0.7, 1.2))
+			elif distance < 3.6 and rng.randf() < 0.35:
+				color = Color(0.1, 0.09, 0.08)
+			image.set_pixel(x, y, color)
 	return image

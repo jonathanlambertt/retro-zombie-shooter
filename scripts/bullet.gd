@@ -6,6 +6,8 @@ extends Node3D
 ## just the new position) means a fast bullet can never skip through a thin
 ## wall or a small enemy between two steps.
 
+const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
+
 var velocity := Vector3.ZERO
 var damage := 6
 ## Whoever fired the bullet, so it can't hit them on the way out.
@@ -37,6 +39,12 @@ func _physics_process(delta: float) -> void:
 	if not hit.is_empty():
 		if hit.collider.has_method("take_damage"):
 			hit.collider.take_damage(damage)
+		else:
+			# Walls, floors and crates get a bullet hole. (Enemies don't:
+			# they move, and the hole would be left hanging in the air.)
+			var hole := BULLET_HOLE_SCENE.instantiate()
+			get_parent().add_child(hole)
+			hole.place(hit.position, hit.normal)
 		queue_free()
 		return
 

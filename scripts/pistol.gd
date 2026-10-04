@@ -9,6 +9,7 @@ extends Node3D
 ## the corner of the view wherever you look.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
+const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
 
 @export var damage := 10
 ## How far the shot reaches, in metres.
@@ -79,6 +80,12 @@ func _trace_shot() -> void:
 	# maybe explosive barrels tomorrow.
 	if hit.collider.has_method("take_damage"):
 		hit.collider.take_damage(damage)
+	else:
+		# Walls, floors and crates get a bullet hole. It is added to the
+		# level (the player's parent) so it stays put on the wall.
+		var hole := BULLET_HOLE_SCENE.instantiate()
+		owner.get_parent().add_child(hole)
+		hole.place(hit.position, hit.normal)
 
 
 ## Muzzle flash, recoil kick and sound.
