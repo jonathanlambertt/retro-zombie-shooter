@@ -44,10 +44,18 @@ extends CharacterBody3D
 ## Radians of turn per pixel of mouse movement.
 @export var mouse_sensitivity := 0.0025
 
+@export_group("Health")
+@export var max_health := 100
+
+var health := 0
+
 @onready var head: Node3D = $Head
+## The HUD reads the ammo count from here.
+@onready var pistol: Node3D = $Head/Camera3D/Pistol
 
 
 func _ready() -> void:
+	health = max_health
 	# "Capturing" hides the cursor and locks it to the window, so the mouse
 	# can be moved endlessly to look around.
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -126,3 +134,12 @@ func _accelerate(wish_direction: Vector3, wish_speed: float, acceleration: float
 		return
 	var acceleration_step := minf(acceleration * max_speed * delta, speed_to_add)
 	velocity += wish_direction * acceleration_step
+
+
+## Called by enemies when they hit the player.
+func take_damage(amount: int) -> void:
+	health = maxi(health - amount, 0)
+	if health == 0:
+		# Dying simply restarts the whole game. call_deferred waits until
+		# the current physics step has finished before swapping scenes.
+		get_tree().reload_current_scene.call_deferred()

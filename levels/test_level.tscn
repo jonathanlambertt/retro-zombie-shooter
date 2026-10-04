@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -7,6 +7,7 @@
 [ext_resource type="Material" path="res://assets/materials/crate.tres" id="crate"]
 [ext_resource type="Material" path="res://assets/materials/ground.tres" id="ground"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="enemy"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
 size = Vector3(2, 0.2, 6.5)
@@ -269,3 +270,13 @@ light_energy = 4.0
 omni_range = 12.0
 omni_attenuation = 0.5
 
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="EnemyRoomB" parent="Enemies" instance=ExtResource("enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, -15)
+
+[node name="EnemyCourtyard" parent="Enemies" instance=ExtResource("enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0.1, -13)
+
+[node name="EnemyRoomC" parent="Enemies" instance=ExtResource("enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 0.1, 5)
