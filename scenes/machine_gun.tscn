@@ -61,4 +61,4 @@ light_energy = 3.0
 omni_range = 6.0
 
 [node name="ShootSound" type="AudioStreamPlayer" parent="."]
-volume_db = -10.0
+volume_db = -24.0
