@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
-[ext_resource type="PackedScene" path="res://levels/sandbox.tscn" id="2_level"]
+[ext_resource type="PackedScene" path="res://levels/test_room.tscn" id="2_level"]
+[ext_resource type="Shader" path="res://shaders/color_quantize.gdshader" id="3_quantize"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_quantize"]
+shader = ExtResource("3_quantize")
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -23,6 +27,7 @@ color = Color(0, 0, 0, 1)
 
 [node name="ViewportContainer" type="SubViewportContainer" parent="."]
 texture_filter = 1
+material = SubResource("ShaderMaterial_quantize")
 layout_mode = 0
 offset_right = 320.0
 offset_bottom = 240.0
@@ -38,4 +43,4 @@ use_taa = false
 use_debanding = false
 size = Vector2i(320, 240)
 
-[node name="Sandbox" parent="ViewportContainer/GameViewport" instance=ExtResource("2_level")]
+[node name="Level" parent="ViewportContainer/GameViewport" instance=ExtResource("2_level")]

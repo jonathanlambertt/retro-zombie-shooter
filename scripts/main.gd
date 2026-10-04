@@ -10,6 +10,8 @@ extends Control
 ##      every low-res pixel becomes a sharp square instead of a blurry blob.
 ##   4. Whatever window area is left over shows the black ColorRect behind
 ##      it. Those are the letterbox bars.
+##   5. The container also has a small shader (shaders/color_quantize.gdshader)
+##      that reduces the number of colours in the final picture.
 
 ## The resolution the game is rendered at. THIS IS THE ONE PLACE TO CHANGE IT.
 ## Try Vector2i(640, 480) for a sharper, late-90s "high-res mode" look.
@@ -20,6 +22,10 @@ extends Control
 ## then exactly the same size on screen, at the cost of thicker black bars.
 ## If false, the picture fills as much of the window as possible.
 @export var integer_scaling := false
+
+## Whether the colour-reducing post-process starts switched on.
+## Press F1 while playing to toggle it and compare.
+@export var color_quantize := true
 
 @onready var viewport_container: SubViewportContainer = $ViewportContainer
 @onready var game_viewport: SubViewport = $ViewportContainer/GameViewport
@@ -35,6 +41,13 @@ func _ready() -> void:
 	# whenever the window does (it is anchored to fill the whole window).
 	resized.connect(_fit_to_window)
 	_fit_to_window()
+	_apply_color_quantize()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
+		color_quantize = not color_quantize
+		_apply_color_quantize()
 
 
 ## Scales and centres the low-res image inside the window.
@@ -50,3 +63,9 @@ func _fit_to_window() -> void:
 	viewport_container.scale = Vector2(fit_scale, fit_scale)
 	# Centre it. floor() keeps it on a whole pixel so the edges stay crisp.
 	viewport_container.position = ((window_size - image_size * fit_scale) / 2.0).floor()
+
+
+## Sends the on/off switch to the post-process shader on the container.
+func _apply_color_quantize() -> void:
+	var post_process := viewport_container.material as ShaderMaterial
+	post_process.set_shader_parameter("enabled", color_quantize)

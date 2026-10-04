@@ -18,16 +18,17 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 
 window/size/viewport_width=960
 window/size/viewport_height=720
-window/stretch/mode="disabled"
-window/hdr/request_hdr_output=false
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/canvas_textures/default_texture_filter=0
-anti_aliasing/quality/msaa_2d=0
-anti_aliasing/quality/msaa_3d=0
-anti_aliasing/quality/screen_space_aa=0
-anti_aliasing/quality/use_taa=false
-anti_aliasing/quality/use_debanding=false
+
+[importer_defaults]
+
+texture={
+"compress/mode": 0,
+"detect_3d/compress_to": 0,
+"mipmaps/generate": false
+}
