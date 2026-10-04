@@ -1,0 +1,128 @@
+extends CharacterBody3D
+## First-person player with Quake-style movement.
+##
+## Node layout (see scenes/player.tscn):
+##   Player (CharacterBody3D)  - turns left/right with the mouse, and moves
+##     CollisionShape3D        - the capsule that bumps into the world
+##     Head (Node3D)           - tilts up/down with the mouse
+##       Camera3D              - what you see
+##
+## Splitting the turn (body) from the tilt (head) keeps "forward" level with
+## the floor, so looking up at the ceiling doesn't make you walk slower.
+##
+## The movement maths is the same idea Quake used:
+##   - On the ground, friction slows you down every frame, then acceleration
+##     pushes you towards the direction you're holding.
+##   - In the air there is no friction, and you can only add a small amount
+##     of speed in the direction you're holding. That small nudge is what
+##     gives "air control" (and, as a side effect, strafe-jumping).
+
+@export_group("Movement")
+## Top running speed, in metres per second.
+@export var max_speed := 7.0
+## How quickly you reach top speed on the ground. Higher = snappier.
+@export var ground_acceleration := 10.0
+## How quickly you slow down on the ground when you let go of the keys.
+@export var friction := 6.0
+## Below this speed, friction acts as if you were moving this fast, so you
+## come to a crisp stop instead of sliding forever.
+@export var stop_speed := 2.0
+
+@export_group("Air")
+## Downward acceleration, in metres per second squared. (Real life is 9.8;
+## shooters use about double so jumps feel snappy.)
+@export var gravity := 20.0
+## How high a jump reaches, in metres.
+@export var jump_height := 1.0
+## How quickly you can change direction in mid-air.
+@export var air_acceleration := 10.0
+## The most speed you can add in a new direction while in mid-air.
+## 0 = no air control at all. Higher = more steering while airborne.
+@export var air_control_speed := 1.0
+
+@export_group("Mouse")
+## Radians of turn per pixel of mouse movement.
+@export var mouse_sensitivity := 0.0025
+
+@onready var head: Node3D = $Head
+
+
+func _ready() -> void:
+	# "Capturing" hides the cursor and locks it to the window, so the mouse
+	# can be moved endlessly to look around.
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Esc releases the mouse (ui_cancel is a built-in action bound to Esc).
+	if event.is_action_pressed("ui_cancel"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		return
+
+	var mouse_is_captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+
+	# Clicking in the window grabs the mouse again.
+	if event is InputEventMouseButton and event.pressed and not mouse_is_captured:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
+
+	if event is InputEventMouseMotion and mouse_is_captured:
+		# screen_relative is the raw mouse movement in real screen pixels.
+		# (The plain "relative" value would shrink as our low-res picture is
+		# scaled up, making sensitivity depend on the window size.)
+		var motion: Vector2 = event.screen_relative
+		# Turn the whole body left/right...
+		rotate_y(-motion.x * mouse_sensitivity)
+		# ...but tilt only the head up/down, and stop just short of straight
+		# up or down so the view can't flip over.
+		head.rotation.x = clampf(head.rotation.x - motion.y * mouse_sensitivity, -1.5, 1.5)
+
+
+# _physics_process runs at a fixed rate (60 times a second by default),
+# which keeps movement consistent no matter how fast the game is drawing.
+func _physics_process(delta: float) -> void:
+	# Turn the WASD keys into a direction. get_vector returns x = left/right
+	# and y = forward/back, each from -1 to 1.
+	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	# Rotate it by the way the body is facing to get a world direction.
+	var wish_direction := (global_transform.basis * Vector3(input.x, 0.0, input.y)).normalized()
+
+	if is_on_floor():
+		_apply_friction(delta)
+		_accelerate(wish_direction, max_speed, ground_acceleration, delta)
+		if Input.is_action_just_pressed("jump"):
+			# The upward speed needed to reach jump_height under this gravity.
+			velocity.y = sqrt(2.0 * gravity * jump_height)
+	else:
+		velocity.y -= gravity * delta
+		_accelerate(wish_direction, air_control_speed, air_acceleration, delta)
+
+	# Moves the body by "velocity", sliding along walls and floors it hits.
+	move_and_slide()
+
+
+## Slows horizontal movement, like shoes gripping the floor.
+func _apply_friction(delta: float) -> void:
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	var speed := horizontal.length()
+	if speed < 0.01:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+
+	var drop := maxf(speed, stop_speed) * friction * delta
+	var new_speed := maxf(speed - drop, 0.0)
+	velocity.x *= new_speed / speed
+	velocity.z *= new_speed / speed
+
+
+## Speeds up towards wish_direction, but never past wish_speed in that
+## direction. Speed you already have in other directions is left alone.
+func _accelerate(wish_direction: Vector3, wish_speed: float, acceleration: float, delta: float) -> void:
+	# How fast we are already going in the wished direction.
+	var current_speed := velocity.dot(wish_direction)
+	var speed_to_add := wish_speed - current_speed
+	if speed_to_add <= 0.0:
+		return
+	var acceleration_step := minf(acceleration * max_speed * delta, speed_to_add)
+	velocity += wish_direction * acceleration_step
