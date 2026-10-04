@@ -1,0 +1,68 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/crawler.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/crawler.tres" id="2_body"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = ExtResource("2_body")
+size = Vector3(0.45, 0.22, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+material = ExtResource("2_body")
+size = Vector3(0.08, 0.3, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fang"]
+material = ExtResource("2_body")
+size = Vector3(0.06, 0.06, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mouth"]
+shading_mode = 0
+albedo_color = Color(0.8, 0.1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mouth"]
+material = SubResource("StandardMaterial3D_mouth")
+size = Vector3(0.2, 0.06, 0.04)
+
+[node name="Crawler" type="CharacterBody3D" groups=["enemy"]]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("BoxMesh_body")
+
+[node name="Mouth" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, -0.28)
+mesh = SubResource("BoxMesh_mouth")
+
+[node name="FangLeft" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.22, -0.36)
+mesh = SubResource("BoxMesh_fang")
+
+[node name="FangRight" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.22, -0.36)
+mesh = SubResource("BoxMesh_fang")
+
+[node name="LegFrontLeft" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.866, 0.5, 0, -0.5, 0.866, 0, 0, 0, 1, -0.3, 0.15, -0.18)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegFrontRight" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.866, -0.5, 0, 0.5, 0.866, 0, 0, 0, 1, 0.3, 0.15, -0.18)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegBackLeft" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.866, 0.5, 0, -0.5, 0.866, 0, 0, 0, 1, -0.3, 0.15, 0.18)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegBackRight" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.866, -0.5, 0, 0.5, 0.866, 0, 0, 0, 1, 0.3, 0.15, 0.18)
+mesh = SubResource("BoxMesh_leg")

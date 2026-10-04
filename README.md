@@ -23,7 +23,8 @@ Godot_v4.7-stable_win64_console.exe --path .
 | W A S D | Move |
 | Mouse | Look |
 | Space | Jump |
-| Left mouse button | Shoot |
+| Left mouse button | Shoot (hold for the machine gun) |
+| 1 / 2 | Switch to pistol / machine gun |
 | Esc | Release the mouse (click the window to grab it again) |
 | F1 | Toggle the colour quantization post-process |
 
@@ -37,13 +38,17 @@ scenes/              Reusable scenes
   main.tscn            Entry point: low-res viewport + HUD + the level
   player.tscn          First-person player (with the pistol attached)
   pistol.tscn          Hitscan pistol viewmodel
-  enemy.tscn           Chasing enemy
+  machine_gun.tscn     Automatic gun that fires bullet.tscn projectiles
+  bullet.tscn          One yellow machine gun bullet
+  enemy.tscn           Walking enemy that chases and hits you
+  crawler.tscn         Small crawling enemy that leaps at your head
   hud.tscn             Health / ammo / crosshair
 levels/
   test_level.tscn      The greybox level (CSG)
   test_room.tscn       Small single room, handy for trying shader settings
 scripts/             One script per scene, plus:
   pixel_text.gd        Tiny built-in 3x5 pixel font for the HUD
+  placeholder_sound.gd Generates stand-in gunshot noise from code
   tools/generate_textures.gd   Generates the placeholder textures
 shaders/
   retro_surface.gdshader    Every 3D surface: snapping, banded light, UVs
@@ -136,9 +141,17 @@ Select a node and use the Inspector; every value is an exported variable.
 
 - **Player** (`scenes/player.tscn`): speed, acceleration, friction, gravity,
   jump height, air control, mouse sensitivity, health.
+
+  To add another weapon: make its scene, place it under `Head/Camera3D` in
+  the player scene, add it to the `weapons` list in `scripts/player.gd`, and
+  give it a `weapon_3` input action.
 - **Pistol** (`scenes/pistol.tscn`): damage, range, fire interval, ammo, and
   **Shoot Sound** (drag in a `.wav`/`.ogg` to replace the placeholder noise).
+- **Machine gun** (`scenes/machine_gun.tscn`): damage per bullet, fire
+  interval, ammo, bullet speed, spread, and **Shoot Sound**.
 - **Enemy** (`scenes/enemy.tscn`): health, speed, sight range, attack damage.
+- **Crawler** (`scenes/crawler.tscn`): health, crawl speed, sight range, leap
+  range, leap speed, leap damage, time between leaps.
 
 ## Editing the level
 
@@ -150,7 +163,7 @@ Crates live under `Props` and enemies under `Enemies`.
 
 ## Known limitations
 
-- Enemies walk straight at the player and can get stuck on walls.
+- Enemies head straight for the player and can get stuck on walls.
 - Lights cast no shadows, so a light with a large range shines through walls.
 - The player cannot step up ledges; the stairs use an invisible ramp
   (`StairRamp` in the level).
@@ -159,8 +172,8 @@ Crates live under `Props` and enemies under `Enemies`.
 
 ## Suggested next steps
 
-- **More weapons**: a shotgun (several rays with spread), a weapon-switch
-  system, ammo pickups, and bullet impact marks.
+- **More weapons**: a shotgun (several rays with spread), ammo pickups,
+  bullet impact marks, and weapons you find in the level instead of start with.
 - **Level tools**: build levels in TrenchBroom and import the `.map` files
   with an addon such as func_godot, instead of CSG.
 - **Audio**: real gunshot, footstep and enemy sounds; `AudioStreamPlayer3D`

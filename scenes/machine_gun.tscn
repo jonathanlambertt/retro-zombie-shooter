@@ -1,0 +1,64 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/machine_gun.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/gun.tres" id="2_gun"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = ExtResource("2_gun")
+size = Vector3(0.06, 0.08, 0.34)
+
+[sub_resource type="BoxMesh" id="BoxMesh_barrel"]
+material = ExtResource("2_gun")
+size = Vector3(0.03, 0.03, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_magazine"]
+material = ExtResource("2_gun")
+size = Vector3(0.04, 0.14, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_grip"]
+material = ExtResource("2_gun")
+size = Vector3(0.045, 0.1, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
+shading_mode = 0
+albedo_color = Color(1, 0.85, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_flash"]
+material = SubResource("StandardMaterial3D_flash")
+size = Vector3(0.1, 0.1, 0.02)
+
+[node name="MachineGun" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+mesh = SubResource("BoxMesh_body")
+
+[node name="Barrel" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.26)
+mesh = SubResource("BoxMesh_barrel")
+
+[node name="Magazine" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -0.04)
+mesh = SubResource("BoxMesh_magazine")
+
+[node name="Grip" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.966, -0.259, 0, 0.259, 0.966, 0, -0.08, 0.12)
+mesh = SubResource("BoxMesh_grip")
+
+[node name="MuzzleFlash" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.38)
+visible = false
+
+[node name="FlashMesh" type="MeshInstance3D" parent="MuzzleFlash"]
+transform = Transform3D(0.707, -0.707, 0, 0.707, 0.707, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_flash")
+
+[node name="FlashLight" type="OmniLight3D" parent="MuzzleFlash"]
+light_color = Color(1, 0.8, 0.3, 1)
+light_energy = 3.0
+omni_range = 6.0
+
+[node name="ShootSound" type="AudioStreamPlayer" parent="."]
+volume_db = -10.0

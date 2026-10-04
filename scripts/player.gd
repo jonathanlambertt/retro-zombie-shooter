@@ -50,12 +50,16 @@ extends CharacterBody3D
 var health := 0
 
 @onready var head: Node3D = $Head
-## The HUD reads the ammo count from here.
-@onready var pistol: Node3D = $Head/Camera3D/Pistol
+## Every weapon the player carries, in the order of the number keys.
+@onready var weapons: Array[Node3D] = [$Head/Camera3D/Pistol, $Head/Camera3D/MachineGun]
+
+## The weapon currently in hand. The HUD reads the ammo count from here.
+var current_weapon: Node3D
 
 
 func _ready() -> void:
 	health = max_health
+	_select_weapon(0)
 	# "Capturing" hides the cursor and locks it to the window, so the mouse
 	# can be moved endlessly to look around.
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -66,6 +70,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
+
+	# Number keys switch weapon.
+	if event.is_action_pressed("weapon_1"):
+		_select_weapon(0)
+	elif event.is_action_pressed("weapon_2"):
+		_select_weapon(1)
 
 	var mouse_is_captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
@@ -134,6 +144,13 @@ func _accelerate(wish_direction: Vector3, wish_speed: float, acceleration: float
 		return
 	var acceleration_step := minf(acceleration * max_speed * delta, speed_to_add)
 	velocity += wish_direction * acceleration_step
+
+
+## Shows one weapon and hides the rest. A hidden weapon ignores the trigger.
+func _select_weapon(index: int) -> void:
+	for i in weapons.size():
+		weapons[i].visible = i == index
+	current_weapon = weapons[index]
 
 
 ## Called by enemies when they hit the player.

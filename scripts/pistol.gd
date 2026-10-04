@@ -8,6 +8,8 @@ extends Node3D
 ## This scene is a child of the player's camera, so the gun model stays in
 ## the corner of the view wherever you look.
 
+const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
+
 @export var damage := 10
 ## How far the shot reaches, in metres.
 @export var max_range := 100.0
@@ -28,7 +30,7 @@ var cooldown := 0.0
 
 func _ready() -> void:
 	if shoot_sound == null:
-		shoot_sound = _make_placeholder_sound()
+		shoot_sound = PlaceholderSound.make_noise_burst(0.15)
 	sound_player.stream = shoot_sound
 
 
@@ -37,6 +39,9 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# A weapon that isn't in the player's hand is hidden, and must not fire.
+	if not visible:
+		return
 	# Only shoot while the mouse is captured. (The click that grabs the mouse
 	# again after pressing Esc should not also fire the gun.)
 	if event.is_action_pressed("shoot") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -90,21 +95,3 @@ func _play_effects() -> void:
 	muzzle_flash.visible = true
 	await get_tree().create_timer(0.05).timeout
 	muzzle_flash.visible = false
-
-
-## Builds a short burst of fading white noise to stand in for a gunshot.
-func _make_placeholder_sound() -> AudioStreamWAV:
-	var sample_rate := 11025
-	var sample_count := int(sample_rate * 0.15)
-	var data := PackedByteArray()
-	for i in sample_count:
-		var fade := 1.0 - float(i) / sample_count
-		var sample := randf_range(-1.0, 1.0) * fade * fade
-		# 8-bit audio stores each sample as one signed byte (-128 to 127).
-		data.append(int(sample * 127.0) & 0xFF)
-
-	var sound := AudioStreamWAV.new()
-	sound.format = AudioStreamWAV.FORMAT_8_BITS
-	sound.mix_rate = sample_rate
-	sound.data = data
-	return sound

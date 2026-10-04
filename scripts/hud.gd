@@ -22,4 +22,4 @@ func _process(_delta: float) -> void:
 	# Simply read the numbers every frame. This is the easiest approach; for
 	# a bigger game you would use signals to update only when they change.
 	health_text.text = "HEALTH %d" % player.health
-	ammo_text.text = "AMMO %d" % player.pistol.ammo
+	ammo_text.text = "AMMO %d" % player.current_weapon.ammo

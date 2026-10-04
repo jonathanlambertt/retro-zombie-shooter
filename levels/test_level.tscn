@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -8,6 +8,7 @@
 [ext_resource type="Material" path="res://assets/materials/ground.tres" id="ground"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="enemy"]
+[ext_resource type="PackedScene" path="res://scenes/crawler.tscn" id="crawler"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
 size = Vector3(2, 0.2, 6.5)
@@ -280,3 +281,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0.1, -13)
 
 [node name="EnemyRoomC" parent="Enemies" instance=ExtResource("enemy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 0.1, 5)
+
+[node name="CrawlerCorridor" parent="Enemies" instance=ExtResource("crawler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -7)
+
+[node name="CrawlerLedge" parent="Enemies" instance=ExtResource("crawler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.6, -18.5)
+
+[node name="CrawlerRoomC" parent="Enemies" instance=ExtResource("crawler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.1, 2)
+
+[node name="CrawlerCourtyardA" parent="Enemies" instance=ExtResource("crawler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.1, -16)
+
+[node name="CrawlerCourtyardB" parent="Enemies" instance=ExtResource("crawler")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, -9)
