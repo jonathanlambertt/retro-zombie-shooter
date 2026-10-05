@@ -88,10 +88,7 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Esc releases the mouse (ui_cancel is a built-in action bound to Esc).
-	if event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		return
+	# (Esc is handled by the pause menu, scripts/pause_menu.gd.)
 
 	# Number keys switch weapon: the action "weapon_1" picks the first one
 	# in the list, "weapon_2" the second, and so on.
@@ -107,7 +104,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var mouse_is_captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
-	# Clicking in the window grabs the mouse again.
+	# Clicking in the window grabs the mouse again (if it was lost, for
+	# example by switching to another window).
 	if event is InputEventMouseButton and event.pressed and not mouse_is_captured:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return

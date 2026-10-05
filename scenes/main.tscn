@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://levels/half-life-level.tscn" id="level_1"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://levels/test_room.tscn" id="level_6"]
 [ext_resource type="Shader" path="res://shaders/color_quantize.gdshader" id="3_quantize"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="5_pause"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_quantize"]
 shader = ExtResource("3_quantize")
@@ -33,6 +34,7 @@ grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
 [node name="ViewportContainer" type="SubViewportContainer" parent="."]
+process_mode = 3
 texture_filter = 1
 material = SubResource("ShaderMaterial_quantize")
 layout_mode = 0
@@ -51,3 +53,7 @@ use_debanding = false
 size = Vector2i(320, 240)
 
 [node name="HUD" parent="ViewportContainer/GameViewport" instance=ExtResource("4_hud")]
+process_mode = 1
+
+[node name="PauseMenu" parent="ViewportContainer/GameViewport" instance=ExtResource("5_pause")]
+visible = false

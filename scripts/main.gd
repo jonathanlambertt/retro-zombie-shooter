@@ -11,7 +11,8 @@ extends Control
 ##   4. Whatever window area is left over shows the black ColorRect behind
 ##      it. Those are the letterbox bars.
 ##   5. The container also has a small shader (shaders/color_quantize.gdshader)
-##      that reduces the number of colours in the final picture.
+##      that reduces the number of colours in the final picture. F1 and the
+##      pause menu (scripts/pause_menu.gd) switch it on and off.
 ##
 ## It also loads the level, and swaps it for the next or previous one in its
 ## Levels list when F2 or F3 is pressed.
@@ -25,10 +26,6 @@ extends Control
 ## then exactly the same size on screen, at the cost of thicker black bars.
 ## If false, the picture fills as much of the window as possible.
 @export var integer_scaling := false
-
-## Whether the colour-reducing post-process starts switched on.
-## Press F1 while playing to toggle it and compare.
-@export var color_quantize := true
 
 ## Every level in the game, in the order F2 steps through them. The game
 ## starts in the first one. To add a level, add its .tscn file to this list
@@ -57,15 +54,10 @@ func _ready() -> void:
 	# whenever the window does (it is anchored to fill the whole window).
 	resized.connect(_fit_to_window)
 	_fit_to_window()
-	_apply_color_quantize()
 	_load_level()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
-		color_quantize = not color_quantize
-		_apply_color_quantize()
-
 	# F2 and F3 step forwards and backwards through the levels. posmod wraps
 	# around, so going past the last level comes back to the first.
 	if event.is_action_pressed("level_next"):
@@ -84,6 +76,10 @@ func _load_level() -> void:
 		level.queue_free()  # removes the old level and everything in it
 
 	level = levels[level_index].instantiate()
+	# The ViewportContainer is set to keep running while the game is paused
+	# (so the pause menu still gets the keyboard and mouse), and everything
+	# inside it copies that. Make the level freeze with the pause instead.
+	level.process_mode = Node.PROCESS_MODE_PAUSABLE
 	game_viewport.add_child(level)
 	# Keep the level first in the list, so the HUD is drawn on top of it.
 	game_viewport.move_child(level, 0)
@@ -102,9 +98,3 @@ func _fit_to_window() -> void:
 	viewport_container.scale = Vector2(fit_scale, fit_scale)
 	# Centre it. floor() keeps it on a whole pixel so the edges stay crisp.
 	viewport_container.position = ((window_size - image_size * fit_scale) / 2.0).floor()
-
-
-## Sends the on/off switch to the post-process shader on the container.
-func _apply_color_quantize() -> void:
-	var post_process := viewport_container.material as ShaderMaterial
-	post_process.set_shader_parameter("enabled", color_quantize)

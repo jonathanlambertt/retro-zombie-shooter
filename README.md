@@ -27,8 +27,8 @@ Godot_v4.7-stable_win64_console.exe --path .
 | Right mouse button | Machine gun: fire a grenade. Shotgun: double shot |
 | 1 / 2 / 3 / 4 | Switch to pistol / machine gun / rocket launcher / shotgun |
 | Mouse wheel | Next / previous weapon |
-| Esc | Release the mouse (click the window to grab it again) |
-| F1 | Toggle the colour quantization post-process |
+| Esc | Pause menu: turn the retro effects down or off, or quit. Esc again resumes |
+| F1 | Toggle the colour quantization post-process (also works while paused) |
 | F2 / F3 | Next / previous level |
 
 When you are hurt you grunt and the screen flashes red. If your health
@@ -58,6 +58,7 @@ scenes/              Reusable scenes
   crawler.tscn         Small crawling enemy that leaps at your head
   zombie.tscn          Thin, limping enemy (shares scripts/enemy.gd)
   hud.tscn             Health / ammo / crosshair
+  pause_menu.tscn      Esc menu: pauses the game, retro effect settings, quit
 levels/
   test_level.tscn      The greybox level (CSG)
   backrooms.tscn       Backrooms maze: yellow wallpaper, carpet, ceiling lights
@@ -66,7 +67,7 @@ levels/
   half-life-level.tscn Office complex full of zombies, with a slime pit
   quake-level.tscn     Brick castle hall with a lava channel and an altar
 scripts/             One script per scene, plus:
-  pixel_text.gd        Tiny built-in 3x5 pixel font for the HUD
+  pixel_text.gd        Tiny built-in 3x5 pixel font for the HUD and menu
   surface_mark.gd      Shared by bullet holes and blood stains
   placeholder_sound.gd Generates stand-in gunshot noise from code
   damage_zone.gd       Area that hurts whatever stands in it (lava, slime)
@@ -99,15 +100,39 @@ Open `scripts/main.gd` and edit one line:
 ```
 
 Or select the `Main` node in `scenes/main.tscn` and change **Render Size** in
-the Inspector. On the same node:
-
-- **Integer Scaling**: scale only by whole numbers (2x, 3x...), so every
-  pixel is exactly the same size, with thicker black bars.
-- **Color Quantize**: whether the colour-reducing effect starts on.
+the Inspector. On the same node, **Integer Scaling** scales only by whole
+numbers (2x, 3x...), so every pixel is exactly the same size, with thicker
+black bars.
 
 The HUD is anchored to the corners, so it adapts to the new size.
 
 ## Changing the shader settings
+
+### Turning the effects down (pause menu)
+
+Press **Esc** while playing to pause the game and open the menu:
+
+| Line | What it does |
+| --- | --- |
+| Retro Effects | Master switch. `OFF` turns off every effect below (and affine warping) without forgetting their settings. |
+| Vertex Snap | How strong the vertex snapping is: the jittery "wobble" as you move. `100%`, `75%`, `50%`, `25%` or `OFF`. |
+| Light Bands | How strong the banded lighting is. Lower = more, subtler bands. `OFF` = smooth lighting. |
+| Color Quantize | The colour-reducing post-process (the same switch as F1). |
+
+Up/down (or W/S) choose a line, left/right (or A/D) turn it down or up.
+Enter or a click steps it down, and from `OFF` back round to `100%`. The
+settings are kept when you die, but not when you quit.
+
+`100%` means "exactly as set in the shader and the materials" (the
+`snap_resolution` and `light_bands` values below); `50%` makes the snapping
+jumps half as big, or the light bands twice as many.
+
+These four switches are **shader globals**: values shared by every shader
+in the project, found under **Project Settings > Globals > Shader Globals**
+as `retro_effects`, `retro_snap_strength`, `retro_light_band_strength` and
+`retro_color_quantize`. The game starts with the values set there. The editor
+draws with them too, so setting `retro_snap_strength` to `0` there also stops
+the wobble while you work in the 3D editor.
 
 ### Surface shader (`shaders/retro_surface.gdshader`)
 
@@ -129,7 +154,7 @@ material.
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `color_levels` | `32` | Shades per colour channel. Try `16` or `8` for harsher banding. |
-| `enabled` | on | Controlled by **Color Quantize** on the `Main` node, and F1 in game. |
+| `retro_color_quantize` | on | Shader global (see above): starts as set in Project Settings, F1 or the pause menu in game. |
 
 ### Fog and ambient light (`assets/retro_environment.tres`)
 
@@ -310,8 +335,8 @@ out of one block. The glowing lamps, screens and the green sample under
   a ranged attack, pain and death animations, hit feedback.
 - **Save/load**: write player position, health, ammo and dead enemies to a
   file with `FileAccess` or a custom `Resource`.
-- **Game flow**: a death screen instead of an instant restart, a menu, health
-  pickups, and a level exit.
+- **Game flow**: a death screen instead of an instant restart, a main menu,
+  health pickups, and a level exit.
 - **Look**: baked lightmaps (`LightmapGI`) for Quake-style static shadows, a
   sky texture, ordered dithering in the colour quantize shader, and a real
   pixel font and sprite-based weapon.

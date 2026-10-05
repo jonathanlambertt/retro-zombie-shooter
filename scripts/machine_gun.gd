@@ -73,6 +73,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		fire_grenade()
 
 
+func _notification(what: int) -> void:
+	# Godot sends NOTIFICATION_PAUSED when the pause menu freezes the game.
+	# A paused node hears no input, so it would miss the button being let go
+	# and carry on firing after the game resumes. Let go of the trigger now.
+	if what == NOTIFICATION_PAUSED:
+		trigger_held = false
+
+
 func _process(delta: float) -> void:
 	cooldown = maxf(cooldown - delta, 0.0)
 	grenade_cooldown = maxf(grenade_cooldown - delta, 0.0)

@@ -9,7 +9,8 @@ extends Control
 ## give them a pixel .ttf/.fnt font with antialiasing turned off in its
 ## import settings.
 
-## The text to show. Supports A-Z, 0-9 and spaces (lower case is upper-cased).
+## The text to show. Supports A-Z, 0-9, spaces, ">" and "%" (lower case is
+## upper-cased).
 @export var text := "":
 	set(value):
 		if value == text:
@@ -17,7 +18,10 @@ extends Control
 		text = value
 		queue_redraw()  # ask Godot to call _draw() again
 
-@export var color := Color(1.0, 0.82, 0.35)
+@export var color := Color(1.0, 0.82, 0.35):
+	set(value):
+		color = value
+		queue_redraw()
 ## Size of one font pixel, in game pixels. 2 gives 6x10 pixel letters.
 @export var pixel_size := 2
 ## If true, the text ends at the right edge of this Control instead of
@@ -65,6 +69,8 @@ const GLYPHS := {
 	"7": ["###", "..#", ".#.", ".#.", ".#."],
 	"8": ["###", "#.#", "###", "#.#", "###"],
 	"9": ["###", "#.#", "###", "..#", "##."],
+	">": ["#..", ".#.", "..#", ".#.", "#.."],
+	"%": ["#.#", "..#", ".#.", "#..", "#.#"],
 }
 
 

@@ -1,12 +1,11 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://fdtdm21og4dx"]
 
-[ext_resource type="Environment" path="res://assets/backrooms_environment.tres" id="env"]
-[ext_resource type="Material" path="res://assets/materials/wallpaper.tres" id="wallpaper"]
-[ext_resource type="Material" path="res://assets/materials/carpet.tres" id="carpet"]
 [ext_resource type="Material" path="res://assets/materials/ceiling_tile.tres" id="ceiling_tile"]
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
-[ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="enemy"]
 [ext_resource type="PackedScene" path="res://scenes/crawler.tscn" id="crawler"]
+[ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="enemy"]
+[ext_resource type="Environment" path="res://assets/backrooms_environment.tres" id="env"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="Material" path="res://assets/materials/wallpaper.tres" id="wallpaper"]
 [ext_resource type="PackedScene" path="res://scenes/zombie.tscn" id="zombie"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_panel"]
@@ -17,641 +16,636 @@ albedo_color = Color(1, 0.97, 0.8, 1)
 material = SubResource("StandardMaterial3D_panel")
 size = Vector3(1, 0.04, 2)
 
-[node name="Backrooms" type="Node3D"]
+[node name="Backrooms" type="Node3D" unique_id=1419948715]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=23723376]
 environment = ExtResource("env")
 
-[node name="Player" parent="." instance=ExtResource("player")]
+[node name="Player" parent="." unique_id=647820487 instance=ExtResource("player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, 2)
 
-[node name="World" type="CSGCombiner3D" parent="."]
+[node name="World" type="CSGCombiner3D" parent="." unique_id=659630656]
 use_collision = true
 
-[node name="Solid" type="CSGBox3D" parent="World"]
+[node name="Solid" type="CSGBox3D" parent="World" unique_id=1764081815]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 size = Vector3(42, 5.3, 42)
 material = ExtResource("wallpaper")
 
-[node name="CarveFloor" type="CSGBox3D" parent="World"]
+[node name="CarveFloor" type="CSGBox3D" parent="World" unique_id=927904409]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 operation = 2
 size = Vector3(40, 3.3, 40)
 material = ExtResource("wallpaper")
 
-[node name="Carpet" type="CSGBox3D" parent="World"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 0)
-size = Vector3(40, 0.25, 40)
-material = ExtResource("carpet")
-
-[node name="Ceiling" type="CSGBox3D" parent="World"]
+[node name="Ceiling" type="CSGBox3D" parent="World" unique_id=1760006628]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.925, 0)
 size = Vector3(40, 0.25, 40)
 material = ExtResource("ceiling_tile")
 
-[node name="Wall01" type="CSGBox3D" parent="World"]
+[node name="Wall01" type="CSGBox3D" parent="World" unique_id=425154444]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1.4, -18)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall02" type="CSGBox3D" parent="World"]
+[node name="Wall02" type="CSGBox3D" parent="World" unique_id=826860815]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 1.4, -10)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall03" type="CSGBox3D" parent="World"]
+[node name="Wall03" type="CSGBox3D" parent="World" unique_id=232645638]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.4, -15.125)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall04" type="CSGBox3D" parent="World"]
+[node name="Wall04" type="CSGBox3D" parent="World" unique_id=1842902293]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.4, -10)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall05" type="CSGBox3D" parent="World"]
+[node name="Wall05" type="CSGBox3D" parent="World" unique_id=1993667120]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.4, -4.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall06" type="CSGBox3D" parent="World"]
+[node name="Wall06" type="CSGBox3D" parent="World" unique_id=668544720]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.4, -0.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall07" type="CSGBox3D" parent="World"]
+[node name="Wall07" type="CSGBox3D" parent="World" unique_id=444357078]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.4, 14)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall08" type="CSGBox3D" parent="World"]
+[node name="Wall08" type="CSGBox3D" parent="World" unique_id=1969691579]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.4, -16.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall09" type="CSGBox3D" parent="World"]
+[node name="Wall09" type="CSGBox3D" parent="World" unique_id=1404886211]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.4, -14)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall10" type="CSGBox3D" parent="World"]
+[node name="Wall10" type="CSGBox3D" parent="World" unique_id=390037501]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.4, -3.125)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall11" type="CSGBox3D" parent="World"]
+[node name="Wall11" type="CSGBox3D" parent="World" unique_id=1806587744]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.4, 10)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall12" type="CSGBox3D" parent="World"]
+[node name="Wall12" type="CSGBox3D" parent="World" unique_id=981005526]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.4, 18)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall13" type="CSGBox3D" parent="World"]
+[node name="Wall13" type="CSGBox3D" parent="World" unique_id=944598902]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.4, -11.125)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall14" type="CSGBox3D" parent="World"]
+[node name="Wall14" type="CSGBox3D" parent="World" unique_id=1084396921]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.4, -6)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall15" type="CSGBox3D" parent="World"]
+[node name="Wall15" type="CSGBox3D" parent="World" unique_id=89786875]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.4, -0.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall16" type="CSGBox3D" parent="World"]
+[node name="Wall16" type="CSGBox3D" parent="World" unique_id=920049023]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.4, 19.125)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall17" type="CSGBox3D" parent="World"]
+[node name="Wall17" type="CSGBox3D" parent="World" unique_id=1624681708]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -18)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall18" type="CSGBox3D" parent="World"]
+[node name="Wall18" type="CSGBox3D" parent="World" unique_id=1850440081]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -10)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall19" type="CSGBox3D" parent="World"]
+[node name="Wall19" type="CSGBox3D" parent="World" unique_id=1617113810]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 6)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall20" type="CSGBox3D" parent="World"]
+[node name="Wall20" type="CSGBox3D" parent="World" unique_id=858970884]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 14)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall21" type="CSGBox3D" parent="World"]
+[node name="Wall21" type="CSGBox3D" parent="World" unique_id=1352592036]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, -16.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall22" type="CSGBox3D" parent="World"]
+[node name="Wall22" type="CSGBox3D" parent="World" unique_id=1120435643]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, -12)
 size = Vector3(0.5, 3, 8.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall23" type="CSGBox3D" parent="World"]
+[node name="Wall23" type="CSGBox3D" parent="World" unique_id=1916288627]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, -4.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall24" type="CSGBox3D" parent="World"]
+[node name="Wall24" type="CSGBox3D" parent="World" unique_id=1234684005]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, 8)
 size = Vector3(0.5, 3, 8.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall25" type="CSGBox3D" parent="World"]
+[node name="Wall25" type="CSGBox3D" parent="World" unique_id=1915080789]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, 15.125)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall26" type="CSGBox3D" parent="World"]
+[node name="Wall26" type="CSGBox3D" parent="World" unique_id=1356477191]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, 18)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall27" type="CSGBox3D" parent="World"]
+[node name="Wall27" type="CSGBox3D" parent="World" unique_id=1829433886]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.4, -10)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall28" type="CSGBox3D" parent="World"]
+[node name="Wall28" type="CSGBox3D" parent="World" unique_id=456956308]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.4, -16.875)
 size = Vector3(0.5, 3, 2.25)
 material = ExtResource("wallpaper")
 
-[node name="Wall29" type="CSGBox3D" parent="World"]
+[node name="Wall29" type="CSGBox3D" parent="World" unique_id=967526601]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.4, -6)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall30" type="CSGBox3D" parent="World"]
+[node name="Wall30" type="CSGBox3D" parent="World" unique_id=503995317]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.4, 2)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall31" type="CSGBox3D" parent="World"]
+[node name="Wall31" type="CSGBox3D" parent="World" unique_id=511352012]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.4, 18)
 size = Vector3(0.5, 3, 4.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall32" type="CSGBox3D" parent="World"]
+[node name="Wall32" type="CSGBox3D" parent="World" unique_id=1021484050]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.4, -12)
 size = Vector3(0.5, 3, 8.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall33" type="CSGBox3D" parent="World"]
+[node name="Wall33" type="CSGBox3D" parent="World" unique_id=1029947831]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -16)
 size = Vector3(16.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall34" type="CSGBox3D" parent="World"]
+[node name="Wall34" type="CSGBox3D" parent="World" unique_id=1930046050]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1.4, -16)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall35" type="CSGBox3D" parent="World"]
+[node name="Wall35" type="CSGBox3D" parent="World" unique_id=405822597]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.4, -12)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall36" type="CSGBox3D" parent="World"]
+[node name="Wall36" type="CSGBox3D" parent="World" unique_id=2011957700]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.875, 1.4, -12)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall37" type="CSGBox3D" parent="World"]
+[node name="Wall37" type="CSGBox3D" parent="World" unique_id=1566798209]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.875, 1.4, -12)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall38" type="CSGBox3D" parent="World"]
+[node name="Wall38" type="CSGBox3D" parent="World" unique_id=1375157842]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.875, 1.4, -8)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall39" type="CSGBox3D" parent="World"]
+[node name="Wall39" type="CSGBox3D" parent="World" unique_id=1994710591]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.4, -8)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall40" type="CSGBox3D" parent="World"]
+[node name="Wall40" type="CSGBox3D" parent="World" unique_id=743240249]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.125, 1.4, -8)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall41" type="CSGBox3D" parent="World"]
+[node name="Wall41" type="CSGBox3D" parent="World" unique_id=1500852808]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.4, -4)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall42" type="CSGBox3D" parent="World"]
+[node name="Wall42" type="CSGBox3D" parent="World" unique_id=353370736]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.4, -4)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall43" type="CSGBox3D" parent="World"]
+[node name="Wall43" type="CSGBox3D" parent="World" unique_id=1713864344]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.875, 1.4, -4)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall44" type="CSGBox3D" parent="World"]
+[node name="Wall44" type="CSGBox3D" parent="World" unique_id=402592492]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.4, -4)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall45" type="CSGBox3D" parent="World"]
+[node name="Wall45" type="CSGBox3D" parent="World" unique_id=374203514]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.875, 1.4, 0)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall46" type="CSGBox3D" parent="World"]
+[node name="Wall46" type="CSGBox3D" parent="World" unique_id=1477594172]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.4, 0)
 size = Vector3(8.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall47" type="CSGBox3D" parent="World"]
+[node name="Wall47" type="CSGBox3D" parent="World" unique_id=1660921901]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.4, 0)
 size = Vector3(8.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall48" type="CSGBox3D" parent="World"]
+[node name="Wall48" type="CSGBox3D" parent="World" unique_id=1679172720]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.125, 1.4, 4)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall49" type="CSGBox3D" parent="World"]
+[node name="Wall49" type="CSGBox3D" parent="World" unique_id=1290054680]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.875, 1.4, 4)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall50" type="CSGBox3D" parent="World"]
+[node name="Wall50" type="CSGBox3D" parent="World" unique_id=1467069009]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.4, 4)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall51" type="CSGBox3D" parent="World"]
+[node name="Wall51" type="CSGBox3D" parent="World" unique_id=605786747]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.125, 1.4, 4)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall52" type="CSGBox3D" parent="World"]
+[node name="Wall52" type="CSGBox3D" parent="World" unique_id=1774551021]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.875, 1.4, 8)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall53" type="CSGBox3D" parent="World"]
+[node name="Wall53" type="CSGBox3D" parent="World" unique_id=1434144476]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.4, 8)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall54" type="CSGBox3D" parent="World"]
+[node name="Wall54" type="CSGBox3D" parent="World" unique_id=776793027]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 8)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall55" type="CSGBox3D" parent="World"]
+[node name="Wall55" type="CSGBox3D" parent="World" unique_id=1096822828]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.4, 12)
 size = Vector3(8.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall56" type="CSGBox3D" parent="World"]
+[node name="Wall56" type="CSGBox3D" parent="World" unique_id=1374072272]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.125, 1.4, 12)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall57" type="CSGBox3D" parent="World"]
+[node name="Wall57" type="CSGBox3D" parent="World" unique_id=676453925]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1.4, 16)
 size = Vector3(4.5, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall58" type="CSGBox3D" parent="World"]
+[node name="Wall58" type="CSGBox3D" parent="World" unique_id=1387777464]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.125, 1.4, 16)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall59" type="CSGBox3D" parent="World"]
+[node name="Wall59" type="CSGBox3D" parent="World" unique_id=1805998719]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.125, 1.4, 16)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall60" type="CSGBox3D" parent="World"]
+[node name="Wall60" type="CSGBox3D" parent="World" unique_id=1256668411]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.125, 1.4, 16)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall61" type="CSGBox3D" parent="World"]
+[node name="Wall61" type="CSGBox3D" parent="World" unique_id=801411286]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.875, 1.4, 16)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Wall62" type="CSGBox3D" parent="World"]
+[node name="Wall62" type="CSGBox3D" parent="World" unique_id=1103335007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.875, 1.4, 16)
 size = Vector3(2.25, 3, 0.5)
 material = ExtResource("wallpaper")
 
-[node name="Pillar01" type="CSGBox3D" parent="World"]
+[node name="Pillar01" type="CSGBox3D" parent="World" unique_id=142915937]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.4, 0)
 size = Vector3(0.6, 3, 0.6)
 material = ExtResource("wallpaper")
 
-[node name="LightPanels" type="Node3D" parent="."]
+[node name="LightPanels" type="Node3D" parent="." unique_id=1914511528]
 
-[node name="Panel01" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel01" type="MeshInstance3D" parent="LightPanels" unique_id=1992451109]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2.78, -18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel02" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel02" type="MeshInstance3D" parent="LightPanels" unique_id=1160944970]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 2.78, -18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel03" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel03" type="MeshInstance3D" parent="LightPanels" unique_id=1798628673]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.78, -18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel04" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel04" type="MeshInstance3D" parent="LightPanels" unique_id=753237777]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.78, -18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel05" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel05" type="MeshInstance3D" parent="LightPanels" unique_id=91930372]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 2.78, -18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel06" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel06" type="MeshInstance3D" parent="LightPanels" unique_id=170567080]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 2.78, -14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel07" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel07" type="MeshInstance3D" parent="LightPanels" unique_id=1315268540]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.78, -14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel08" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel08" type="MeshInstance3D" parent="LightPanels" unique_id=2052841062]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.78, -14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel09" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel09" type="MeshInstance3D" parent="LightPanels" unique_id=1157896078]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.78, -14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel10" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel10" type="MeshInstance3D" parent="LightPanels" unique_id=1505121930]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 2.78, -14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel11" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel11" type="MeshInstance3D" parent="LightPanels" unique_id=108658324]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2.78, -10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel12" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel12" type="MeshInstance3D" parent="LightPanels" unique_id=1513277158]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 2.78, -10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel13" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel13" type="MeshInstance3D" parent="LightPanels" unique_id=2129214296]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.78, -10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel14" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel14" type="MeshInstance3D" parent="LightPanels" unique_id=1292641341]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.78, -10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel15" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel15" type="MeshInstance3D" parent="LightPanels" unique_id=668399423]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 2.78, -10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel16" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel16" type="MeshInstance3D" parent="LightPanels" unique_id=609414372]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 2.78, -6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel17" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel17" type="MeshInstance3D" parent="LightPanels" unique_id=1991498052]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.78, -6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel18" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel18" type="MeshInstance3D" parent="LightPanels" unique_id=1305736447]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.78, -6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel19" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel19" type="MeshInstance3D" parent="LightPanels" unique_id=1946703467]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.78, -6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel20" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel20" type="MeshInstance3D" parent="LightPanels" unique_id=1852038336]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 2.78, -6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel21" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel21" type="MeshInstance3D" parent="LightPanels" unique_id=1355873273]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2.78, -2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel22" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel22" type="MeshInstance3D" parent="LightPanels" unique_id=1190742334]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 2.78, -2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel23" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel23" type="MeshInstance3D" parent="LightPanels" unique_id=422420975]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.78, -2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel24" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel24" type="MeshInstance3D" parent="LightPanels" unique_id=1800226888]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.78, -2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel25" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel25" type="MeshInstance3D" parent="LightPanels" unique_id=1870320786]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 2.78, -2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel26" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel26" type="MeshInstance3D" parent="LightPanels" unique_id=314149139]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 2.78, 2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel27" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel27" type="MeshInstance3D" parent="LightPanels" unique_id=17159919]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.78, 2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel28" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel28" type="MeshInstance3D" parent="LightPanels" unique_id=2111633745]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.78, 2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel29" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel29" type="MeshInstance3D" parent="LightPanels" unique_id=93714584]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.78, 2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel30" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel30" type="MeshInstance3D" parent="LightPanels" unique_id=67601923]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 2.78, 2)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel31" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel31" type="MeshInstance3D" parent="LightPanels" unique_id=1264661110]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2.78, 6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel32" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel32" type="MeshInstance3D" parent="LightPanels" unique_id=1465987259]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 2.78, 6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel33" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel33" type="MeshInstance3D" parent="LightPanels" unique_id=1976518932]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.78, 6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel34" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel34" type="MeshInstance3D" parent="LightPanels" unique_id=376505606]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.78, 6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel35" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel35" type="MeshInstance3D" parent="LightPanels" unique_id=36493265]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 2.78, 6)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel36" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel36" type="MeshInstance3D" parent="LightPanels" unique_id=1634826651]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 2.78, 10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel37" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel37" type="MeshInstance3D" parent="LightPanels" unique_id=805003769]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.78, 10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel38" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel38" type="MeshInstance3D" parent="LightPanels" unique_id=517203353]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.78, 10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel39" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel39" type="MeshInstance3D" parent="LightPanels" unique_id=593425809]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.78, 10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel40" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel40" type="MeshInstance3D" parent="LightPanels" unique_id=1651787540]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 2.78, 10)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel41" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel41" type="MeshInstance3D" parent="LightPanels" unique_id=924364441]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2.78, 14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel42" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel42" type="MeshInstance3D" parent="LightPanels" unique_id=335210824]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 2.78, 14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel43" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel43" type="MeshInstance3D" parent="LightPanels" unique_id=1226887432]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.78, 14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel44" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel44" type="MeshInstance3D" parent="LightPanels" unique_id=320142800]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.78, 14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel45" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel45" type="MeshInstance3D" parent="LightPanels" unique_id=1736465937]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 2.78, 14)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel46" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel46" type="MeshInstance3D" parent="LightPanels" unique_id=355694306]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 2.78, 18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel47" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel47" type="MeshInstance3D" parent="LightPanels" unique_id=1862544393]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.78, 18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel48" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel48" type="MeshInstance3D" parent="LightPanels" unique_id=744889167]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.78, 18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel49" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel49" type="MeshInstance3D" parent="LightPanels" unique_id=800324362]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.78, 18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Panel50" type="MeshInstance3D" parent="LightPanels"]
+[node name="Panel50" type="MeshInstance3D" parent="LightPanels" unique_id=1688039746]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 2.78, 18)
 mesh = SubResource("BoxMesh_panel")
 
-[node name="Lights" type="Node3D" parent="."]
+[node name="Lights" type="Node3D" parent="." unique_id=1513857520]
 
-[node name="FaceShading" type="DirectionalLight3D" parent="Lights"]
+[node name="FaceShading" type="DirectionalLight3D" parent="Lights" unique_id=1599647025]
 transform = Transform3D(0.848, -0.169, 0.502, 0, 0.948, 0.319, -0.53, -0.27, 0.804, 0, 2, 0)
 light_color = Color(1, 0.95, 0.7, 1)
 light_energy = 0.35
 
-[node name="PanelLight1" type="OmniLight3D" parent="Lights"]
+[node name="PanelLight1" type="OmniLight3D" parent="Lights" unique_id=356801643]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 2.4, 2)
 light_color = Color(1, 0.93, 0.6, 1)
 light_energy = 2.0
 omni_range = 7.0
 omni_attenuation = 0.5
 
-[node name="PanelLight2" type="OmniLight3D" parent="Lights"]
+[node name="PanelLight2" type="OmniLight3D" parent="Lights" unique_id=1928067101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 2.4, -14)
 light_color = Color(1, 0.93, 0.6, 1)
 light_energy = 2.0
 omni_range = 7.0
 omni_attenuation = 0.5
 
-[node name="PanelLight3" type="OmniLight3D" parent="Lights"]
+[node name="PanelLight3" type="OmniLight3D" parent="Lights" unique_id=110346691]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 2.4, -10)
 light_color = Color(1, 0.93, 0.6, 1)
 light_energy = 2.0
 omni_range = 7.0
 omni_attenuation = 0.5
 
-[node name="PanelLight4" type="OmniLight3D" parent="Lights"]
+[node name="PanelLight4" type="OmniLight3D" parent="Lights" unique_id=1295630123]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 2.4, 6)
 light_color = Color(1, 0.93, 0.6, 1)
 light_energy = 2.0
 omni_range = 7.0
 omni_attenuation = 0.5
 
-[node name="PanelLight5" type="OmniLight3D" parent="Lights"]
+[node name="PanelLight5" type="OmniLight3D" parent="Lights" unique_id=357125759]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.4, 10)
 light_color = Color(1, 0.93, 0.6, 1)
 light_energy = 2.0
 omni_range = 7.0
 omni_attenuation = 0.5
 
-[node name="PanelLight6" type="OmniLight3D" parent="Lights"]
+[node name="PanelLight6" type="OmniLight3D" parent="Lights" unique_id=929221037]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 2.4, 18)
 light_color = Color(1, 0.93, 0.6, 1)
 light_energy = 2.0
 omni_range = 7.0
 omni_attenuation = 0.5
 
-[node name="Enemies" type="Node3D" parent="."]
+[node name="Enemies" type="Node3D" parent="." unique_id=836166238]
 
-[node name="Enemy1" parent="Enemies" instance=ExtResource("enemy")]
+[node name="Enemy1" parent="Enemies" unique_id=2047288985 instance=ExtResource("enemy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.8, 0.1, -10)
 
-[node name="Enemy2" parent="Enemies" instance=ExtResource("enemy")]
+[node name="Enemy2" parent="Enemies" unique_id=2104602662 instance=ExtResource("enemy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.1, -14)
 
-[node name="Enemy3" parent="Enemies" instance=ExtResource("enemy")]
+[node name="Enemy3" parent="Enemies" unique_id=777553054 instance=ExtResource("enemy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.8, 0.1, 14)
 
-[node name="Enemy4" parent="Enemies" instance=ExtResource("enemy")]
+[node name="Enemy4" parent="Enemies" unique_id=1353357735 instance=ExtResource("enemy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0.1, 14)
 
-[node name="Crawler1" parent="Enemies" instance=ExtResource("crawler")]
+[node name="Crawler1" parent="Enemies" unique_id=367666018 instance=ExtResource("crawler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.1, -14)
 
-[node name="Crawler2" parent="Enemies" instance=ExtResource("crawler")]
+[node name="Crawler2" parent="Enemies" unique_id=661610842 instance=ExtResource("crawler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.8, 0.1, 2)
 
-[node name="Crawler3" parent="Enemies" instance=ExtResource("crawler")]
+[node name="Crawler3" parent="Enemies" unique_id=589240684 instance=ExtResource("crawler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.2, 0.1, 2)
 
-[node name="Crawler4" parent="Enemies" instance=ExtResource("crawler")]
+[node name="Crawler4" parent="Enemies" unique_id=505756691 instance=ExtResource("crawler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.1, 18)
 
-[node name="Crawler5" parent="Enemies" instance=ExtResource("crawler")]
+[node name="Crawler5" parent="Enemies" unique_id=1821772724 instance=ExtResource("crawler")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.8, 0.1, -6)
 
-[node name="Zombie1" parent="Enemies" instance=ExtResource("zombie")]
+[node name="Zombie1" parent="Enemies" unique_id=1209682134 instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.1, 2)
 
-[node name="Zombie2" parent="Enemies" instance=ExtResource("zombie")]
+[node name="Zombie2" parent="Enemies" unique_id=549290357 instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.1, 6)
 
-[node name="Zombie3" parent="Enemies" instance=ExtResource("zombie")]
+[node name="Zombie3" parent="Enemies" unique_id=517004528 instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, -10)
 
-[node name="Zombie4" parent="Enemies" instance=ExtResource("zombie")]
+[node name="Zombie4" parent="Enemies" unique_id=2129604575 instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0.1, -14)

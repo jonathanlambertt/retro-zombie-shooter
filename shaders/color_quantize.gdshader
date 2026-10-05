@@ -7,8 +7,14 @@
 // graphics card with a small colour palette.
 shader_type canvas_item;
 
-// On/off switch. Toggled from scripts/main.gd (F1 in game).
-uniform bool enabled = true;
+// On/off switches. These are "global" values shared with every shader that
+// declares them (see the note in retro_surface.gdshader). Their starting
+// values are in Project Settings > Globals > Shader Globals; in game, F1 and
+// the pause menu (scripts/pause_menu.gd) change them.
+// This effect's own switch:
+global uniform bool retro_color_quantize;
+// The master switch for all the retro effects:
+global uniform bool retro_effects;
 // Shades per colour channel. 32 gives 15-bit colour, like a 3dfx Voodoo card.
 // Lower = harsher banding (try 16 or 8). 256 would be the same as off.
 uniform float color_levels : hint_range(2.0, 64.0, 1.0) = 32.0;
@@ -17,7 +23,7 @@ uniform float color_levels : hint_range(2.0, 64.0, 1.0) = 32.0;
 void fragment() {
 	// TEXTURE is whatever this node draws: here, the low-res game picture.
 	vec4 color = texture(TEXTURE, UV);
-	if (enabled) {
+	if (retro_effects && retro_color_quantize) {
 		float steps = color_levels - 1.0;
 		color.rgb = floor(color.rgb * steps + 0.5) / steps;
 	}

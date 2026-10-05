@@ -110,3 +110,22 @@ level_previous={
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[shader_globals]
+
+retro_effects={
+"type": "bool",
+"value": true
+}
+retro_snap_strength={
+"type": "float",
+"value": 1.0
+}
+retro_light_band_strength={
+"type": "float",
+"value": 1.0
+}
+retro_color_quantize={
+"type": "bool",
+"value": true
+}

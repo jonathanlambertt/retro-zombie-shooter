@@ -44,7 +44,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
 	# Only shoot while the mouse is captured. (The click that grabs the mouse
-	# again after pressing Esc should not also fire the gun.)
+	# again, after switching windows, should not also fire the gun.)
 	if event.is_action_pressed("shoot") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		fire()
 

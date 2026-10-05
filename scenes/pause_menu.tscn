@@ -1,0 +1,174 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/pixel_text.gd" id="2_text"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 2
+script = ExtResource("1_menu")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Menu" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -90.0
+offset_right = 120.0
+offset_bottom = 90.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="Control" parent="Menu"]
+anchors_preset = 0
+offset_left = 74.0
+offset_top = 8.0
+offset_right = 170.0
+offset_bottom = 28.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "PAUSED"
+pixel_size = 4
+
+[node name="Cursor" type="Control" parent="Menu"]
+anchors_preset = 0
+offset_left = 4.0
+offset_top = 48.0
+offset_right = 12.0
+offset_bottom = 58.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = ">"
+
+[node name="Rows" type="Control" parent="Menu"]
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 224.0
+offset_bottom = 144.0
+mouse_filter = 2
+
+[node name="Resume" type="Control" parent="Menu/Rows"]
+anchors_preset = 0
+offset_right = 208.0
+offset_bottom = 16.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "RESUME"
+
+[node name="RetroEffects" type="Control" parent="Menu/Rows"]
+anchors_preset = 0
+offset_top = 16.0
+offset_right = 208.0
+offset_bottom = 32.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "RETRO EFFECTS"
+
+[node name="Value" type="Control" parent="Menu/Rows/RetroEffects"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "ON"
+align_right = true
+
+[node name="VertexSnap" type="Control" parent="Menu/Rows"]
+anchors_preset = 0
+offset_top = 32.0
+offset_right = 208.0
+offset_bottom = 48.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "VERTEX SNAP"
+
+[node name="Value" type="Control" parent="Menu/Rows/VertexSnap"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "100%"
+align_right = true
+
+[node name="LightBands" type="Control" parent="Menu/Rows"]
+anchors_preset = 0
+offset_top = 48.0
+offset_right = 208.0
+offset_bottom = 64.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "LIGHT BANDS"
+
+[node name="Value" type="Control" parent="Menu/Rows/LightBands"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "100%"
+align_right = true
+
+[node name="ColorQuantize" type="Control" parent="Menu/Rows"]
+anchors_preset = 0
+offset_top = 64.0
+offset_right = 208.0
+offset_bottom = 80.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "COLOR QUANTIZE"
+
+[node name="Value" type="Control" parent="Menu/Rows/ColorQuantize"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "ON"
+align_right = true
+
+[node name="Quit" type="Control" parent="Menu/Rows"]
+anchors_preset = 0
+offset_top = 80.0
+offset_right = 208.0
+offset_bottom = 96.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "QUIT"
+
+[node name="Hint" type="Control" parent="Menu"]
+anchors_preset = 0
+offset_left = 62.0
+offset_top = 156.0
+offset_right = 178.0
+offset_bottom = 162.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "LEFT RIGHT OR CLICK TO CHANGE"
+pixel_size = 1

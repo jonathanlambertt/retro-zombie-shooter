@@ -9,6 +9,10 @@
 // The default values below are shared by every material that uses this
 // shader, so changing a default here changes the whole game. A material can
 // still override any of them for itself in the Inspector.
+//
+// On top of that, three "global" settings at the end of the uniforms below
+// turn the retro effects down or off for every material at once. The pause
+// menu (Esc) changes them while playing.
 shader_type spatial;
 
 // No shiny highlights: surfaces in Quake-era games were completely matte.
@@ -37,6 +41,22 @@ uniform float affine_amount : hint_range(0.0, 1.0) = 0.0;
 // Number of brightness steps a light is chopped into. 0 = smooth lighting.
 uniform float light_bands : hint_range(0.0, 16.0, 1.0) = 6.0;
 group_uniforms;
+
+// "global uniform" values don't belong to any one material. They are
+// defined once in Project Settings > Globals > Shader Globals (saved in
+// project.godot), every shader that declares them reads the same value, and
+// scripts/pause_menu.gd changes them with RenderingServer while playing.
+// The editor draws with the Project Settings values, so lowering them there
+// also calms the wobble in the 3D editor.
+//
+// Master switch: false turns off snapping, affine warping and light bands.
+global uniform bool retro_effects;
+// Scales the vertex snapping. 1 = the grid set by snap_resolution,
+// 0.5 = jumps half as big, 0 = off.
+global uniform float retro_snap_strength;
+// Scales the light bands the same way. 0.5 = twice as many (so subtler)
+// steps, 0 = smooth lighting.
+global uniform float retro_light_band_strength;
 
 // "Varyings" carry values from vertex() to fragment(). The graphics card
 // blends them smoothly across each triangle.
@@ -73,8 +93,11 @@ void vertex() {
 	// Project the vertex to "clip space" ourselves. After dividing by w, x and
 	// y run from -1 to +1 across the screen.
 	vec4 clip_position = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	if (snap_resolution.x > 0.0 && snap_resolution.y > 0.0 && clip_position.w > 0.0) {
-		vec2 grid = snap_resolution * 0.5;
+	float snap_strength = retro_effects ? retro_snap_strength : 0.0;
+	if (snap_resolution.x > 0.0 && snap_resolution.y > 0.0 && snap_strength > 0.0 && clip_position.w > 0.0) {
+		// Dividing by a strength below 1 makes the grid finer, so each jump
+		// is smaller. (At 1 the grid is exactly snap_resolution.)
+		vec2 grid = snap_resolution / snap_strength * 0.5;
 		vec2 screen_position = clip_position.xy / clip_position.w;
 		// Round to the nearest grid cell. Old hardware had no sub-pixel
 		// precision, which is what made early 3D geometry jitter.
@@ -94,7 +117,7 @@ void vertex() {
 
 void fragment() {
 	vec2 warped_uv = affine_uv.xy / affine_uv.z;
-	vec2 uv = mix(surface_uv, warped_uv, affine_amount);
+	vec2 uv = mix(surface_uv, warped_uv, retro_effects ? affine_amount : 0.0);
 	ALBEDO = texture(albedo_texture, uv).rgb * tint;
 }
 
@@ -103,9 +126,12 @@ void light() {
 	// Simple diffuse lighting: brightest when the surface faces the light.
 	// ATTENUATION is how much the light has faded over distance.
 	float amount = clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * ATTENUATION;
-	if (light_bands > 0.0) {
+	float band_strength = retro_effects ? retro_light_band_strength : 0.0;
+	if (light_bands > 0.0 && band_strength > 0.0) {
 		// Round the brightness to a few fixed steps to get visible bands.
-		amount = floor(amount * light_bands + 0.5) / light_bands;
+		// A weaker strength means more steps, which look smoother.
+		float bands = light_bands / band_strength;
+		amount = floor(amount * bands + 0.5) / bands;
 	}
 	DIFFUSE_LIGHT += amount * LIGHT_COLOR / PI;
 }
