@@ -4,7 +4,7 @@
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="2_concrete"]
 [ext_resource type="Material" path="res://assets/materials/metal.tres" id="3_metal"]
 [ext_resource type="Material" path="res://assets/materials/tile.tres" id="4_tile"]
-[ext_resource type="Material" path="res://assets/materials/crate.tres" id="5_crate"]
+[ext_resource type="PackedScene" path="res://scenes/crate.tscn" id="crate_scene"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="6_player"]
 
 [node name="TestRoom" type="Node3D"]
@@ -59,15 +59,11 @@ use_collision = true
 size = Vector3(0.6, 3, 0.6)
 material = ExtResource("3_metal")
 
-[node name="CrateA" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.5, -1.5)
-use_collision = true
-material = ExtResource("5_crate")
+[node name="CrateA" parent="Geometry" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -1.5)
 
-[node name="CrateB" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 2.3, 0.5, -0.2)
-use_collision = true
-material = ExtResource("5_crate")
+[node name="CrateB" parent="Geometry" instance=ExtResource("crate_scene")]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 2.3, 0, -0.2)
 
 [node name="Lights" type="Node3D" parent="."]
 

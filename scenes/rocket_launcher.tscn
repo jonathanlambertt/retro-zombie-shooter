@@ -1,0 +1,66 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/rocket_launcher.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/gun.tres" id="2_gun"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_tube"]
+material = ExtResource("2_gun")
+size = Vector3(0.1, 0.1, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_muzzle"]
+material = ExtResource("2_gun")
+size = Vector3(0.13, 0.13, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_grip"]
+material = ExtResource("2_gun")
+size = Vector3(0.045, 0.11, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sight"]
+material = ExtResource("2_gun")
+size = Vector3(0.02, 0.05, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
+shading_mode = 0
+albedo_color = Color(1, 0.8, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_flash"]
+material = SubResource("StandardMaterial3D_flash")
+size = Vector3(0.2, 0.2, 0.02)
+
+[node name="RocketLauncher" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Tube" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.05)
+mesh = SubResource("BoxMesh_tube")
+
+[node name="Muzzle" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.36)
+mesh = SubResource("BoxMesh_muzzle")
+
+[node name="Grip" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.966, -0.259, 0, 0.259, 0.966, 0, -0.1, 0.02)
+mesh = SubResource("BoxMesh_grip")
+
+[node name="Sight" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, -0.2)
+mesh = SubResource("BoxMesh_sight")
+
+[node name="MuzzleFlash" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.45)
+visible = false
+
+[node name="FlashMesh" type="MeshInstance3D" parent="MuzzleFlash"]
+transform = Transform3D(0.707, -0.707, 0, 0.707, 0.707, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_flash")
+
+[node name="FlashLight" type="OmniLight3D" parent="MuzzleFlash"]
+light_color = Color(1, 0.8, 0.3, 1)
+light_energy = 4.0
+omni_range = 7.0
+
+[node name="ShootSound" type="AudioStreamPlayer" parent="."]
+volume_db = -24.0
+pitch_scale = 0.7

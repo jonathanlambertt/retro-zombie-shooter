@@ -37,6 +37,9 @@ func _physics_process(delta: float) -> void:
 
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
+		# Things that bleed spray blood from the spot that was hit.
+		if hit.collider.has_method("bleed"):
+			hit.collider.bleed(hit.position, hit.normal)
 		if hit.collider.has_method("take_damage"):
 			hit.collider.take_damage(damage)
 		else:

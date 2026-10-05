@@ -27,6 +27,19 @@ func _init() -> void:
 	_save(_make_tile(), "tile")
 	_save(_make_crate(), "crate")
 	_save(_make_bullet_hole(), "bullet_hole")
+	# The Backrooms level's textures. New textures go at the end of this list
+	# so the random numbers used by the ones above stay the same.
+	_save(_make_wallpaper(), "wallpaper")
+	_save(_make_carpet(), "carpet")
+	_save(_make_ceiling_tile(), "ceiling_tile")
+	# The facility test level's textures.
+	_save(_make_lab_wall(), "lab_wall")
+	_save(_make_hazard(), "hazard")
+	_save(_make_blood_stain(), "blood_stain")
+	# The Quake level's textures, and the slime in the Half-Life level.
+	_save(_make_brick(), "brick")
+	_save(_make_liquid(Color(0.35, 0.05, 0.02), Color(1.0, 0.75, 0.15)), "lava")
+	_save(_make_liquid(Color(0.08, 0.25, 0.04), Color(0.6, 1.0, 0.25)), "slime")
 	quit()
 
 
@@ -197,4 +210,168 @@ func _make_bullet_hole() -> Image:
 			elif distance < 3.6 and rng.randf() < 0.35:
 				color = Color(0.1, 0.09, 0.08)
 			image.set_pixel(x, y, color)
+	return image
+
+
+## Backrooms wallpaper: stale mustard yellow with thin vertical lines, rows
+## of small arrowheads between them, and faint damp stains.
+func _make_wallpaper() -> Image:
+	var image := _new_image()
+	var base := Color(0.80, 0.71, 0.36)
+	var stains := _make_blotch_grid(4)
+	for y in SIZE:
+		for x in SIZE:
+			# Position inside the current 16-pixel-wide strip of wallpaper.
+			var strip_x := x % 16
+			var brightness := 0.92 + 0.12 * _blotch(stains, 4, x, y)
+			brightness += rng.randf_range(-0.03, 0.03)
+			if strip_x == 0:
+				brightness *= 0.86  # line between strips
+			elif y % 8 < 3 and absi(strip_x - 8) == y % 8:
+				brightness *= 0.9  # arrowhead: one pixel, then two spreading out
+			image.set_pixel(x, y, _shade(base, brightness))
+	return image
+
+
+## Backrooms carpet: damp brownish-beige with a rough, speckled pile.
+func _make_carpet() -> Image:
+	var image := _new_image()
+	var base := Color(0.50, 0.43, 0.24)
+	var damp := _make_blotch_grid(4)
+	for y in SIZE:
+		for x in SIZE:
+			var brightness := 0.8 + 0.3 * _blotch(damp, 4, x, y)
+			brightness += rng.randf_range(-0.12, 0.12)
+			image.set_pixel(x, y, _shade(base, brightness))
+	return image
+
+
+## Office ceiling tiles: off-white squares, 32 pixels each, with a dark grid
+## between them and the little pockmarks those tiles always have.
+func _make_ceiling_tile() -> Image:
+	var image := _new_image()
+	var base := Color(0.80, 0.78, 0.68)
+	for y in SIZE:
+		for x in SIZE:
+			var brightness := 1.0 + rng.randf_range(-0.03, 0.03)
+			if x % 32 == 0 or y % 32 == 0:
+				brightness *= 0.6  # metal grid holding the tiles up
+			elif rng.randf() < 0.08:
+				brightness *= 0.8  # pockmark
+			image.set_pixel(x, y, _shade(base, brightness))
+	return image
+
+
+## Research-lab wall: pale grey-green panels, a blue stripe at waist height
+## and a dark skirting strip along the bottom.
+##
+## On a wall the texture is 2 m tall and its bottom row sits on the floor, so
+## row 63 is at floor level and row 32 is 1 m up.
+func _make_lab_wall() -> Image:
+	var image := _new_image()
+	var panel := Color(0.62, 0.66, 0.62)
+	var stripe := Color(0.22, 0.38, 0.55)
+	var grime := _make_blotch_grid(4)
+	for y in SIZE:
+		for x in SIZE:
+			var color := panel
+			var brightness := 0.9 + 0.15 * _blotch(grime, 4, x, y)
+			brightness += rng.randf_range(-0.03, 0.03)
+			if y >= 28 and y < 36:
+				color = stripe
+			elif y >= 58:
+				brightness *= 0.45  # skirting strip
+			elif x % 32 == 0 or y == 0:
+				brightness *= 0.7  # seam between panels
+			image.set_pixel(x, y, _shade(color, brightness))
+	return image
+
+
+## Yellow and black diagonal warning stripes, scuffed with a little dirt.
+func _make_hazard() -> Image:
+	var image := _new_image()
+	var yellow := Color(0.85, 0.68, 0.10)
+	var black := Color(0.10, 0.10, 0.09)
+	for y in SIZE:
+		for x in SIZE:
+			# x + y is the same all the way along a diagonal line, so this
+			# switches colour every 8 pixels measured across the diagonals.
+			var color := yellow if (x + y) % 16 < 8 else black
+			image.set_pixel(x, y, _shade(color, rng.randf_range(0.8, 1.05)))
+	return image
+
+
+## A 16x16 splat for blood stains: a ragged blob with a few stray droplets,
+## see-through everywhere else. It is white so that the game can tint it red
+## for one enemy and yellow-green for another (see scripts/surface_mark.gd).
+func _make_blood_stain() -> Image:
+	var stain_size := 16
+	var image := Image.create_empty(stain_size, stain_size, false, Image.FORMAT_RGBA8)
+	var centre := Vector2(7.5, 7.5)
+	# Cut the blob into 8 slices like a pizza and give each a different
+	# length, which makes the outline ragged instead of a neat circle.
+	var reach := PackedFloat32Array()
+	for i in 8:
+		reach.append(rng.randf_range(2.5, 6.5))
+
+	for y in stain_size:
+		for x in stain_size:
+			var offset := Vector2(x, y) - centre
+			# angle() runs from -PI to PI; turn that into a slice number 0-7.
+			var slice := int((offset.angle() + PI) / TAU * 8.0) % 8
+			var color := Color(0, 0, 0, 0)  # fully transparent
+			if offset.length() < reach[slice]:
+				color = _shade(Color.WHITE, rng.randf_range(0.7, 1.0))
+			elif offset.length() < 7.5 and rng.randf() < 0.06:
+				color = Color(0.8, 0.8, 0.8)  # stray droplet
+			image.set_pixel(x, y, color)
+	return image
+
+
+## Dark brown stone blocks, 32 pixels wide and 16 tall, laid like bricks:
+## every other row is shifted along by half a block.
+func _make_brick() -> Image:
+	var image := _new_image()
+	var stone := Color(0.36, 0.26, 0.18)
+	var mortar := Color(0.11, 0.09, 0.08)
+	var grime := _make_blotch_grid(4)
+	# Each of the 2 x 4 blocks gets its own slightly different brightness.
+	var block_tints := PackedFloat32Array()
+	for i in 8:
+		block_tints.append(rng.randf_range(0.75, 1.1))
+
+	for y in SIZE:
+		for x in SIZE:
+			@warning_ignore("integer_division")
+			var row := y / 16
+			# Odd rows are slid 16 pixels to the right.
+			var shifted_x := (x + (row % 2) * 16) % SIZE
+			if shifted_x % 32 == 0 or y % 16 == 0:
+				image.set_pixel(x, y, _shade(mortar, rng.randf_range(0.8, 1.1)))
+				continue
+			@warning_ignore("integer_division")
+			var block := row * 2 + shifted_x / 32
+			var brightness := block_tints[block]
+			brightness *= 0.75 + 0.35 * _blotch(grime, 4, x, y)
+			brightness += rng.randf_range(-0.05, 0.05)
+			# A darker line under the top edge makes each block look chiselled.
+			if y % 16 == 15 or shifted_x % 32 == 31:
+				brightness *= 0.7
+			image.set_pixel(x, y, _shade(stone, brightness))
+	return image
+
+
+## A glowing liquid such as lava or toxic slime: a dark crust with bright
+## veins running through it. "crust" and "glow" are its two colours.
+func _make_liquid(crust: Color, glow: Color) -> Image:
+	var image := _new_image()
+	var flow := _make_blotch_grid(8)
+	for y in SIZE:
+		for x in SIZE:
+			var heat := _blotch(flow, 8, x, y)
+			# Push the middle values apart so there are clear bright veins
+			# and dark patches rather than one even orange.
+			heat = clampf((heat - 0.3) * 2.2, 0.0, 1.0)
+			heat += rng.randf_range(-0.06, 0.06)
+			image.set_pixel(x, y, crust.lerp(glow, clampf(heat, 0.0, 1.0)))
 	return image

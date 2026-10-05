@@ -17,6 +17,8 @@ extends CharacterBody3D
 ##     of speed in the direction you're holding. That small nudge is what
 ##     gives "air control" (and, as a side effect, strafe-jumping).
 
+const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
+
 @export_group("Movement")
 ## Top running speed, in metres per second.
 @export var max_speed := 7.0
@@ -46,20 +48,40 @@ extends CharacterBody3D
 
 @export_group("Health")
 @export var max_health := 100
+## SOUND HOOK: drag a .wav or .ogg file here in the Inspector to use your own
+## "ouch". If left empty, a soft grunt is generated as a stand-in.
+@export var hurt_sound: AudioStream
+## How quickly the red tint fades after being hurt. 2 = gone in half a second.
+@export var hurt_fade_speed := 2.0
 
 var health := 0
+## How strong the red "you are being hurt" tint is right now, from 0 (none)
+## to 1 (full). It jumps to 1 on every hit and then fades. The HUD reads it.
+var hurt_flash := 0.0
 
 @onready var head: Node3D = $Head
 ## Every weapon the player carries, in the order of the number keys.
-@onready var weapons: Array[Node3D] = [$Head/Camera3D/Pistol, $Head/Camera3D/MachineGun]
+@onready var weapons: Array[Node3D] = [
+	$Head/Camera3D/Pistol,
+	$Head/Camera3D/MachineGun,
+	$Head/Camera3D/RocketLauncher,
+	$Head/Camera3D/Shotgun,
+]
+@onready var camera: Camera3D = $Head/Camera3D
+@onready var hurt_sound_player: AudioStreamPlayer = $HurtSound
 
-## The weapon currently in hand. The HUD reads the ammo count from here.
+## The weapon currently in hand. The HUD asks it what to show for ammo.
 var current_weapon: Node3D
+## Where current_weapon is in the weapons list: 0 for the first, and so on.
+var weapon_index := 0
 
 
 func _ready() -> void:
 	health = max_health
 	_select_weapon(0)
+	if hurt_sound == null:
+		hurt_sound = PlaceholderSound.make_grunt()
+	hurt_sound_player.stream = hurt_sound
 	# "Capturing" hides the cursor and locks it to the window, so the mouse
 	# can be moved endlessly to look around.
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -71,11 +93,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
 
-	# Number keys switch weapon.
-	if event.is_action_pressed("weapon_1"):
-		_select_weapon(0)
-	elif event.is_action_pressed("weapon_2"):
-		_select_weapon(1)
+	# Number keys switch weapon: the action "weapon_1" picks the first one
+	# in the list, "weapon_2" the second, and so on.
+	for i in weapons.size():
+		if event.is_action_pressed("weapon_%d" % (i + 1)):
+			_select_weapon(i)
+	# The mouse wheel steps through them in order. posmod wraps around, so
+	# going past the last weapon comes back to the first (and vice versa).
+	if event.is_action_pressed("weapon_next"):
+		_select_weapon(posmod(weapon_index + 1, weapons.size()))
+	elif event.is_action_pressed("weapon_previous"):
+		_select_weapon(posmod(weapon_index - 1, weapons.size()))
 
 	var mouse_is_captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
@@ -94,6 +122,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		# ...but tilt only the head up/down, and stop just short of straight
 		# up or down so the view can't flip over.
 		head.rotation.x = clampf(head.rotation.x - motion.y * mouse_sensitivity, -1.5, 1.5)
+
+
+func _process(delta: float) -> void:
+	hurt_flash = maxf(hurt_flash - hurt_fade_speed * delta, 0.0)
 
 
 # _physics_process runs at a fixed rate (60 times a second by default),
@@ -151,11 +183,41 @@ func _select_weapon(index: int) -> void:
 	for i in weapons.size():
 		weapons[i].visible = i == index
 	current_weapon = weapons[index]
+	weapon_index = index
 
 
-## Called by enemies when they hit the player.
+## Returns the direction from "from" (the end of a gun barrel) to whatever
+## the crosshair is on. Weapons that fire real projectiles use this.
+##
+## The gun sits to the right of the camera, so a shot flying straight out of
+## the barrel would land beside the crosshair. Instead, find the point the
+## crosshair is on and aim the barrel at that.
+func get_aim_direction(from: Vector3) -> Vector3:
+	var eye := camera.global_position
+	# A camera looks along its own negative Z axis.
+	var forward := -camera.global_transform.basis.z
+
+	var aim_point := eye + forward * 100.0
+	var query := PhysicsRayQueryParameters3D.create(eye, aim_point)
+	# Leave ourselves out, so the ray can't stop on our own body.
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		aim_point = hit.position
+
+	# (When the target is right in front of your face, just shoot forwards.)
+	if eye.distance_to(aim_point) <= 1.0:
+		return forward
+	return (aim_point - from).normalized()
+
+
+## Called by enemies (and lava, and your own explosions) when they hurt the
+## player.
 func take_damage(amount: int) -> void:
 	health = maxi(health - amount, 0)
+	# Let the player know: a grunt, and the HUD turns the screen red.
+	hurt_flash = 1.0
+	hurt_sound_player.play()
 	if health == 0:
 		# Dying simply restarts the whole game. call_deferred waits until
 		# the current physics step has finished before swapping scenes.

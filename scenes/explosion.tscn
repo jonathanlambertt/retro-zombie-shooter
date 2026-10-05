@@ -1,0 +1,63 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/explosion.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fireball"]
+shading_mode = 0
+albedo_color = Color(1, 0.6, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_fireball"]
+material = SubResource("StandardMaterial3D_fireball")
+radius = 1.2
+height = 2.4
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_speck"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_speck"]
+material = SubResource("StandardMaterial3D_speck")
+size = Vector2(0.12, 0.12)
+
+[sub_resource type="Gradient" id="Gradient_smoke"]
+colors = PackedColorArray(0.03, 0.03, 0.03, 1, 0.55, 0.55, 0.55, 1)
+
+[node name="Explosion" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Fireball" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_fireball")
+
+[node name="FlashLight" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.65, 0.25, 1)
+light_energy = 6.0
+omni_range = 9.0
+
+[node name="Smoke" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 60
+lifetime = 1.4
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.5
+mesh = SubResource("QuadMesh_speck")
+emission_shape = 1
+emission_sphere_radius = 0.5
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -5, 0)
+initial_velocity_min = 1.5
+initial_velocity_max = 7.0
+damping_min = 1.0
+damping_max = 3.0
+scale_amount_min = 0.6
+scale_amount_max = 2.0
+color_initial_ramp = SubResource("Gradient_smoke")
+
+[node name="Sound" type="AudioStreamPlayer" parent="."]
+volume_db = -26.0
+pitch_scale = 0.5

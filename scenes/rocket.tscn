@@ -1,0 +1,57 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/rocket.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+shading_mode = 0
+albedo_color = Color(0.3, 0.33, 0.25, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("StandardMaterial3D_body")
+size = Vector3(0.1, 0.1, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flame"]
+shading_mode = 0
+albedo_color = Color(1, 0.75, 0.25, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_flame"]
+material = SubResource("StandardMaterial3D_flame")
+size = Vector3(0.07, 0.07, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_puff"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_puff"]
+material = SubResource("StandardMaterial3D_puff")
+size = Vector2(0.1, 0.1)
+
+[sub_resource type="Gradient" id="Gradient_puff"]
+colors = PackedColorArray(0.3, 0.3, 0.3, 1, 0.85, 0.85, 0.85, 1)
+
+[node name="Rocket" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+
+[node name="Flame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.25)
+mesh = SubResource("BoxMesh_flame")
+
+[node name="Trail" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.3)
+amount = 30
+lifetime = 0.5
+lifetime_randomness = 0.4
+mesh = SubResource("QuadMesh_puff")
+direction = Vector3(0, 0, 1)
+spread = 25.0
+gravity = Vector3(0, 0.5, 0)
+initial_velocity_min = 0.5
+initial_velocity_max = 2.0
+scale_amount_min = 0.6
+scale_amount_max = 1.6
+color_initial_ramp = SubResource("Gradient_puff")

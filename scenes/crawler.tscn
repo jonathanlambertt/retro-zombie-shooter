@@ -43,26 +43,44 @@ mesh = SubResource("BoxMesh_body")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, -0.28)
 mesh = SubResource("BoxMesh_mouth")
 
-[node name="FangLeft" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.22, -0.36)
+[node name="FangLeft" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.22, -0.26)
+
+[node name="Mesh" type="MeshInstance3D" parent="Model/FangLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
 mesh = SubResource("BoxMesh_fang")
 
-[node name="FangRight" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.22, -0.36)
+[node name="FangRight" type="Node3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.22, -0.26)
+
+[node name="Mesh" type="MeshInstance3D" parent="Model/FangRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
 mesh = SubResource("BoxMesh_fang")
 
-[node name="LegFrontLeft" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(0.866, 0.5, 0, -0.5, 0.866, 0, 0, 0, 1, -0.3, 0.15, -0.18)
+[node name="LegFrontLeft" type="Node3D" parent="Model"]
+transform = Transform3D(0.866, 0.5, 0, -0.5, 0.866, 0, 0, 0, 1, -0.225, 0.28, -0.18)
+
+[node name="Mesh" type="MeshInstance3D" parent="Model/LegFrontLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 mesh = SubResource("BoxMesh_leg")
 
-[node name="LegFrontRight" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(0.866, -0.5, 0, 0.5, 0.866, 0, 0, 0, 1, 0.3, 0.15, -0.18)
+[node name="LegFrontRight" type="Node3D" parent="Model"]
+transform = Transform3D(0.866, -0.5, 0, 0.5, 0.866, 0, 0, 0, 1, 0.225, 0.28, -0.18)
+
+[node name="Mesh" type="MeshInstance3D" parent="Model/LegFrontRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 mesh = SubResource("BoxMesh_leg")
 
-[node name="LegBackLeft" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(0.866, 0.5, 0, -0.5, 0.866, 0, 0, 0, 1, -0.3, 0.15, 0.18)
+[node name="LegBackLeft" type="Node3D" parent="Model"]
+transform = Transform3D(0.866, 0.5, 0, -0.5, 0.866, 0, 0, 0, 1, -0.225, 0.28, 0.18)
+
+[node name="Mesh" type="MeshInstance3D" parent="Model/LegBackLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 mesh = SubResource("BoxMesh_leg")
 
-[node name="LegBackRight" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(0.866, -0.5, 0, 0.5, 0.866, 0, 0, 0, 1, 0.3, 0.15, 0.18)
+[node name="LegBackRight" type="Node3D" parent="Model"]
+transform = Transform3D(0.866, -0.5, 0, 0.5, 0.866, 0, 0, 0, 1, 0.225, 0.28, 0.18)
+
+[node name="Mesh" type="MeshInstance3D" parent="Model/LegBackRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 mesh = SubResource("BoxMesh_leg")

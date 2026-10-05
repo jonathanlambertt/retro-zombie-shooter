@@ -1,0 +1,60 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/crate.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/crate.tres" id="2_crate"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_crate"]
+material = ExtResource("2_crate")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_crate"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_splinter"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_splinter"]
+material = SubResource("StandardMaterial3D_splinter")
+size = Vector3(0.1, 0.05, 0.28)
+
+[sub_resource type="Gradient" id="Gradient_wood"]
+colors = PackedColorArray(0.45, 0.45, 0.45, 1, 1, 1, 1, 1)
+
+[node name="Crate" type="CharacterBody3D" groups=["breakable"]]
+script = ExtResource("1_script")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_crate")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_crate")
+
+[node name="Debris" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+emitting = false
+amount = 28
+lifetime = 0.9
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.3
+mesh = SubResource("BoxMesh_splinter")
+emission_shape = 3
+emission_box_extents = Vector3(0.4, 0.4, 0.4)
+particle_flag_rotate_y = true
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -14, 0)
+initial_velocity_min = 1.5
+initial_velocity_max = 5.0
+angular_velocity_min = -400.0
+angular_velocity_max = 400.0
+angle_max = 360.0
+scale_amount_min = 0.6
+scale_amount_max = 1.5
+color = Color(0.5, 0.34, 0.18, 1)
+color_initial_ramp = SubResource("Gradient_wood")
+
+[node name="BreakSound" type="AudioStreamPlayer" parent="."]
+volume_db = -22.0
+pitch_scale = 0.8

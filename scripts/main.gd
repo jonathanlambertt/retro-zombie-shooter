@@ -12,6 +12,9 @@ extends Control
 ##      it. Those are the letterbox bars.
 ##   5. The container also has a small shader (shaders/color_quantize.gdshader)
 ##      that reduces the number of colours in the final picture.
+##
+## It also loads the level, and swaps it for the next or previous one in its
+## Levels list when F2 or F3 is pressed.
 
 ## The resolution the game is rendered at. THIS IS THE ONE PLACE TO CHANGE IT.
 ## Try Vector2i(640, 480) for a sharper, late-90s "high-res mode" look.
@@ -26,6 +29,19 @@ extends Control
 ## Whether the colour-reducing post-process starts switched on.
 ## Press F1 while playing to toggle it and compare.
 @export var color_quantize := true
+
+## Every level in the game, in the order F2 steps through them. The game
+## starts in the first one. To add a level, add its .tscn file to this list
+## in the Inspector (select the Main node in scenes/main.tscn).
+@export var levels: Array[PackedScene] = []
+
+## Which entry of Levels is being played. "static" keeps the number when the
+## whole game is reloaded after the player dies, so you restart in the level
+## you died in instead of being sent back to the first one.
+static var level_index := 0
+
+## The level currently loaded inside the low-res viewport.
+var level: Node
 
 @onready var viewport_container: SubViewportContainer = $ViewportContainer
 @onready var game_viewport: SubViewport = $ViewportContainer/GameViewport
@@ -42,12 +58,35 @@ func _ready() -> void:
 	resized.connect(_fit_to_window)
 	_fit_to_window()
 	_apply_color_quantize()
+	_load_level()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
 		color_quantize = not color_quantize
 		_apply_color_quantize()
+
+	# F2 and F3 step forwards and backwards through the levels. posmod wraps
+	# around, so going past the last level comes back to the first.
+	if event.is_action_pressed("level_next"):
+		level_index = posmod(level_index + 1, levels.size())
+		_load_level()
+	elif event.is_action_pressed("level_previous"):
+		level_index = posmod(level_index - 1, levels.size())
+		_load_level()
+
+
+## Removes the level being played (if any) and puts levels[level_index] in
+## its place.
+func _load_level() -> void:
+	if is_instance_valid(level):
+		game_viewport.remove_child(level)
+		level.queue_free()  # removes the old level and everything in it
+
+	level = levels[level_index].instantiate()
+	game_viewport.add_child(level)
+	# Keep the level first in the list, so the HUD is drawn on top of it.
+	game_viewport.move_child(level, 0)
 
 
 ## Scales and centres the low-res image inside the window.

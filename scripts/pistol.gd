@@ -49,6 +49,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		fire()
 
 
+## The words the HUD shows in the bottom-right corner while this weapon is
+## in hand.
+func get_hud_text() -> String:
+	return "AMMO %d" % ammo
+
+
 func fire() -> void:
 	if cooldown > 0.0 or ammo <= 0:
 		return
@@ -76,6 +82,9 @@ func _trace_shot() -> void:
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return
+	# Things that bleed spray blood from the spot that was hit.
+	if hit.collider.has_method("bleed"):
+		hit.collider.bleed(hit.position, hit.normal)
 	# Anything with a take_damage() function can be hurt: enemies today,
 	# maybe explosive barrels tomorrow.
 	if hit.collider.has_method("take_damage"):
