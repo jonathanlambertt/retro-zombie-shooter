@@ -13,6 +13,10 @@ const EXPLOSION_SCENE := preload("res://scenes/explosion.tscn")
 @export var gravity := 12.0
 ## Seconds until it explodes in mid-air if it hasn't hit anything.
 @export var lifetime := 5.0
+## Whether the explosion shows its orange ball of fire. Off, a grenade goes
+## off with only a flash of light, smoke and the bang. (Rockets and pylons
+## always show theirs.)
+@export var fireball := false
 
 var velocity := Vector3.ZERO
 ## Whoever fired the grenade, so it can't hit them on the way out.
@@ -56,6 +60,7 @@ func _physics_process(delta: float) -> void:
 func _explode(at: Vector3, normal: Vector3, collider: Object) -> void:
 	var explosion := EXPLOSION_SCENE.instantiate()
 	explosion.deals_damage = deals_damage
+	explosion.show_fireball = fireball
 	get_parent().add_child(explosion)
 	# Start the blast a little way out from the wall, not inside it.
 	explosion.global_position = at + normal * 0.2

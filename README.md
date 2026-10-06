@@ -301,7 +301,9 @@ Select a node and use the Inspector; every value is an exported variable.
 - **Rocket launcher** (`scenes/rocket_launcher.tscn`): time between rockets,
   rocket speed and **Shoot Sound**. **Rocket** (`scenes/rocket.tscn`): blast
   damage, blast radius and fuse time; its `Trail` node is the smoke.
-- **Grenade** (`scenes/grenade.tscn`): gravity and fuse time.
+- **Grenade** (`scenes/grenade.tscn`): gravity, fuse time and **Fireball**
+  (off: a grenade goes off with a flash of light, smoke and the bang, but no
+  orange ball of fire; rockets and pylons always show theirs).
   **Explosion** (`scenes/explosion.tscn`): damage, blast radius and
   **Explosion Sound**. A blast hurts you too if you stand too close. Its
   `Smoke` node is the cloud of grey and black specks: change **Amount**,
