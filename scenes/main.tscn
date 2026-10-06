@@ -1,22 +1,23 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene format=3 uid="uid://b6y82f8mmpj8c"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://dnasmisoqv544" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Shader" uid="uid://d1bdb2e0tgssm" path="res://shaders/color_quantize.gdshader" id="3_quantize"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="5_pause"]
 [ext_resource type="PackedScene" path="res://levels/half-life-level.tscn" id="level_1"]
 [ext_resource type="PackedScene" path="res://levels/quake-level.tscn" id="level_2"]
 [ext_resource type="PackedScene" path="res://levels/test_facility.tscn" id="level_3"]
-[ext_resource type="PackedScene" path="res://levels/backrooms.tscn" id="level_4"]
+[ext_resource type="PackedScene" uid="uid://fdtdm21og4dx" path="res://levels/backrooms.tscn" id="level_4"]
 [ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="level_5"]
 [ext_resource type="PackedScene" path="res://levels/test_room.tscn" id="level_6"]
-[ext_resource type="PackedScene" path="res://levels/test-map.tscn" id="level_7"]
+[ext_resource type="PackedScene" uid="uid://bgigffvwea3mq" path="res://levels/test-map.tscn" id="level_7"]
 [ext_resource type="PackedScene" path="res://levels/test-map-2.tscn" id="level_8"]
-[ext_resource type="Shader" path="res://shaders/color_quantize.gdshader" id="3_quantize"]
-[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
-[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="5_pause"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_quantize"]
 shader = ExtResource("3_quantize")
+shader_parameter/color_levels = 32.0
 
-[node name="Main" type="Control"]
+[node name="Main" type="Control" unique_id=31691789]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,7 +27,7 @@ grow_vertical = 2
 script = ExtResource("1_main")
 levels = Array[PackedScene]([ExtResource("level_1"), ExtResource("level_7"), ExtResource("level_8"), ExtResource("level_2"), ExtResource("level_3"), ExtResource("level_4"), ExtResource("level_5"), ExtResource("level_6")])
 
-[node name="LetterboxBars" type="ColorRect" parent="."]
+[node name="LetterboxBars" type="ColorRect" parent="." unique_id=1596387310]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,7 +36,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="ViewportContainer" type="SubViewportContainer" parent="."]
+[node name="ViewportContainer" type="SubViewportContainer" parent="." unique_id=1614090126]
 process_mode = 3
 texture_filter = 1
 material = SubResource("ShaderMaterial_quantize")
@@ -43,20 +44,16 @@ layout_mode = 0
 offset_right = 320.0
 offset_bottom = 240.0
 
-[node name="GameViewport" type="SubViewport" parent="ViewportContainer"]
+[node name="GameViewport" type="SubViewport" parent="ViewportContainer" unique_id=1714159866]
 handle_input_locally = false
-audio_listener_enable_3d = true
 snap_2d_transforms_to_pixel = true
 canvas_item_default_texture_filter = 0
-msaa_2d = 0
-msaa_3d = 0
-screen_space_aa = 0
-use_taa = false
-use_debanding = false
+audio_listener_enable_3d = true
 size = Vector2i(320, 240)
+render_target_update_mode = 4
 
-[node name="HUD" parent="ViewportContainer/GameViewport" instance=ExtResource("4_hud")]
+[node name="HUD" parent="ViewportContainer/GameViewport" unique_id=1901870325 instance=ExtResource("4_hud")]
 process_mode = 1
 
-[node name="PauseMenu" parent="ViewportContainer/GameViewport" instance=ExtResource("5_pause")]
+[node name="PauseMenu" parent="ViewportContainer/GameViewport" unique_id=945668041 instance=ExtResource("5_pause")]
 visible = false
