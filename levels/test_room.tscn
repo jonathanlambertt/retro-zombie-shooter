@@ -1,12 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://b2qi14w7c7ub5"]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="1_wyybw"]
 [ext_resource type="MeshLibrary" path="res://assets/blocks.tres" id="2_y5wqh"]
-[ext_resource type="Script" path="res://scripts/structure.gd" id="3_77pwf"]
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="4_lktwm"]
+[ext_resource type="Script" uid="uid://cgrh43gj6ic4q" path="res://scripts/structure.gd" id="3_77pwf"]
+[ext_resource type="PackedScene" uid="uid://bxqmgykcp4rx1" path="res://scenes/player.tscn" id="4_lktwm"]
 [ext_resource type="PackedScene" path="res://scenes/crate.tscn" id="5_bodbi"]
 [ext_resource type="PackedScene" path="res://scenes/explosive_pylon.tscn" id="6_lapnv"]
-[ext_resource type="PackedScene" path="res://scenes/zombie_textured.tscn" id="7_o3jvf"]
+[ext_resource type="PackedScene" uid="uid://36s2y2gd8l7e" path="res://scenes/zombie_textured.tscn" id="7_o3jvf"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_6eehy"]
 size = Vector3(2, 0.2, 10.062305)

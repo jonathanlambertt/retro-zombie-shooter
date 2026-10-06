@@ -1,9 +1,17 @@
-[gd_resource type="ShaderMaterial" load_steps=3 format=3]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://qa4grfmvdd0p"]
 
-[ext_resource type="Shader" path="res://shaders/retro_surface.gdshader" id="1_shader"]
-[ext_resource type="Texture2D" path="res://assets/textures/rubble.png" id="2_texture"]
+[ext_resource type="Shader" uid="uid://v6hfwh273sgn" path="res://shaders/retro_surface.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://ddma3ncj4c2e0" path="res://assets/textures/rubble.png" id="2_texture"]
 
 [resource]
+render_priority = 0
 shader = ExtResource("1_shader")
 shader_parameter/albedo_texture = ExtResource("2_texture")
+shader_parameter/tint = Color(1, 1, 1, 1)
+shader_parameter/uv_from_world = true
 shader_parameter/texture_size_meters = 1.0
+shader_parameter/uv_from_mesh = false
+shader_parameter/snap_resolution = Vector2(160, 120)
+shader_parameter/affine_amount = 0.0
+shader_parameter/light_bands = 6.0
+shader_parameter/viewmodel = false

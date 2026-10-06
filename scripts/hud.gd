@@ -12,7 +12,15 @@ var player: Node
 @onready var health_text: Control = $HealthText
 @onready var ammo_text: Control = $AmmoText
 @onready var damage_tint: ColorRect = $DamageTint
-@onready var crosshair: ColorRect = $Crosshair
+# The crosshair is a plus sign built from three white rectangles (one bar
+# across, plus the pieces above and below it, so none overlap), with the
+# same three in black under "Shadow", moved one pixel down and right.
+# The arms are one pixel thick, and a 320x240 picture has no middle pixel,
+# so the plus sits on the pixel just down and right of the exact centre.
+# One pixel is also the smallest distance the shadow can be moved, which is
+# a lot next to arms one pixel thick, so the shadow is kept faint instead
+# (the alpha of its three rectangles).
+@onready var crosshair: Control = $Crosshair
 @onready var network_text: Control = $NetworkText
 
 ## How see-through the red tint is at its strongest. 0 = invisible,

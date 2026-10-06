@@ -25,6 +25,10 @@ const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
 ## SOUND HOOK: drag a .wav or .ogg file here in the Inspector to use your own
 ## explosion. If left empty, a burst of noise is generated as a stand-in.
 @export var explosion_sound: AudioStream
+## Whether the orange ball of fire is drawn. The machine gun's grenades turn
+## it off (see scripts/grenade.gd) and go off with only the flash of light,
+## the smoke and the bang.
+@export var show_fireball := true
 
 ## False for an explosion that is only for show. Online, every game draws
 ## each explosion, but only one of them (the game that fired the rocket or
@@ -52,6 +56,9 @@ func detonate() -> void:
 
 	# The fireball swells up fast, shrinks away, and the light fades with it.
 	# A tween plays its steps one after another unless told otherwise.
+	# Without a fireball the same steps still run on the hidden ball, so the
+	# light fades at exactly the same moment either way.
+	fireball.visible = show_fireball
 	fireball.scale = Vector3.ONE * 0.2
 	var tween := create_tween()
 	tween.tween_property(fireball, "scale", Vector3.ONE, 0.1)

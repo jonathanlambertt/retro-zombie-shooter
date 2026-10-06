@@ -1,6 +1,6 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene format=3 uid="uid://36s2y2gd8l7e"]
 
-[ext_resource type="Script" path="res://scripts/enemy.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cdxhy0c0cy2v1" path="res://scripts/enemy.gd" id="1_script"]
 [ext_resource type="Material" path="res://assets/materials/zombie_head.tres" id="2_head"]
 [ext_resource type="Material" path="res://assets/materials/zombie_torso.tres" id="3_torso"]
 [ext_resource type="Material" path="res://assets/materials/zombie_arm.tres" id="4_arm"]
@@ -22,10 +22,6 @@ size = Vector3(0.4, 0.68, 0.22)
 material = ExtResource("2_head")
 size = Vector3(0.28, 0.28, 0.28)
 
-[sub_resource type="BoxMesh" id="BoxMesh_arm"]
-material = ExtResource("4_arm")
-size = Vector3(0.1, 0.1, 0.55)
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eyes"]
 shading_mode = 0
 albedo_color = Color(0.9, 0.15, 0.1, 1)
@@ -33,6 +29,10 @@ albedo_color = Color(0.9, 0.15, 0.1, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_eye"]
 material = SubResource("StandardMaterial3D_eyes")
 size = Vector3(0.07, 0.05, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = ExtResource("4_arm")
+size = Vector3(0.1, 0.1, 0.55)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
 properties/0/path = NodePath(".:position")
@@ -57,7 +57,7 @@ properties/6/path = NodePath(".:severed")
 properties/6/spawn = true
 properties/6/replication_mode = 2
 
-[node name="ZombieTextured" type="CharacterBody3D" groups=["enemy"]]
+[node name="ZombieTextured" type="CharacterBody3D" unique_id=1099766615 groups=["enemy"]]
 script = ExtResource("1_script")
 max_health = 40
 move_speed = 2.8
@@ -69,62 +69,62 @@ limp = 1.0
 hunch = 0.3
 loses_limbs = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=513318445]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="Model" type="Node3D" parent="."]
+[node name="Model" type="Node3D" parent="." unique_id=436100650]
 
-[node name="LegLeft" type="Node3D" parent="Model"]
+[node name="LegLeft" type="Node3D" parent="Model" unique_id=1790411048]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.62, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="Model/LegLeft"]
+[node name="Mesh" type="MeshInstance3D" parent="Model/LegLeft" unique_id=1187914243]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31, 0)
 mesh = SubResource("BoxMesh_leg")
 
-[node name="LegRight" type="Node3D" parent="Model"]
+[node name="LegRight" type="Node3D" parent="Model" unique_id=1658776791]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.62, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="Model/LegRight"]
+[node name="Mesh" type="MeshInstance3D" parent="Model/LegRight" unique_id=1727325966]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31, 0)
 mesh = SubResource("BoxMesh_leg")
 
-[node name="Upper" type="Node3D" parent="Model"]
+[node name="Upper" type="Node3D" parent="Model" unique_id=2025426383]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
 
-[node name="Torso" type="MeshInstance3D" parent="Model/Upper"]
+[node name="Torso" type="MeshInstance3D" parent="Model/Upper" unique_id=1839971946]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
 mesh = SubResource("BoxMesh_torso")
 
-[node name="Head" type="Node3D" parent="Model/Upper"]
+[node name="Head" type="Node3D" parent="Model/Upper" unique_id=317054982]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="Model/Upper/Head"]
+[node name="Mesh" type="MeshInstance3D" parent="Model/Upper/Head" unique_id=1984589310]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
 mesh = SubResource("BoxMesh_head")
 
-[node name="EyeLeft" type="MeshInstance3D" parent="Model/Upper/Head"]
+[node name="EyeLeft" type="MeshInstance3D" parent="Model/Upper/Head" unique_id=1877958296]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.17, -0.145)
 mesh = SubResource("BoxMesh_eye")
 
-[node name="EyeRight" type="MeshInstance3D" parent="Model/Upper/Head"]
+[node name="EyeRight" type="MeshInstance3D" parent="Model/Upper/Head" unique_id=1917829558]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.17, -0.145)
 mesh = SubResource("BoxMesh_eye")
 
-[node name="ArmLeft" type="Node3D" parent="Model/Upper"]
+[node name="ArmLeft" type="Node3D" parent="Model/Upper" unique_id=1048898257]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.26, 0.56, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmLeft"]
+[node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmLeft" unique_id=1265737777]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
 mesh = SubResource("BoxMesh_arm")
 
-[node name="ArmRight" type="Node3D" parent="Model/Upper"]
+[node name="ArmRight" type="Node3D" parent="Model/Upper" unique_id=376857631]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 0.56, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmRight"]
+[node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmRight" unique_id=49234472]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
 mesh = SubResource("BoxMesh_arm")
 
-[node name="Sync" type="MultiplayerSynchronizer" parent="."]
+[node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=2015067989]
 replication_interval = 0.05
 replication_config = SubResource("SceneReplicationConfig_sync")

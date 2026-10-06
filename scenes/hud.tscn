@@ -47,18 +47,66 @@ script = ExtResource("2_text")
 text = "AMMO 50"
 align_right = true
 
-[node name="Crosshair" type="ColorRect" parent="."]
+[node name="Crosshair" type="Control" parent="."]
+layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -1.0
-offset_top = -1.0
+mouse_filter = 2
+
+[node name="Shadow" type="Control" parent="Crosshair"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1.0
+offset_top = 1.0
 offset_right = 1.0
 offset_bottom = 1.0
 mouse_filter = 2
-color = Color(1, 1, 1, 0.8)
+
+[node name="Across" type="ColorRect" parent="Crosshair/Shadow"]
+layout_mode = 0
+offset_left = -2.0
+offset_right = 3.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.3)
+
+[node name="Top" type="ColorRect" parent="Crosshair/Shadow"]
+layout_mode = 0
+offset_top = -2.0
+offset_right = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.3)
+
+[node name="Bottom" type="ColorRect" parent="Crosshair/Shadow"]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 1.0
+offset_bottom = 3.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.3)
+
+[node name="Across" type="ColorRect" parent="Crosshair"]
+layout_mode = 0
+offset_left = -2.0
+offset_right = 3.0
+offset_bottom = 1.0
+mouse_filter = 2
+
+[node name="Top" type="ColorRect" parent="Crosshair"]
+layout_mode = 0
+offset_top = -2.0
+offset_right = 1.0
+mouse_filter = 2
+
+[node name="Bottom" type="ColorRect" parent="Crosshair"]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 1.0
+offset_bottom = 3.0
+mouse_filter = 2
 
 [node name="NetworkText" type="Control" parent="."]
 layout_mode = 3

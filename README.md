@@ -312,6 +312,7 @@ Select a node and use the Inspector; every value is an exported variable.
   seconds between bites.
 - **Rocket launcher** (`scenes/rocket_launcher.tscn`): time between rockets,
   rocket speed and **Shoot Sound**. **Rocket** (`scenes/rocket.tscn`): blast
+<<<<<<< HEAD
   damage, blast radius, **Structure Damage** and **Structure Radius** (how
   hard and how far it smashes walls; see "Destruction" below) and fuse
   time; its `Trail` node is the smoke.
@@ -319,8 +320,7 @@ Select a node and use the Inspector; every value is an exported variable.
   **Explosion** (`scenes/explosion.tscn`): damage, blast radius,
   **Structure Damage** and **Structure Radius** (a grenade's: 180 and
   1.75 m) and **Explosion Sound**. A blast hurts you too if you stand too
-  close. Its
-  `Smoke` node is the cloud of grey and black specks: change **Amount**,
+  close. Its `Smoke` node is the cloud of grey and black specks: change **Amount**,
   **Lifetime**, the velocities or the colours under **Color Initial Ramp**.
 - **Blood** (`scenes/blood_splash.tscn`): how fast, how far and how long the
   drops fly. Each enemy scene has its own **Blood Color** (dark red for the
