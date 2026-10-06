@@ -40,6 +40,8 @@ func _init() -> void:
 	_save(_make_brick(), "brick")
 	_save(_make_liquid(Color(0.35, 0.05, 0.02), Color(1.0, 0.75, 0.15)), "lava")
 	_save(_make_liquid(Color(0.08, 0.25, 0.04), Color(0.6, 1.0, 0.25)), "slime")
+	# The explosive pylon (scenes/explosive_pylon.tscn).
+	_save(_make_pylon(), "pylon")
 	quit()
 
 
@@ -374,4 +376,57 @@ func _make_liquid(crust: Color, glow: Color) -> Image:
 			heat = clampf((heat - 0.3) * 2.2, 0.0, 1.0)
 			heat += rng.randf_range(-0.06, 0.06)
 			image.set_pixel(x, y, crust.lerp(glow, clampf(heat, 0.0, 1.0)))
+	return image
+
+
+## The body of the explosive pylon, from its top (row 0) to its bottom
+## (row 63): scuffed red paint between steel rims, a white warning diamond,
+## and a band of hazard stripes around the middle.
+##
+## The pylon is round, and the surface shader's box mapping mirrors the
+## picture left to right around its middle (between columns 31 and 32) as
+## it wraps around. So anything that must read properly, like the diamond,
+## is drawn symmetrical about that line.
+func _make_pylon() -> Image:
+	var image := _new_image()
+	var paint := Color(0.62, 0.13, 0.08)
+	var steel := Color(0.22, 0.23, 0.24)
+	var yellow := Color(0.85, 0.68, 0.10)
+	var black := Color(0.10, 0.10, 0.09)
+	var white := Color(0.85, 0.84, 0.78)
+	var grime := _make_blotch_grid(4)
+
+	for y in SIZE:
+		for x in SIZE:
+			var color := paint
+			# How far this pixel is from the mirror line, and from the
+			# middle of the diamond (rows 6 to 22).
+			var across := absf(x - 31.5)
+			var diamond := across + absf(y - 14.0)
+
+			if y <= 2 or y >= 60:
+				color = steel  # the rims at the top and bottom
+			elif y == 26 or y == 27 or y == 40 or y == 41:
+				color = _shade(steel, 0.6)  # dark edges of the stripe band
+			elif y >= 28 and y <= 39:
+				color = yellow if (x + y) % 12 < 6 else black
+			elif diamond <= 6.5:
+				color = white
+				# An exclamation mark: a bar with a dot under it.
+				if across < 1.0 and ((y >= 10 and y <= 15) or y == 17 or y == 18):
+					color = black
+			elif diamond <= 8.0:
+				color = black  # the diamond's outline
+			elif (y == 45 or y == 56) and int(across) % 8 == 4:
+				color = Color(0.85, 0.3, 0.2)  # rivet heads catching the light
+
+			var brightness := 0.85 + 0.3 * _blotch(grime, 4, x, y)
+			brightness += rng.randf_range(-0.06, 0.06)
+			# Soot creeps up from the bottom, darkest just above the rim.
+			if y > 44 and y < 60:
+				brightness *= 1.0 - (y - 44) * 0.025
+			# Here and there the paint is scratched off down to bare metal.
+			if color == paint and rng.randf() < 0.04:
+				color = steel.lerp(paint, 0.3)
+			image.set_pixel(x, y, _shade(color, brightness))
 	return image

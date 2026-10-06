@@ -51,8 +51,9 @@ func detonate() -> void:
 	tween.tween_callback(queue_free)
 
 
-## Hurts the player, every enemy and every crate within the blast radius. The closer they
-## are, the more it hurts. Yes, that includes whoever fired it!
+## Hurts the player, every enemy and every crate or pylon within the blast
+## radius. The closer they are, the more it hurts. Yes, that includes
+## whoever fired it!
 func _damage_everything_nearby() -> void:
 	var targets := get_tree().get_nodes_in_group("enemy")
 	targets.append_array(get_tree().get_nodes_in_group("player"))

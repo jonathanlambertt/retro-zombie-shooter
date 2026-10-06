@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Environment" path="res://assets/quake_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/brick.tres" id="brick"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/crawler.tscn" id="crawler"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="enemy"]
 [ext_resource type="PackedScene" path="res://scenes/zombie.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://scenes/explosive_pylon.tscn" id="explosive_pylon"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flame"]
 shading_mode = 0
@@ -251,6 +252,24 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.45, -16)
 use_collision = true
 size = Vector3(2, 0.9, 3)
 material = ExtResource("dark_stone")
+
+[node name="HallPylonSouth" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.6, 0, -19)
+
+[node name="HallPylonPillar" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 0, -16.9)
+
+[node name="AltarPylonWest" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 0, -28.4)
+
+[node name="AltarPylonEast" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 0, -28.4)
+
+[node name="CryptPylon" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.1, 0, -17.9)
+
+[node name="AlcovePylon" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -26)
 
 [node name="Details" type="Node3D" parent="."]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" path="res://assets/textures/slime.png" id="slime"]
 [ext_resource type="Script" path="res://scripts/damage_zone.gd" id="damage_zone"]
 [ext_resource type="PackedScene" path="res://scenes/zombie.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://scenes/explosive_pylon.tscn" id="explosive_pylon"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
 shading_mode = 0
@@ -368,6 +369,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.5, 0, -9)
 
 [node name="CoreCrate2" parent="Props" instance=ExtResource("crate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.5, 0, -10.1)
+
+[node name="HallwayPylon1" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -5.1)
+
+[node name="HallwayPylon2" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, -7.9)
+
+[node name="OfficeBPylon" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0, -15.4)
+
+[node name="BayPylon1" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.4, 0, -12.4)
+
+[node name="BayPylon2" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.4, 0, -13.4)
+
+[node name="CorePylon1" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.5, 0, -11.9)
+
+[node name="CorePylon2" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.6, 0, -1.6)
 
 [node name="Details" type="Node3D" parent="."]
 

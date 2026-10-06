@@ -85,8 +85,8 @@ func _trace_shot() -> void:
 	# Things that bleed spray blood from the spot that was hit.
 	if hit.collider.has_method("bleed"):
 		hit.collider.bleed(hit.position, hit.normal)
-	# Anything with a take_damage() function can be hurt: enemies today,
-	# maybe explosive barrels tomorrow.
+	# Anything with a take_damage() function can be hurt: enemies, crates
+	# and explosive pylons.
 	if hit.collider.has_method("take_damage"):
 		hit.collider.take_damage(damage)
 	else:

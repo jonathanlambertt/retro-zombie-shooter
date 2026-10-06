@@ -34,6 +34,12 @@ Godot_v4.7-stable_win64_console.exe --path .
 When you are hurt you grunt and the screen flashes red. If your health
 reaches 0 the game restarts.
 
+Red **explosive pylons** with a blinking lamp stand around every level,
+usually next to a group of enemies. Two pistol shots (or a nearby blast) light
+the fuse; it hisses and shakes for a moment and then explodes, killing
+anything close by, smashing crates and setting off any other pylon within
+about 4 metres. It hurts you too, so shoot it from a distance.
+
 ## Project layout
 
 ```
@@ -50,6 +56,7 @@ scenes/              Reusable scenes
   rocket.tscn          One rocket, with its smoke trail
   explosion.tscn       The blast a grenade makes when it lands
   crate.tscn           Wooden crate that can be shot to pieces
+  explosive_pylon.tscn Red canister that explodes when shot
   blood_splash.tscn    Spray of square blood drops when an enemy is hit
   blood_stain.tscn     Stain the blood leaves on walls and floors
   gib.tscn             A limb that has been shot off a zombie
@@ -169,8 +176,8 @@ Double-click the file in Godot and edit it in the Inspector:
 
 The placeholder textures are plain PNG files in `assets/textures/`
 (`concrete`, `metal`, `tile`, `crate`, plus `wallpaper`, `carpet` and
-`ceiling_tile` for the Backrooms level, and `lab_wall` and `hazard` for the
-facility level). Overwrite them with your own pixel art
+`ceiling_tile` for the Backrooms level, `lab_wall` and `hazard` for the
+facility level, and `pylon` for the explosive pylon). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -212,6 +219,15 @@ Select a node and use the Inspector; every value is an exported variable.
 - **Crate** (`scenes/crate.tscn`): health (20 = two pistol shots) and size.
   Its `Debris` node is the splinters. To add one to a level, drag
   `scenes/crate.tscn` into the level; set **Size** on it for a bigger one.
+- **Explosive pylon** (`scenes/explosive_pylon.tscn`): health (15 = two
+  pistol shots), fuse time (the hiss before the bang, which is also the
+  delay between pylons in a chain reaction), blast damage (100), blast
+  radius (5 m), fireball size, how fast the lamp blinks (it speeds up as
+  the pylon is damaged) and **Fuse Sound**. Its `Sparks` node is the shower
+  from a bullet hit and `Debris` is the scrap metal. To add one to a level,
+  drag `scenes/explosive_pylon.tscn` under the level's `Props` node. Two
+  pylons closer than about 4 m set each other off; further apart, the blast
+  is too weak at that distance.
 - **Lava and slime** (the `Hazards` node in a level): damage per bite and
   seconds between bites.
 - **Rocket launcher** (`scenes/rocket_launcher.tscn`): time between rockets,
@@ -311,6 +327,9 @@ out of one block. The glowing lamps, screens and the green sample under
 
 - Enemies head straight for the player and can get stuck on walls. They
   will also walk straight into lava or slime.
+- The pylon's warning lamp only glows; it doesn't light up its
+  surroundings (a real lamp per pylon would use up the renderer's limit of
+  8 lights per object).
 - Shots leave no bullet holes on crates, since the crate may not be there
   for long.
 - Lights cast no shadows, so a light with a large range shines through walls.
