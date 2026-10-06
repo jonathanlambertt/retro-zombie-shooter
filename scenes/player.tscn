@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/machine_gun.tscn" id="3_machine_gun"]
 [ext_resource type="PackedScene" path="res://scenes/rocket_launcher.tscn" id="4_rocket_launcher"]
 [ext_resource type="PackedScene" path="res://scenes/shotgun.tscn" id="5_shotgun"]
-[ext_resource type="PackedScene" path="res://scenes/player_model.tscn" id="6_model"]
+[ext_resource type="PackedScene" path="res://scenes/player_model_soldier.tscn" id="6_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.4

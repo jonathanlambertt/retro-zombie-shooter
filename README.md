@@ -54,7 +54,8 @@ project.godot        Project settings (renderer, input map, import defaults)
 scenes/              Reusable scenes
   main.tscn            Entry point: low-res viewport + HUD + the level
   player.tscn          First-person player (with the guns attached)
-  player_model.tscn    The player's body, as other players will see it
+  player_model_soldier.tscn  The player's body, as other players see it: a special forces soldier
+  player_model.tscn    The earlier body, an armoured hazard suit (kept, not in use)
   pistol.tscn          Hitscan pistol viewmodel
   machine_gun.tscn     Automatic gun that fires bullet.tscn projectiles
   bullet.tscn          One yellow machine gun bullet
@@ -69,20 +70,15 @@ scenes/              Reusable scenes
   blood_stain.tscn     Stain the blood leaves on walls and floors
   gib.tscn             A limb that has been shot off a zombie
   bullet_hole.tscn     Mark left on walls and floors by shots
-  enemy.tscn           Walking enemy that chases and hits you
-  crawler.tscn         Small crawling enemy that leaps at your head
-  zombie.tscn          Thin, limping enemy (shares scripts/enemy.gd)
+  zombie.tscn          Thin, limping enemy that chases and hits you (scripts/enemy.gd)
+  zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
   hud.tscn             Health / ammo / crosshair
   pause_menu.tscn      Esc menu: pauses the game, retro effect settings, multiplayer, quit
 levels/
-  test_level.tscn      The greybox level (CSG)
-  backrooms.tscn       Backrooms maze: yellow wallpaper, carpet, ceiling lights
   test_facility.tscn   Half-Life-style research facility: lobby, lab, storage, test chamber
-  test_room.tscn       Small single room, handy for trying shader settings
   half-life-level.tscn Office complex full of zombies, with a slime pit
   test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
   test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
-  quake-level.tscn     Brick castle hall with a lava channel and an altar
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
   network.gd           Autoload: multiplayer (hosting, joining, sharing the game)
@@ -95,11 +91,9 @@ shaders/
   retro_surface.gdshader    Every 3D surface: snapping, banded light, UVs
   color_quantize.gdshader   Post-process: limits the number of colours
 assets/
-  textures/            64x64 PNG textures
+  textures/            64x64 PNG textures, plus one per part of the zombie, soldier, guns and projectiles
   materials/           One material per texture, all using the retro shader
   retro_environment.tres    Fog, ambient light and background colour
-  backrooms_environment.tres   The same, tuned yellow for the Backrooms level
-  quake_environment.tres       The same, dark and brown for the Quake level
 ```
 
 ## How the low-res look works
@@ -140,7 +134,8 @@ it):
 | Vertex Snap | `25%` | How strong the vertex snapping is: the jittery "wobble" as you move. `100%`, `75%`, `50%`, `25%` or `OFF`. |
 | Light Bands | `OFF` | How strong the banded lighting is. Lower = more, subtler bands. `OFF` = smooth lighting. |
 | Color Quantize | `ON` | The colour-reducing post-process (the same switch as F1). |
-| View Bob | `ON` | The slight rise, fall and sway of the camera as you walk. Not one of the retro effects, so the master switch leaves it alone. |
+| View Bob | `ON` | The slight rise, fall and sway of the camera as you walk, and the swing of the gun in your hands. Not one of the retro effects, so the master switch leaves it alone. |
+| Fullscreen | `OFF` | Fills the whole screen (still 4:3 with black bars) instead of running in a window. Greyed out when the game runs inside the editor's Game tab: untick **Embed Game on Next Play** in that tab's menu to use it. |
 
 Up/down (or W/S) choose a line, left/right (or A/D) turn it down or up.
 Enter or a click steps it down, and from `OFF` back round to `100%`. The
@@ -170,6 +165,7 @@ material.
 | `light_bands` | `6` | Brightness steps per light. `0` = smooth lighting. |
 | `texture_size_meters` | `2.0` | How many metres one copy of the texture covers. |
 | `uv_from_world` | `true` | Lay textures out by world position (walls) or by object (crates, props). |
+| `uv_from_mesh` | `false` | Use the mesh's own UVs instead, so each side of a box gets its own part of the texture (the textured zombie). |
 | `tint` | white | Multiplies the texture colour. |
 | `viewmodel` | `false` | Draws in front of everything else. Leave it off: the player script switches it on for the guns in your hands (see below). |
 
@@ -192,10 +188,11 @@ Double-click the file in Godot and edit it in the Inspector:
 ## Using your own textures
 
 The placeholder textures are plain PNG files in `assets/textures/`
-(`concrete`, `metal`, `tile`, `crate`, plus `wallpaper`, `carpet` and
-`ceiling_tile` for the Backrooms level, `lab_wall` and `hazard` for the
-facility level, `pylon` for the explosive pylon, and `armor` and `suit`
-for the player model). Overwrite them with your own pixel art
+(`concrete`, `metal`, `tile`, `crate`, `carpet`, `ceiling_tile`, `lab_wall`
+and `hazard` for the levels, `wallpaper`, `brick` and `lava` which no level
+uses at the moment, `pylon` for the explosive pylon, and `armor` and `suit`
+for the armoured player model, and the `soldier_*` textures for the soldier
+player model). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -218,7 +215,9 @@ Select a node and use the Inspector; every value is an exported variable.
   jump height, air control, mouse sensitivity, health, **Hurt Sound** (the
   grunt) and **Hurt Fade Speed** (how fast the red flash clears). Under
   **View Bob**: **Height** and **Sway** (how far the camera moves, in
-  metres), **Steps Per Meter** and **Fade Speed**. How red
+  metres), **Steps Per Meter**, **Fade Speed**, and **Weapon Bob Sway**
+  and **Weapon Bob Drop** (how far the gun in your hands swings and dips
+  on top of that; 0 keeps it still on screen). How red
   the flash gets is **Damage Tint Strength** on the `HUD` node in
   `scenes/hud.tscn`.
 
@@ -233,13 +232,22 @@ Select a node and use the Inspector; every value is an exported variable.
   function, which returns the words shown in the bottom-right corner. If it
   fires projectiles, start them at `owner.get_projectile_start(muzzle)` rather
   than at the muzzle itself (see "The gun in your hands" below). For the
-  player model to hold it, also add a gun model to `scenes/player_model.tscn`
+  player model to hold it, also add a gun model to `scenes/player_model_soldier.tscn`
   (see below).
-- **Player model** (`scenes/player_model.tscn`): **Armor Color** and **Visor
-  Color** (only show when the game runs; give each multiplayer player their
-  own), **Stride Length** (metres per stride: lower = quicker steps),
-  **Crouch Hip Height** and **Lamp Blink Interval** (the green lamp on the
-  backpack).
+- **Player model** (`scenes/player_model_soldier.tscn`): **Armor Color** (the
+  armbands and the panel on the backpack; a multiplayer game gives each
+  player their own) and **Visor Color** (the lens of the night-vision
+  goggles); both only show when the game runs. **Stride Length** (metres
+  per stride: lower = quicker steps), **Crouch Hip Height** and **Lamp
+  Blink Interval** (the red lamp on the backpack). **Tinted Material** is
+  the material that Armor Color recolours.
+
+  `scenes/player_model.tscn` is the earlier body, an armoured hazard suit,
+  with the same settings (its Armor Color paints the armour plates). To go
+  back to it, open `scenes/player.tscn`, delete the `Model` node, drag
+  `scenes/player_model.tscn` onto `Player` in its place and name it `Model`.
+  Both use `scripts/player_model.gd`, so a new gun model has to be added to
+  each.
 
   Each weapon has a gun model under `Hips/Upper/Aim/Guns`, named exactly like
   the weapon's node in the player scene (`Pistol`, `MachineGun`...); the one
@@ -253,6 +261,18 @@ Select a node and use the Inspector; every value is an exported variable.
   interval, bullet speed, spread, and **Shoot Sound**. Its bullets and
   grenades never run out. Under **Grenades**: time between them, launch
   speed, how far above the crosshair they are lobbed, and **Grenade Sound**.
+  Each of its five boxes has its own texture (`machine_gun_body.png`,
+  `_barrel`, `_launcher`, `_magazine` and `_grip` in `assets/textures/`),
+  laid out as six small pictures like the textured zombie's, so you can
+  paint over them.
+- **Gun and projectile textures**: the other guns are textured the same
+  way, one PNG per box: `pistol_slide` and `pistol_grip`; `shotgun_receiver`,
+  `_barrel`, `_tube`, `_pump`, `_grip` and `_rib` (the sighting rib on top,
+  the node called `Stock`); `rocket_launcher_tube`, `_muzzle` and `_sight`
+  (its grip uses the machine gun's). `shotgun_stock` and
+  `machine_gun_stock` are only on the guns the player model carries. The
+  things the guns fire have one each too: `bullet`, `grenade` and `rocket`.
+  Those three are drawn without lighting, so they show up in the dark.
 - **Shotgun** (`scenes/shotgun.tscn`): pellets per shell, damage per pellet,
   spread, range, time between shots, time after a double shot, and
   **Shoot Sound**. It never runs out of shells.
@@ -279,8 +299,8 @@ Select a node and use the Inspector; every value is an exported variable.
   `Smoke` node is the cloud of grey and black specks: change **Amount**,
   **Lifetime**, the velocities or the colours under **Color Initial Ramp**.
 - **Blood** (`scenes/blood_splash.tscn`): how fast, how far and how long the
-  drops fly. Each enemy has its own **Blood Color** (red for the enemy,
-  yellow-green for the crawler). Also here: **Stain Range** (how far blood
+  drops fly. Each enemy scene has its own **Blood Color** (dark red for the
+  zombies). Also here: **Stain Range** (how far blood
   can fly and still leave a stain), **Drops Per Stain** (lower = more
   stains) and **Stain Darkness**.
 - **Bullet holes and blood stains** (`scenes/bullet_hole.tscn`,
@@ -289,11 +309,10 @@ Select a node and use the Inspector; every value is an exported variable.
 - **Sound volume**: every sound is an `AudioStreamPlayer` node in its scene
   (`ShootSound`, `GrenadeSound`, the explosion's `Sound`). Lower its
   **Volume dB** to make it quieter; each -6 roughly halves the loudness.
-- **Enemy** (`scenes/enemy.tscn`): health, speed, sight range, attack damage,
-  and step speed (how fast its legs swing).
-- **Zombie** (`scenes/zombie.tscn`): the same settings as the enemy, plus
+- **Zombie** (`scenes/zombie.tscn`), the only kind of enemy: health, speed,
+  sight range, attack damage, and step speed (how fast its legs swing), plus
   **Limp** (0 = walks normally, 1 = drags a leg and lurches) and **Hunch**
-  (how far it stoops). Turn those up on the ordinary enemy and it limps too.
+  (how far it stoops).
   Under **Dismemberment**: **Loses Limbs** (on for the zombie), **Limb
   Health** (damage a limb takes before it comes off; 12 is two pistol
   shots), **Head Loss Chance**, **Leg Loss Chance** and **Arm Loss Chance**
@@ -303,13 +322,19 @@ Select a node and use the Inspector; every value is an exported variable.
   that holds on can't be shot off afterwards, so a zombie that keeps its
   head has to be killed the ordinary way. Grenades and rockets take off a
   random limb.
-- **Crawler** (`scenes/crawler.tscn`): health, crawl speed, sight range, leap
-  range, leap speed, leap damage, time between leaps, crouch time (the
-  wind-up before a leap) and step speed.
+- **Textured zombie** (`scenes/zombie_textured.tscn`): a copy of the zombie
+  with the same settings, but a texture for each body part instead of one
+  flat green: `zombie_head.png`, `zombie_torso.png`, `zombie_arm.png` and
+  `zombie_leg.png` in `assets/textures/`. Each is six small pictures in one
+  file, one for each side of the box (the layout is drawn at the top of the
+  zombie section in `scripts/tools/generate_textures.gd`), so you can paint
+  over them in any pixel-art program. Every zombie in the levels is this
+  one; the plain green `zombie.tscn` is kept but no level uses it. To add
+  one to a level, drag the scene under the level's `Enemies` node.
 
 The enemies' animations (walking, attacking, flinching, dying...) are not made
 in Godot's animation editor. They are a few lines of maths in the `_animate`
-function of `scripts/enemy.gd` and `scripts/crawler.gd`, which is where to
+function of `scripts/enemy.gd`, which is where to
 change how far or how fast a limb moves. The player model is animated the same
 way, in `scripts/player_model.gd`.
 
@@ -318,9 +343,11 @@ way, in `scripts/player_model.gd`.
 You never see your own body in first person (it would only get in the way of
 the view). Press **F4** for a camera behind you, and again for one in front
 of you looking back at your face; a third press returns to first person. In
-multiplayer this is the body the other players see. It is an armoured
-soldier in a hazard suit, built from boxes like the enemies, and it is
-animated from what the player is doing:
+multiplayer this is the body the other players see. It is a special forces
+soldier in camouflage, with a helmet and night-vision goggles, a vest of
+magazine pouches and a backpack with a bedroll and a radio aerial. It is
+built from boxes like the enemies, and it is animated from what the player
+is doing:
 
 - **Running**: the legs swing and the knees lift, and the body bobs and
   leans into the run. The legs turn to face the way you are moving, so
@@ -432,9 +459,10 @@ How it works, in short (`scripts/network.gd` explains it in full):
 
 ## Editing the level
 
-`levels/test_level.tscn` is carved out of one solid block. Under the `World`
-node, the `Carve...` boxes are set to **Subtraction** and cut rooms out of
-`Solid`; floors, the ledge and the steps are then added back. Children are
+Every level is carved out of one solid block (`levels/test_facility.tscn` is
+the simplest to read). Under the `World` node, the `Carve...` boxes are set
+to **Subtraction** and cut rooms out of `Solid`; floors, ledges and steps
+are then added back. Children are
 applied top to bottom, so keep carves above the pieces added afterwards.
 Crates live under `Props` and enemies under `Enemies`.
 
@@ -498,37 +526,17 @@ checkpoint that opens onto a tall 24 x 24 m atrium. From there:
   passage joins the lab to the warehouse, so every area is on a loop.
 
 Forty zombies stand at fixed points, named after their room as in the test
-map. Like the stairs in `test_level.tscn`, these are steps with an invisible
-`StairRamp` slope over them.
-
-### The Quake level
-
-`levels/quake-level.tscn` is a brick start room and corridor leading to a
-tall hall. A channel of lava cuts the hall in two, with one stone bridge
-across; fall in and it burns until you jump out. Beyond it is an altar on
-two steps (jump up them), and there is a crypt and an alcove off the sides.
-All three kinds of enemy live here.
-
-### The Backrooms level
-
-`levels/backrooms.tscn` is one 40 x 40 m room cut out of a solid block, with
-the `Wall...` boxes under `World` added back to make the maze. Move, resize,
-duplicate or delete them freely. The wall colour comes from
-`assets/textures/wallpaper.png`.
-
-The glowing panels under `LightPanels` are only pictures of lights. The real
-light comes from the bright ambient colour in
-`assets/backrooms_environment.tres`, a faint `FaceShading` light that makes
-walls facing different ways slightly different shades, and six `PanelLight`
-lamps. Keep it to six: this renderer lets at most 8 lamps shine on one
-object, and the whole maze is one object.
+map. The stairs are steps with an invisible `StairRamp` slope over them,
+because the player can't step up a ledge.
 
 ### The facility test level
 
-`levels/test_facility.tscn` is built the same way as `test_level.tscn`: a
-lobby, a corridor, a lab, a storage room and a tall test chamber are carved
-out of one block. The glowing lamps, screens and the green sample under
-`Details` are only for show; the six lamps under `Lights` do the lighting.
+`levels/test_facility.tscn` (the fourth and last level, so three presses of
+F2) is a lobby, a corridor, a lab, a storage room and a tall test chamber
+carved out of one block, with six zombies in it. The glowing
+lamps, screens and the green sample under `Details` are only for show; the
+six lamps under `Lights` do the lighting. Keep it to six: this renderer lets
+at most 8 lamps shine on one object, and a level's walls are one object.
 
 ## Known limitations
 

@@ -1,26 +1,30 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/machine_gun.gd" id="1_script"]
-[ext_resource type="Material" path="res://assets/materials/gun.tres" id="2_gun"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_body.tres" id="2_body"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_barrel.tres" id="3_barrel"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_magazine.tres" id="4_magazine"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_grip.tres" id="5_grip"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_launcher.tres" id="6_launcher"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_body"]
-material = ExtResource("2_gun")
+material = ExtResource("2_body")
 size = Vector3(0.06, 0.08, 0.34)
 
 [sub_resource type="BoxMesh" id="BoxMesh_barrel"]
-material = ExtResource("2_gun")
+material = ExtResource("3_barrel")
 size = Vector3(0.03, 0.03, 0.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_magazine"]
-material = ExtResource("2_gun")
+material = ExtResource("4_magazine")
 size = Vector3(0.04, 0.14, 0.05)
 
 [sub_resource type="BoxMesh" id="BoxMesh_grip"]
-material = ExtResource("2_gun")
+material = ExtResource("5_grip")
 size = Vector3(0.045, 0.1, 0.05)
 
 [sub_resource type="BoxMesh" id="BoxMesh_launcher"]
-material = ExtResource("2_gun")
+material = ExtResource("6_launcher")
 size = Vector3(0.05, 0.05, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]

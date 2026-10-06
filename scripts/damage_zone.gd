@@ -3,7 +3,7 @@ extends Area3D
 ## like. An Area3D doesn't block movement; it just knows what is inside it.
 ##
 ## The zone has no picture of its own. Levels pair it with a glowing slab
-## (see the lava in levels/quake-level.tscn).
+## (see the slime in levels/half-life-level.tscn).
 
 ## Damage dealt each time the zone "bites".
 @export var damage := 10

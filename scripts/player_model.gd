@@ -1,7 +1,7 @@
 extends Node3D
-## The player's body, as other players will see it in multiplayer: a soldier
-## in an armoured hazard suit, built from boxes like the enemies and animated
-## with code instead of an AnimationPlayer.
+## The player's body, as other players will see it in multiplayer, built
+## from boxes like the enemies and animated with code instead of an
+## AnimationPlayer.
 ##
 ## It sits inside scenes/player.tscn and only reads what the player is doing
 ## (how fast and which way it moves, whether it is on the floor, how far it
@@ -15,7 +15,12 @@ extends Node3D
 ## and the weapon), so their bodies animate just like yours. When they fire,
 ## show_shot() flashes their gun and plays the bang from where they stand.
 ##
-## Node layout (see scenes/player_model.tscn):
+## Two scenes use this script: scenes/player_model_soldier.tscn, a special
+## forces soldier with a backpack (the one scenes/player.tscn uses), and
+## scenes/player_model.tscn, a soldier in an armoured hazard suit. The script
+## only relies on the node layout below, which both share.
+##
+## Node layout:
 ##   Hips                 - moved up and down so the feet stay on the floor
 ##     Legs               - turned towards the way you are running
 ##       LegLeft/Right    - hip joints; Knee and Ankle inside each
@@ -53,12 +58,13 @@ const LAND_TIME := 0.3
 ## How long a muzzle flash stays lit, in seconds.
 const FLASH_TIME := 0.05
 
-## The armour material, so _ready() can find every box that wears it.
-const ARMOR_MATERIAL := preload("res://assets/materials/player_armor.tres")
-
-## The colour of the armour plates. Give each player in a multiplayer game a
-## different one to tell them apart. (Only shows when the game runs: the
-## editor shows the colour set in assets/materials/player_armor.tres.)
+## The material that armor_color recolours: every box wearing it changes
+## colour. It is the armour plates on the armoured model, and the armbands
+## and the panel on the backpack on the soldier.
+@export var tinted_material: ShaderMaterial
+## The colour of everything wearing tinted_material. A multiplayer game
+## gives each player a different one to tell them apart. (Only shows when
+## the game runs: the editor shows the colour set in the material itself.)
 @export var armor_color := Color(0.85, 0.5, 0.22)
 ## The colour of the glowing visor.
 @export var visor_color := Color(0.35, 0.95, 1.0)
@@ -136,13 +142,14 @@ func _ready() -> void:
 ## Recolours the armour and the visor. Every copy of this scene shares the
 ## same materials, so each body gets its own duplicate to change.
 func _paint() -> void:
-	var armor := ARMOR_MATERIAL.duplicate() as ShaderMaterial
-	armor.set_shader_parameter("tint", armor_color)
-	# find_children("*", "MeshInstance3D") lists every box in the model.
-	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D"):
-		if mesh.get_active_material(0) == ARMOR_MATERIAL:
-			# material_override replaces the material for this one node only.
-			mesh.material_override = armor
+	if tinted_material:
+		var armor := tinted_material.duplicate() as ShaderMaterial
+		armor.set_shader_parameter("tint", armor_color)
+		# find_children("*", "MeshInstance3D") lists every box in the model.
+		for mesh: MeshInstance3D in find_children("*", "MeshInstance3D"):
+			if mesh.get_active_material(0) == tinted_material:
+				# material_override replaces the material for this one node only.
+				mesh.material_override = armor
 
 	var glow := visor.get_active_material(0).duplicate() as StandardMaterial3D
 	glow.albedo_color = visor_color

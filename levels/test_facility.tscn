@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -9,9 +9,7 @@
 [ext_resource type="Material" path="res://assets/materials/hazard.tres" id="hazard"]
 [ext_resource type="Material" path="res://assets/materials/ceiling_tile.tres" id="ceiling_tile"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
-[ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="enemy"]
-[ext_resource type="PackedScene" path="res://scenes/crawler.tscn" id="crawler"]
-[ext_resource type="PackedScene" path="res://scenes/zombie.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://scenes/zombie_textured.tscn" id="zombie_textured"]
 [ext_resource type="PackedScene" path="res://scenes/explosive_pylon.tscn" id="explosive_pylon"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
@@ -377,47 +375,20 @@ omni_attenuation = 0.5
 
 [node name="Enemies" type="Node3D" parent="."]
 
-[node name="CrawlerCorridor" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -12.5)
-
-[node name="EnemyLab" parent="Enemies" instance=ExtResource("enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.1, -10)
-
-[node name="CrawlerLab" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0.1, -6.5)
-
-[node name="EnemyStorage" parent="Enemies" instance=ExtResource("enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.1, -12.5)
-
-[node name="CrawlerStorageA" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 0.1, -8)
-
-[node name="CrawlerStorageB" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.1, -13.5)
-
-[node name="CrawlerStorageC" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.2, 0.1, -10.5)
-
-[node name="EnemyChamberA" parent="Enemies" instance=ExtResource("enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.1, -26)
-
-[node name="EnemyChamberB" parent="Enemies" instance=ExtResource("enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, -20)
-
-[node name="CrawlerChamberA" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.1, -25)
-
-[node name="CrawlerChamberB" parent="Enemies" instance=ExtResource("crawler")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.1, -21)
-
-[node name="ZombieLab" parent="Enemies" instance=ExtResource("zombie")]
+[node name="ZombieLab" parent="Enemies" instance=ExtResource("zombie_textured")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.1, -11.5)
 
-[node name="ZombieStorage" parent="Enemies" instance=ExtResource("zombie")]
+[node name="ZombieStorage" parent="Enemies" instance=ExtResource("zombie_textured")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.1, -9)
 
-[node name="ZombieChamberA" parent="Enemies" instance=ExtResource("zombie")]
+[node name="ZombieChamberA" parent="Enemies" instance=ExtResource("zombie_textured")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.1, -28)
 
-[node name="ZombieChamberB" parent="Enemies" instance=ExtResource("zombie")]
+[node name="ZombieChamberB" parent="Enemies" instance=ExtResource("zombie_textured")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.1, -22)
+
+[node name="ZombieTexturedLab" parent="Enemies" instance=ExtResource("zombie_textured")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0.1, -8)
+
+[node name="ZombieTexturedStorage" parent="Enemies" instance=ExtResource("zombie_textured")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.1, -11.5)

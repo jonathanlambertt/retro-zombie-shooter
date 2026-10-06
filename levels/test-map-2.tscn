@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/crate.tscn" id="crate"]
 [ext_resource type="Texture2D" path="res://assets/textures/slime.png" id="slime"]
 [ext_resource type="Script" path="res://scripts/damage_zone.gd" id="damage_zone"]
-[ext_resource type="PackedScene" path="res://scenes/zombie.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://scenes/zombie_textured.tscn" id="zombie"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
 size = Vector3(3, 0.2, 10.4)

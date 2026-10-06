@@ -6,7 +6,7 @@ extends CharacterBody3D
 ## (IDLE, CHASE or DEAD) and each state has its own behaviour.
 ##
 ## Its animations are made with code instead of an AnimationPlayer. The model
-## (see scenes/enemy.tscn) is a handful of boxes hanging off "pivot" nodes
+## (see scenes/zombie.tscn) is a handful of boxes hanging off "pivot" nodes
 ## placed at the hips, waist, neck and shoulders, and _animate() below turns
 ## those pivots a little every frame:
 ##   idle    - breathes, looks from side to side, arms hanging down
@@ -16,11 +16,12 @@ extends CharacterBody3D
 ##   pain    - jerks backwards when shot
 ##   death   - falls onto its back or its face (picked at random)
 ##
-## scenes/zombie.tscn uses this same script with a thinner model and different
-## settings: slower, tougher, and with Limp and Hunch turned up, which makes
-## it drag one leg, lurch along, stoop, and let one arm hang. It also has
-## Loses Limbs switched on: shoot it in an arm, a leg or the head often enough
-## and that part comes off (see "Dismemberment" further down).
+## Two scenes use this script: scenes/zombie.tscn, and its copy with painted
+## body parts, scenes/zombie_textured.tscn. Both set Limp and Hunch high,
+## which makes the zombie drag one leg, lurch along, stoop, and let one arm
+## hang. They also have Loses Limbs switched on: shoot it in an arm, a leg
+## or the head often enough and that part comes off (see "Dismemberment"
+## further down).
 ##
 ## With several players it goes after the nearest one it can see.
 ##

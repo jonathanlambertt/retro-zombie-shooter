@@ -129,9 +129,9 @@ pixel_size = 4
 [node name="Rows" type="Control" parent="Menu/GraphicsPage"]
 anchors_preset = 0
 offset_left = 16.0
-offset_top = 48.0
+offset_top = 40.0
 offset_right = 224.0
-offset_bottom = 144.0
+offset_bottom = 152.0
 mouse_filter = 2
 
 [node name="RetroEffects" type="Control" parent="Menu/GraphicsPage/Rows"]
@@ -238,11 +238,32 @@ script = ExtResource("2_text")
 text = "ON"
 align_right = true
 
-[node name="Back" type="Control" parent="Menu/GraphicsPage/Rows"]
+[node name="Fullscreen" type="Control" parent="Menu/GraphicsPage/Rows"]
 anchors_preset = 0
 offset_top = 80.0
 offset_right = 208.0
 offset_bottom = 96.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "FULLSCREEN"
+
+[node name="Value" type="Control" parent="Menu/GraphicsPage/Rows/Fullscreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "OFF"
+align_right = true
+
+[node name="Back" type="Control" parent="Menu/GraphicsPage/Rows"]
+anchors_preset = 0
+offset_top = 96.0
+offset_right = 208.0
+offset_bottom = 112.0
 mouse_filter = 2
 script = ExtResource("2_text")
 text = "BACK"

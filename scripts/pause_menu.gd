@@ -1,7 +1,7 @@
 extends CanvasLayer
 ## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS, MULTIPLAYER
-## and QUIT. GRAPHICS opens a page with switches for the retro effects and the
-## view bob, and MULTIPLAYER one for hosting or joining a game (see
+## and QUIT. GRAPHICS opens a page with switches for the retro effects, the
+## view bob and fullscreen, and MULTIPLAYER one for hosting or joining a game (see
 ## scripts/network.gd).
 ##
 ## Online, the menu can't freeze the game: the other players carry on. It
@@ -75,7 +75,9 @@ var selected := 0
 @onready var light_bands_row: Control = $Menu/GraphicsPage/Rows/LightBands
 @onready var color_quantize_row: Control = $Menu/GraphicsPage/Rows/ColorQuantize
 @onready var view_bob_row: Control = $Menu/GraphicsPage/Rows/ViewBob
+@onready var fullscreen_row: Control = $Menu/GraphicsPage/Rows/Fullscreen
 @onready var back_row: Control = $Menu/GraphicsPage/Rows/Back
+@onready var graphics_hint: Control = $Menu/GraphicsPage/Hint
 
 @onready var host_row: Control = $Menu/MultiplayerPage/Rows/Host
 @onready var join_row: Control = $Menu/MultiplayerPage/Rows/Join
@@ -235,6 +237,8 @@ func _change(direction: int, wrap: bool) -> void:
 		color_quantize = not color_quantize
 	elif row == view_bob_row:
 		view_bob = not view_bob
+	elif row == fullscreen_row:
+		_set_fullscreen(not _is_fullscreen())
 	else:
 		return  # the button lines have nothing to turn up or down
 	_apply_settings()
@@ -265,6 +269,34 @@ func _apply_settings() -> void:
 	RenderingServer.global_shader_parameter_set(&"retro_snap_strength", snap_strength)
 	RenderingServer.global_shader_parameter_set(&"retro_light_band_strength", light_band_strength)
 	RenderingServer.global_shader_parameter_set(&"retro_color_quantize", color_quantize)
+
+
+## True if the game fills the whole screen. This asks the window itself
+## instead of keeping a copy of the setting here: the window isn't rebuilt
+## when the game reloads after a death, so it remembers on its own.
+func _is_fullscreen() -> bool:
+	var mode := DisplayServer.window_get_mode()
+	return mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+
+
+## True when the game is running inside the editor's own window (the Game
+## tab at the top of the editor, which is where Play puts it unless "Embed
+## Game on Next Play" is unticked in that tab's menu). The game is then a
+## panel of the editor rather than a window of its own, and Godot ignores
+## requests to make it fullscreen.
+func _is_embedded() -> bool:
+	return Engine.is_embedded_in_editor()
+
+
+## Switches between filling the screen and an ordinary window. Either way
+## scripts/main.gd notices the new size and rescales the picture to fit.
+func _set_fullscreen(on: bool) -> void:
+	if _is_embedded():
+		return
+	if on:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
 
 ## Typing on the JOIN line: digits and "." add to the address, Backspace
@@ -300,6 +332,7 @@ func _refresh() -> void:
 	light_bands_row.get_node("Value").text = _strength_text(light_band_strength)
 	color_quantize_row.get_node("Value").text = _on_off_text(color_quantize)
 	view_bob_row.get_node("Value").text = _on_off_text(view_bob)
+	fullscreen_row.get_node("Value").text = _on_off_text(_is_fullscreen())
 	join_row.get_node("Value").text = join_address
 	status_text.text = Network.status
 	# Hosting and joining only make sense in single player, leaving online.
@@ -307,6 +340,13 @@ func _refresh() -> void:
 	var unavailable: Array[Control] = [leave_row]
 	if online:
 		unavailable = [host_row, join_row]
+	if _is_embedded():
+		unavailable.append(fullscreen_row)
+	# Say why FULLSCREEN does nothing, in place of the usual hint.
+	if _is_embedded() and rows[selected] == fullscreen_row:
+		graphics_hint.text = "NOT INSIDE THE EDITOR WINDOW"
+	else:
+		graphics_hint.text = "LEFT RIGHT OR CLICK TO CHANGE"
 
 	for i in rows.size():
 		var row := rows[i]
