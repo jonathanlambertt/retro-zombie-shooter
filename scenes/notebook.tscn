@@ -1,0 +1,49 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/notebook.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/player_gear.tres" id="2_cover"]
+[ext_resource type="Material" path="res://assets/materials/paper.tres" id="3_paper"]
+[ext_resource type="Material" path="res://assets/materials/soldier_marker.tres" id="4_ribbon"]
+[ext_resource type="Material" path="res://assets/materials/soldier_black.tres" id="5_pen"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_cover"]
+material = ExtResource("2_cover")
+size = Vector3(0.34, 0.015, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pages"]
+material = ExtResource("3_paper")
+size = Vector3(0.155, 0.02, 0.21)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ribbon"]
+material = ExtResource("4_ribbon")
+size = Vector3(0.015, 0.004, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pen"]
+material = ExtResource("5_pen")
+size = Vector3(0.012, 0.012, 0.14)
+
+[node name="Notebook" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" type="Node3D" parent="."]
+transform = Transform3D(0.966, 0, 0.259, 0, 1, 0, -0.259, 0, 0.966, 0, 0, 0)
+
+[node name="Cover" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0075, 0)
+mesh = SubResource("BoxMesh_cover")
+
+[node name="PagesLeft" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.025, 0)
+mesh = SubResource("BoxMesh_pages")
+
+[node name="PagesRight" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.025, 0)
+mesh = SubResource("BoxMesh_pages")
+
+[node name="Ribbon" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.037, 0.02)
+mesh = SubResource("BoxMesh_ribbon")
+
+[node name="Pen" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 0.24, 0.006, 0.02)
+mesh = SubResource("BoxMesh_pen")

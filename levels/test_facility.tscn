@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -9,6 +9,7 @@
 [ext_resource type="Material" path="res://assets/materials/hazard.tres" id="hazard"]
 [ext_resource type="Material" path="res://assets/materials/ceiling_tile.tres" id="ceiling_tile"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/notebook.tscn" id="notebook"]
 [ext_resource type="PackedScene" path="res://scenes/zombie_textured.tscn" id="zombie_textured"]
 [ext_resource type="PackedScene" path="res://scenes/explosive_pylon.tscn" id="explosive_pylon"]
 
@@ -204,6 +205,9 @@ size = Vector3(1, 8.2, 1)
 material = ExtResource("concrete")
 
 [node name="Props" type="Node3D" parent="."]
+
+[node name="Notebook" parent="Props" instance=ExtResource("notebook")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, -2)
 
 [node name="LobbyDesk" type="CSGBox3D" parent="Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0.5, -2)

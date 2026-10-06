@@ -1,8 +1,9 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/notebook.tscn" id="notebook"]
 [ext_resource type="Material" path="res://assets/materials/lab_wall.tres" id="lab_wall"]
 [ext_resource type="Material" path="res://assets/materials/tile.tres" id="tile"]
 [ext_resource type="Material" path="res://assets/materials/ceiling_tile.tres" id="ceiling_tile"]
@@ -274,6 +275,9 @@ size = Vector3(5, 0.15, 1.2)
 material = ExtResource("hazard")
 
 [node name="Props" type="Node3D" parent="."]
+
+[node name="Notebook" parent="Props" instance=ExtResource("notebook")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, -2.2)
 
 [node name="CheckpointDesk" type="CSGBox3D" parent="Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0.5, -2.2)

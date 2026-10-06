@@ -3,7 +3,7 @@ extends CharacterBody3D
 ## straight at them and hits them when close. Falls over when killed.
 ##
 ## It is a small "state machine": at any moment it is in exactly one state
-## (IDLE, CHASE or DEAD) and each state has its own behaviour.
+## (IDLE, CHASE, CLIMB or DEAD) and each state has its own behaviour.
 ##
 ## Its animations are made with code instead of an AnimationPlayer. The model
 ## (see scenes/zombie.tscn) is a handful of boxes hanging off "pivot" nodes
@@ -31,10 +31,18 @@ extends CharacterBody3D
 ## setters on those variables below start the matching animation). Shots
 ## can hit any copy: take_damage() passes the damage on to the host.
 ##
+## Windows (scripts/zombie_window.gd): a window in a level can call
+## head_for() to send a chasing enemy to the spot below it, and then
+## climb_through() to haul it over the sill. While it climbs it is in the
+## CLIMB state: it follows the list of points it was given instead of
+## walking, lying flat like an enemy that has lost a leg.
+##
 ## Limitation: it walks in a straight line towards the player, so it can get
 ## stuck behind walls. Proper pathfinding (NavigationAgent3D) is a next step.
 
-enum State { IDLE, CHASE, DEAD }
+# (CLIMB was added last so the numbers of the other states, which are what
+# the network sends, stayed the same.)
+enum State { IDLE, CHASE, DEAD, CLIMB }
 
 const BLOOD_SPLASH_SCENE := preload("res://scenes/blood_splash.tscn")
 const GIB_SCENE := preload("res://scenes/gib.tscn")
@@ -151,6 +159,14 @@ var sturdy_limbs: Array[String] = []
 var wounded_limb := ""
 ## True once it has lost a leg and is dragging itself along the floor.
 var crawling := false
+## Somewhere to walk to instead of straight at the player, and how many
+## seconds longer to keep going there (see head_for()). 0 = no detour.
+var detour_point := Vector3.ZERO
+var detour_time := 0.0
+## The points still to pass on the way through a window, and how fast to
+## move between them, in metres per second (see climb_through()).
+var climb_path: Array[Vector3] = []
+var climb_speed := 1.5
 
 @onready var model: Node3D = $Model
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
@@ -182,6 +198,10 @@ func _physics_process(delta: float) -> void:
 		return
 
 	attack_cooldown = maxf(attack_cooldown - delta, 0.0)
+	detour_time = maxf(detour_time - delta, 0.0)
+	if state == State.CLIMB:
+		_climb(delta)
+		return
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
@@ -211,13 +231,23 @@ func _physics_process(delta: float) -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
 	if state == State.CHASE:
+		# It heads for the player, unless a window has sent it somewhere else
+		# first (see head_for()).
+		var on_detour := detour_time > 0.0
+		var heading := to_player
+		if on_detour:
+			heading = detour_point - global_position
 		# Ignore height so the enemy turns and walks along the ground.
-		var flat_direction := Vector3(to_player.x, 0.0, to_player.z).normalized()
+		var flat_direction := Vector3(heading.x, 0.0, heading.z)
+		if on_detour and flat_direction.length() < 0.15:
+			# Already standing on the spot: wait there instead of shuffling.
+			flat_direction = Vector3.ZERO
+		flat_direction = flat_direction.normalized()
 		if flat_direction != Vector3.ZERO:
 			# look_at points this node's forward (-Z) side at a position.
 			look_at(global_position + flat_direction)
 
-		if distance > attack_range:
+		if on_detour or distance > attack_range:
 			var speed := move_speed * _lurch()
 			if crawling:
 				speed *= crawl_speed_factor
@@ -229,6 +259,76 @@ func _physics_process(delta: float) -> void:
 			player.take_damage(_attack_strength())
 
 	move_and_slide()
+
+
+## Called by a window, every physics frame, for as long as this enemy should
+## walk to "point" (a position in the level) instead of at the player. It
+## gives up the detour a moment after the calls stop.
+func head_for(point: Vector3) -> void:
+	detour_point = point
+	detour_time = 0.2
+
+
+## Called by a window (on the host) to take this enemy through it: it moves
+## from point to point along "path" at "speed" metres per second, passing
+## straight over the sill instead of walking, and then carries on chasing.
+## Returns false if it can't climb just now.
+func climb_through(path: Array[Vector3], speed: float) -> bool:
+	if state != State.CHASE or path.is_empty():
+		return false
+	climb_path = path.duplicate()
+	climb_speed = speed
+	detour_time = 0.0
+	# Face the way through: from where it is to the last point, kept level.
+	var way := path[-1] - global_position
+	way.y = 0.0
+	if way.length() > 0.01:
+		look_at(global_position + way)
+	state = State.CLIMB
+	return true
+
+
+## True while it is part-way through a window.
+func is_climbing() -> bool:
+	return state == State.CLIMB
+
+
+## True if it is chasing a player on its own two feet (or its hands): not
+## standing idle, climbing or dead. A window only bothers with these.
+func is_chasing() -> bool:
+	return state == State.CHASE
+
+
+## Makes an idle enemy notice the nearest player, even without seeing them.
+## Windows call this when a player comes close, so the enemies outside
+## don't have to catch sight of them first.
+func notice_player() -> void:
+	_wake_up()
+
+
+## One physics step of a climb. The body is moved by hand, straight to where
+## it should be: move_and_slide would stop it at the wall it is climbing.
+func _climb(delta: float) -> void:
+	# How far it may move this step. Reaching a point drops it from the list,
+	# and whatever distance is left over is spent on the way to the next.
+	var step := climb_speed * delta
+	var start := global_position
+	while step > 0.0 and not climb_path.is_empty():
+		var gap := global_position.distance_to(climb_path[0])
+		if gap <= step:
+			global_position = climb_path[0]
+			climb_path.remove_at(0)
+			step -= gap
+		else:
+			# move_toward goes "step" metres towards the point, no further.
+			global_position = global_position.move_toward(climb_path[0], step)
+			step = 0.0
+	# The speed is only kept for the other players' computers, which use it
+	# to keep the body moving between updates (see the top of _physics_process).
+	velocity = (global_position - start) / delta
+	if climb_path.is_empty():
+		velocity = Vector3.ZERO
+		state = State.CHASE
 
 
 ## How hard it hits right now. Every arm it has lost halves the damage; with
@@ -272,6 +372,9 @@ func _animate(delta: float) -> void:
 	var head_turn := 0.0
 	var bob := 0.0         # how far the whole body is lifted
 	var dangle := limp     # how much the left arm just hangs (limping only)
+	# Lying on its front: dragging itself along without a leg, or hauling
+	# itself over a window sill.
+	var flat_out := crawling or state == State.CLIMB
 
 	if state == State.IDLE:
 		# Breathe slowly and look from side to side.
@@ -307,7 +410,7 @@ func _animate(delta: float) -> void:
 		arm_angle = lerpf(ARMS_UP, -0.9, progress)
 		arm_swing = 0.0
 		lean = -0.4
-	if crawling:
+	if flat_out:
 		# Flat on its front with the hips just off the floor, hauling itself
 		# along with both arms. The arms are angled back up by as much as
 		# the body is tipped forward, so they reach along the ground.
@@ -320,7 +423,7 @@ func _animate(delta: float) -> void:
 			arm_swing = sin(walk_phase) * 0.5
 
 	if pain_timer > 0.0:
-		lean = 0.45 if not crawling else -1.0
+		lean = 0.45 if not flat_out else -1.0
 		head_turn = 0.5
 
 	# Ease towards the pose instead of jumping to it, so one animation
@@ -329,7 +432,7 @@ func _animate(delta: float) -> void:
 	var left_leg := leg_swing
 	# A bad leg takes much shorter steps and never swings out in front.
 	var right_leg := -leg_swing * (1.0 - 0.75 * limp) - leg_drag
-	if crawling:
+	if flat_out:
 		# Whatever legs are left trail out behind.
 		left_leg = -1.4
 		right_leg = -1.4

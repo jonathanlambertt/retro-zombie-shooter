@@ -28,7 +28,8 @@ Godot_v4.7-stable_win64_console.exe --path .
 | Right mouse button | Machine gun: fire a grenade. Shotgun: double shot |
 | 1 / 2 / 3 / 4 | Switch to pistol / machine gun / rocket launcher / shotgun |
 | Mouse wheel | Next / previous weapon |
-| Esc | Pause menu: resume, graphics settings (the retro effects), multiplayer, or quit. Esc again resumes |
+| E | Read a notebook you are standing at and looking at (E or Esc closes it) |
+| Esc | Pause menu: resume, graphics and audio settings, multiplayer, or quit. Esc again resumes |
 | F1 | Toggle the colour quantization post-process (also works while paused) |
 | F2 / F3 | Next / previous level (in multiplayer, only the host) |
 | F4 | Change view: first person, behind your player, in front looking at your face, and back |
@@ -72,13 +73,17 @@ scenes/              Reusable scenes
   bullet_hole.tscn     Mark left on walls and floors by shots
   zombie.tscn          Thin, limping enemy that chases and hits you (scripts/enemy.gd)
   zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
+  zombie_window.tscn   A window that zombies climb in through
+  notebook.tscn        A notebook on a desk that you can read
+  notebook_reader.tscn The paper page a notebook opens, and its "press E" prompt
   hud.tscn             Health / ammo / crosshair
-  pause_menu.tscn      Esc menu: pauses the game, retro effect settings, multiplayer, quit
+  pause_menu.tscn      Esc menu: pauses the game, graphics and audio settings, multiplayer, quit
 levels/
   test_facility.tscn   Half-Life-style research facility: lobby, lab, storage, test chamber
   half-life-level.tscn Office complex full of zombies, with a slime pit
   test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
   test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
+  office.tscn          One office break room, testing a window that zombies climb through
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
   network.gd           Autoload: multiplayer (hosting, joining, sharing the game)
@@ -124,7 +129,7 @@ The HUD is anchored to the corners, so it adapts to the new size.
 ### Turning the effects down (pause menu)
 
 Press **Esc** while playing to pause the game and open the menu, which has
-four lines: **Resume**, **Graphics**, **Multiplayer** (see "Multiplayer"
+five lines: **Resume**, **Graphics**, **Audio**, **Multiplayer** (see "Multiplayer"
 below) and **Quit**. Graphics opens a second page (Back or Esc returns from
 it):
 
@@ -136,6 +141,9 @@ it):
 | Color Quantize | `ON` | The colour-reducing post-process (the same switch as F1). |
 | View Bob | `ON` | The slight rise, fall and sway of the camera as you walk, and the swing of the gun in your hands. Not one of the retro effects, so the master switch leaves it alone. |
 | Fullscreen | `OFF` | Fills the whole screen (still 4:3 with black bars) instead of running in a window. Greyed out when the game runs inside the editor's Game tab: untick **Embed Game on Next Play** in that tab's menu to use it. |
+
+Audio opens a page with one setting, **Master Volume**: how loud everything
+is, from `100%` down to `OFF` in steps of 10%.
 
 Up/down (or W/S) choose a line, left/right (or A/D) turn it down or up.
 Enter or a click steps it down, and from `OFF` back round to `100%`. The
@@ -531,15 +539,71 @@ because the player can't step up a ledge.
 
 ### The facility test level
 
-`levels/test_facility.tscn` (the fourth and last level, so three presses of
+`levels/test_facility.tscn` (the fourth level, so three presses of
 F2) is a lobby, a corridor, a lab, a storage room and a tall test chamber
 carved out of one block, with six zombies in it. The glowing
 lamps, screens and the green sample under `Details` are only for show; the
 six lamps under `Lights` do the lighting. Keep it to six: this renderer lets
 at most 8 lamps shine on one object, and a level's walls are one object.
 
+### The office
+
+`levels/office.tscn` (the fifth and last level: four presses of F2, or one
+of F3 from the first level) is a single room: an office break room, built
+as a test of a window that zombies climb through. You start facing the
+window. Five zombies wait in a brick yard on the other side of that wall;
+they come to the window, haul themselves over the sill one at a time and
+drop in. There is no way out of the room, so it is a short fight.
+
+### Notebooks
+
+Every level has a notebook lying open on a desk, near where you start (in
+the office it is on the table). Stand next to it, look at it, and
+**PRESS E TO READ** appears; E opens a sheet of lined paper with the page
+written on it, and E or Esc closes it again. Reading pauses the game in
+single player. Online the game carries on behind the page, and walking away
+closes it.
+
+For now every notebook holds the same single page: a survivor's note about
+the bunker the story is set in. Each one can have its own words. Select a
+`Notebook` node in a level and change **Title** and **Text** in the
+Inspector. A page holds one paragraph of up to about 150 words, and the
+pixel font only has capital letters, digits and `. , : - ' ! ?`. **Reach**
+is how close you must be, and **Aim** how squarely you must look at it.
+
+To add another, drag `scenes/notebook.tscn` under a level's `Props` and set
+it on top of a desk. The page itself (the paper's colours and layout) is
+`scenes/notebook_reader.tscn`.
+
+### Windows that zombies climb through
+
+Enemies walk in straight lines and can't step up onto anything, so on their
+own a window sill stops them. `scenes/zombie_window.tscn` does the thinking
+for them: it watches a box of space outside the window (the yard), sends
+every chasing enemy in it to the spot below the sill, and takes them
+through one at a time. It also wakes the enemies in the yard when a player
+comes near, since they usually can't see into the room.
+
+To put one in a level:
+
+1. Cut the hole with a `Carve...` box in the level's `World`: 1.4 m wide,
+   from 0.9 m to 2.2 m above the floor, through a wall 0.5 m thick.
+2. Drag `scenes/zombie_window.tscn` under `Props`, on the floor in the middle
+   of that wall, and turn it so its blue arrow points **out**, to where the
+   zombies come from.
+3. Make a room or yard out there and put zombies in it.
+
+Its settings: **Sill Height**, **Wall Thickness**, **Stand Off** (how far
+from the wall a zombie stands before climbing, and lands after), **Climb
+Speed**, **Yard Size** (the space it watches: along the wall, up, and out
+from the wall) and **Alert Distance** (how close a player must come to wake
+the yard).
+
 ## Known limitations
 
+- Zombies only climb in through a window, never back out, and a crouch-jump
+  may get you out through it. The window has only been tested in single
+  player, not online.
 - In the view behind you (F4), shots come from your eyes, 30 cm below the
   camera's line, so at close range they land slightly below the crosshair.
 - Crouching doesn't hide you from enemies that are already looking your way.

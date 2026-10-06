@@ -10,6 +10,7 @@
 [ext_resource type="Material" path="res://assets/materials/lab_wall.tres" id="lab_wall"]
 [ext_resource type="Material" path="res://assets/materials/metal.tres" id="metal"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/notebook.tscn" id="notebook"]
 [ext_resource type="Texture2D" uid="uid://cb3lk8j8pqh1q" path="res://assets/textures/slime.png" id="slime"]
 [ext_resource type="Material" path="res://assets/materials/tile.tres" id="tile"]
 [ext_resource type="PackedScene" path="res://scenes/zombie_textured.tscn" id="zombie"]
@@ -356,6 +357,9 @@ size = Vector3(5, 0.15, 1.2)
 material = ExtResource("hazard")
 
 [node name="Props" type="Node3D" parent="." unique_id=1933296112]
+
+[node name="Notebook" parent="Props" instance=ExtResource("notebook")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 1, 14)
 
 [node name="CheckpointDesk" type="CSGBox3D" parent="Props" unique_id=303062080]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.5, 14)

@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/zombie_window.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/wood.tres" id="2_wood"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_sill"]
+material = ExtResource("2_wood")
+size = Vector3(1.6, 0.06, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jamb"]
+material = ExtResource("2_wood")
+size = Vector3(0.08, 1.3, 0.56)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lintel"]
+material = ExtResource("2_wood")
+size = Vector3(1.6, 0.08, 0.56)
+
+[sub_resource type="BoxMesh" id="BoxMesh_board"]
+material = ExtResource("2_wood")
+size = Vector3(0.5, 0.12, 0.04)
+
+[node name="ZombieWindow" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Frame" type="Node3D" parent="."]
+
+[node name="Sill" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("BoxMesh_sill")
+
+[node name="JambLeft" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7, 1.55, 0)
+mesh = SubResource("BoxMesh_jamb")
+
+[node name="JambRight" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.55, 0)
+mesh = SubResource("BoxMesh_jamb")
+
+[node name="Lintel" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.18, 0)
+mesh = SubResource("BoxMesh_lintel")
+
+[node name="BrokenBoardLeft" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(0.966, 0.259, 0, -0.259, 0.966, 0, 0, 0, 1, -0.5, 1.75, -0.29)
+mesh = SubResource("BoxMesh_board")
+
+[node name="BrokenBoardRight" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(0.94, -0.342, 0, 0.342, 0.94, 0, 0, 0, 1, 0.5, 1.45, -0.29)
+mesh = SubResource("BoxMesh_board")
+
+[node name="BrokenBoardTop" type="MeshInstance3D" parent="Frame"]
+transform = Transform3D(0.996, 0.087, 0, -0.087, 0.996, 0, 0, 0, 1, 0.35, 2.0, -0.29)
+mesh = SubResource("BoxMesh_board")
