@@ -32,17 +32,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Title" type="Control" parent="Menu"]
-anchors_preset = 0
-offset_left = 74.0
-offset_top = 8.0
-offset_right = 170.0
-offset_bottom = 28.0
-mouse_filter = 2
-script = ExtResource("2_text")
-text = "PAUSED"
-pixel_size = 4
-
 [node name="Cursor" type="Control" parent="Menu"]
 anchors_preset = 0
 offset_left = 4.0
@@ -53,15 +42,35 @@ mouse_filter = 2
 script = ExtResource("2_text")
 text = ">"
 
-[node name="Rows" type="Control" parent="Menu"]
+[node name="MainPage" type="Control" parent="Menu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="Control" parent="Menu/MainPage"]
+anchors_preset = 0
+offset_left = 74.0
+offset_top = 8.0
+offset_right = 170.0
+offset_bottom = 28.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "PAUSED"
+pixel_size = 4
+
+[node name="Rows" type="Control" parent="Menu/MainPage"]
 anchors_preset = 0
 offset_left = 16.0
 offset_top = 48.0
 offset_right = 224.0
-offset_bottom = 144.0
+offset_bottom = 96.0
 mouse_filter = 2
 
-[node name="Resume" type="Control" parent="Menu/Rows"]
+[node name="Resume" type="Control" parent="Menu/MainPage/Rows"]
 anchors_preset = 0
 offset_right = 208.0
 offset_bottom = 16.0
@@ -69,37 +78,26 @@ mouse_filter = 2
 script = ExtResource("2_text")
 text = "RESUME"
 
-[node name="RetroEffects" type="Control" parent="Menu/Rows"]
+[node name="Graphics" type="Control" parent="Menu/MainPage/Rows"]
 anchors_preset = 0
 offset_top = 16.0
 offset_right = 208.0
 offset_bottom = 32.0
 mouse_filter = 2
 script = ExtResource("2_text")
-text = "RETRO EFFECTS"
+text = "GRAPHICS"
 
-[node name="Value" type="Control" parent="Menu/Rows/RetroEffects"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("2_text")
-text = "ON"
-align_right = true
-
-[node name="VertexSnap" type="Control" parent="Menu/Rows"]
+[node name="Quit" type="Control" parent="Menu/MainPage/Rows"]
 anchors_preset = 0
 offset_top = 32.0
 offset_right = 208.0
 offset_bottom = 48.0
 mouse_filter = 2
 script = ExtResource("2_text")
-text = "VERTEX SNAP"
+text = "QUIT"
 
-[node name="Value" type="Control" parent="Menu/Rows/VertexSnap"]
+[node name="GraphicsPage" type="Control" parent="Menu"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -107,41 +105,35 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("2_text")
-text = "100%"
-align_right = true
 
-[node name="LightBands" type="Control" parent="Menu/Rows"]
+[node name="Title" type="Control" parent="Menu/GraphicsPage"]
 anchors_preset = 0
+offset_left = 58.0
+offset_top = 8.0
+offset_right = 186.0
+offset_bottom = 28.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "GRAPHICS"
+pixel_size = 4
+
+[node name="Rows" type="Control" parent="Menu/GraphicsPage"]
+anchors_preset = 0
+offset_left = 16.0
 offset_top = 48.0
-offset_right = 208.0
-offset_bottom = 64.0
+offset_right = 224.0
+offset_bottom = 128.0
 mouse_filter = 2
-script = ExtResource("2_text")
-text = "LIGHT BANDS"
 
-[node name="Value" type="Control" parent="Menu/Rows/LightBands"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("2_text")
-text = "100%"
-align_right = true
-
-[node name="ColorQuantize" type="Control" parent="Menu/Rows"]
+[node name="RetroEffects" type="Control" parent="Menu/GraphicsPage/Rows"]
 anchors_preset = 0
-offset_top = 64.0
 offset_right = 208.0
-offset_bottom = 80.0
+offset_bottom = 16.0
 mouse_filter = 2
 script = ExtResource("2_text")
-text = "COLOR QUANTIZE"
+text = "RETRO EFFECTS"
 
-[node name="Value" type="Control" parent="Menu/Rows/ColorQuantize"]
+[node name="Value" type="Control" parent="Menu/GraphicsPage/Rows/RetroEffects"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -153,16 +145,79 @@ script = ExtResource("2_text")
 text = "ON"
 align_right = true
 
-[node name="Quit" type="Control" parent="Menu/Rows"]
+[node name="VertexSnap" type="Control" parent="Menu/GraphicsPage/Rows"]
 anchors_preset = 0
-offset_top = 80.0
+offset_top = 16.0
 offset_right = 208.0
-offset_bottom = 96.0
+offset_bottom = 32.0
 mouse_filter = 2
 script = ExtResource("2_text")
-text = "QUIT"
+text = "VERTEX SNAP"
 
-[node name="Hint" type="Control" parent="Menu"]
+[node name="Value" type="Control" parent="Menu/GraphicsPage/Rows/VertexSnap"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "25%"
+align_right = true
+
+[node name="LightBands" type="Control" parent="Menu/GraphicsPage/Rows"]
+anchors_preset = 0
+offset_top = 32.0
+offset_right = 208.0
+offset_bottom = 48.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "LIGHT BANDS"
+
+[node name="Value" type="Control" parent="Menu/GraphicsPage/Rows/LightBands"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "OFF"
+align_right = true
+
+[node name="ColorQuantize" type="Control" parent="Menu/GraphicsPage/Rows"]
+anchors_preset = 0
+offset_top = 48.0
+offset_right = 208.0
+offset_bottom = 64.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "COLOR QUANTIZE"
+
+[node name="Value" type="Control" parent="Menu/GraphicsPage/Rows/ColorQuantize"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "ON"
+align_right = true
+
+[node name="Back" type="Control" parent="Menu/GraphicsPage/Rows"]
+anchors_preset = 0
+offset_top = 64.0
+offset_right = 208.0
+offset_bottom = 80.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "BACK"
+
+[node name="Hint" type="Control" parent="Menu/GraphicsPage"]
 anchors_preset = 0
 offset_left = 62.0
 offset_top = 156.0

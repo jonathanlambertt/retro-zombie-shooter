@@ -37,6 +37,15 @@ extends Control
 ## you died in instead of being sent back to the first one.
 static var level_index := 0
 
+## The file of a level scene that was run on its own (F6 in the editor)
+## rather than through this scene, or "" if the game was started normally.
+## scripts/level_launcher.gd sets it. It is kept for the whole run, because a
+## level that isn't in Levels has to be added again after every reload.
+static var direct_level_path := ""
+## True until the level above has been opened once. After that F2 and F3 are
+## free to move away from it.
+static var open_direct_level := false
+
 ## The level currently loaded inside the low-res viewport.
 var level: Node
 
@@ -54,7 +63,31 @@ func _ready() -> void:
 	# whenever the window does (it is anchored to fill the whole window).
 	resized.connect(_fit_to_window)
 	_fit_to_window()
+	_use_direct_level()
 	_load_level()
+
+
+## Handles a level scene that was run on its own: makes sure it is in Levels
+## and, the first time, starts the game in it.
+func _use_direct_level() -> void:
+	if direct_level_path.is_empty():
+		return
+
+	# Look for the level in the list. resource_path is the file a resource
+	# was loaded from.
+	var index := -1
+	for i in levels.size():
+		if levels[i].resource_path == direct_level_path:
+			index = i
+	# A level that hasn't been added to Levels yet goes on the end, so it can
+	# be played (and reached with F2 and F3) anyway.
+	if index == -1:
+		levels.append(load(direct_level_path))
+		index = levels.size() - 1
+
+	if open_direct_level:
+		level_index = index
+		open_direct_level = false
 
 
 func _unhandled_input(event: InputEvent) -> void:

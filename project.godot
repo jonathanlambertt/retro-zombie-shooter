@@ -14,6 +14,10 @@ config/name="Retro FPS"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[autoload]
+
+LevelLauncher="*res://scripts/level_launcher.gd"
+
 [display]
 
 window/size/viewport_width=1280
@@ -119,11 +123,11 @@ retro_effects={
 }
 retro_snap_strength={
 "type": "float",
-"value": 1.0
+"value": 0.25
 }
 retro_light_band_strength={
 "type": "float",
-"value": 1.0
+"value": 0.0
 }
 retro_color_quantize={
 "type": "bool",

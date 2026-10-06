@@ -1,5 +1,6 @@
 extends CanvasLayer
-## Pause menu: Esc freezes the game and shows switches for the retro effects.
+## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS and QUIT.
+## GRAPHICS opens a second page with switches for the retro effects.
 ##
 ## Pausing: setting get_tree().paused to true stops every node whose Process
 ## Mode is "Pausable": no _process, no physics, no input. This menu's mode is
@@ -7,6 +8,11 @@ extends CanvasLayer
 ## the game again. The ViewportContainer in scenes/main.tscn is "Always" too,
 ## because it has to keep passing the keyboard and mouse in to this menu; the
 ## level and the HUD are set back to "Pausable" so they still freeze.
+##
+## Pages: each page is a Control in the scene holding its own title and a
+## "Rows" node with one child per line. Only one page is visible at a time,
+## and "rows" below is filled from whichever one that is, so adding a line to
+## a page is mostly a matter of adding a node to its Rows in the scene.
 ##
 ## The effects are "global shader parameters", listed in Project Settings >
 ## Globals > Shader Globals. A normal shader setting belongs to one material;
@@ -16,9 +22,7 @@ extends CanvasLayer
 ##
 ## Keys: up/down (or W/S) choose a line, left/right (or A/D) turn a setting
 ## down or up, Enter presses it. With the mouse, point at a line and click.
-
-## The rows of the menu, top to bottom. Must match the order of "rows" below.
-enum Row { RESUME, RETRO_EFFECTS, VERTEX_SNAP, LIGHT_BANDS, COLOR_QUANTIZE, QUIT }
+## Esc goes back from the graphics page, and resumes from the first page.
 
 ## The steps VERTEX SNAP and LIGHT BANDS go through. 1 = full strength
 ## (exactly as set in the shader and the materials), 0 = off.
@@ -33,29 +37,30 @@ const STRENGTH_STEPS: Array[float] = [0.0, 0.25, 0.5, 0.75, 1.0]
 
 # The current effect settings. "static" keeps them when the game reloads
 # after the player dies (like level_index in scripts/main.gd), so a death
-# doesn't switch the effects back on.
+# doesn't put the effects back to their starting values.
 static var retro_effects := true
-static var snap_strength := 1.0
-static var light_band_strength := 1.0
+static var snap_strength := 0.25
+static var light_band_strength := 0.0
 static var color_quantize := true
 
-## Which row the cursor is on (one of the Row values).
-var selected: int = Row.RESUME
+## The lines of the page that is showing, top to bottom.
+var rows: Array[Control] = []
+## Which of "rows" the cursor is on (0 = the top line).
+var selected := 0
 
 @onready var cursor: Control = $Menu/Cursor
-@onready var row_list: Control = $Menu/Rows
-@onready var rows: Array[Control] = [
-	$Menu/Rows/Resume,
-	$Menu/Rows/RetroEffects,
-	$Menu/Rows/VertexSnap,
-	$Menu/Rows/LightBands,
-	$Menu/Rows/ColorQuantize,
-	$Menu/Rows/Quit,
-]
-@onready var retro_effects_value: Control = $Menu/Rows/RetroEffects/Value
-@onready var snap_value: Control = $Menu/Rows/VertexSnap/Value
-@onready var light_bands_value: Control = $Menu/Rows/LightBands/Value
-@onready var color_quantize_value: Control = $Menu/Rows/ColorQuantize/Value
+@onready var main_page: Control = $Menu/MainPage
+@onready var graphics_page: Control = $Menu/GraphicsPage
+
+@onready var resume_row: Control = $Menu/MainPage/Rows/Resume
+@onready var graphics_row: Control = $Menu/MainPage/Rows/Graphics
+@onready var quit_row: Control = $Menu/MainPage/Rows/Quit
+
+@onready var retro_effects_row: Control = $Menu/GraphicsPage/Rows/RetroEffects
+@onready var snap_row: Control = $Menu/GraphicsPage/Rows/VertexSnap
+@onready var light_bands_row: Control = $Menu/GraphicsPage/Rows/LightBands
+@onready var color_quantize_row: Control = $Menu/GraphicsPage/Rows/ColorQuantize
+@onready var back_row: Control = $Menu/GraphicsPage/Rows/Back
 
 
 # _static_init runs once, when this script is first loaded. It doesn't run
@@ -72,6 +77,7 @@ static func _static_init() -> void:
 func _ready() -> void:
 	visible = false
 	_apply_settings()
+	_show_page(main_page)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -82,9 +88,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		_refresh()
 		return
 
-	# Esc (the built-in "ui_cancel" action) opens and closes the menu.
+	# Esc (the built-in "ui_cancel" action) opens the menu, steps back from
+	# the graphics page to the first page, and closes the menu from there.
 	if event.is_action_pressed("ui_cancel"):
-		_set_open(not visible)
+		if visible and graphics_page.visible:
+			_show_page(main_page, graphics_row)
+		else:
+			_set_open(not visible)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -128,9 +138,21 @@ func _set_open(open: bool) -> void:
 	# around once the game carries on.
 	if open:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		_select(Row.RESUME)
+		_show_page(main_page)
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+## Switches to a page and puts the cursor on "start_row", or on the page's
+## top line if none is given.
+func _show_page(page: Control, start_row: Control = null) -> void:
+	main_page.visible = page == main_page
+	graphics_page.visible = page == graphics_page
+	# assign() copies the children across, checking that each one really is a
+	# Control (get_children() only promises plain Nodes).
+	rows.assign(page.get_node("Rows").get_children())
+	# find() gives -1 if the row isn't on this page; max() turns that into 0.
+	_select(maxi(rows.find(start_row), 0))
 
 
 ## Moves the cursor to a row. posmod wraps around, so going up from the top
@@ -140,33 +162,37 @@ func _select(row: int) -> void:
 	_refresh()
 
 
-## Enter or a click: presses RESUME or QUIT, or steps a setting down one
-## notch (and from OFF back round to full strength).
+## Enter or a click: presses a button line (RESUME, GRAPHICS, BACK, QUIT), or
+## steps a setting down one notch (and from OFF back round to full strength).
 func _activate() -> void:
-	match selected:
-		Row.RESUME:
-			_set_open(false)
-		Row.QUIT:
-			get_tree().quit()
-		_:
-			_change(-1, true)
+	var row := rows[selected]
+	if row == resume_row:
+		_set_open(false)
+	elif row == graphics_row:
+		_show_page(graphics_page)
+	elif row == back_row:
+		_show_page(main_page, graphics_row)
+	elif row == quit_row:
+		get_tree().quit()
+	else:
+		_change(-1, true)
 
 
 ## Turns the selected setting down (direction -1) or up (+1). On/off settings
 ## simply flip. "wrap" decides whether going past the end comes round to the
 ## other end or stops there.
 func _change(direction: int, wrap: bool) -> void:
-	match selected:
-		Row.RETRO_EFFECTS:
-			retro_effects = not retro_effects
-		Row.VERTEX_SNAP:
-			snap_strength = _step(snap_strength, direction, wrap)
-		Row.LIGHT_BANDS:
-			light_band_strength = _step(light_band_strength, direction, wrap)
-		Row.COLOR_QUANTIZE:
-			color_quantize = not color_quantize
-		_:
-			return  # RESUME and QUIT have nothing to turn up or down
+	var row := rows[selected]
+	if row == retro_effects_row:
+		retro_effects = not retro_effects
+	elif row == snap_row:
+		snap_strength = _step(snap_strength, direction, wrap)
+	elif row == light_bands_row:
+		light_band_strength = _step(light_band_strength, direction, wrap)
+	elif row == color_quantize_row:
+		color_quantize = not color_quantize
+	else:
+		return  # the button lines have nothing to turn up or down
 	_apply_settings()
 	_refresh()
 
@@ -199,24 +225,27 @@ func _apply_settings() -> void:
 
 ## Updates the words, colours and cursor to match the current settings.
 func _refresh() -> void:
-	retro_effects_value.text = _on_off_text(retro_effects)
-	snap_value.text = _strength_text(snap_strength)
-	light_bands_value.text = _strength_text(light_band_strength)
-	color_quantize_value.text = _on_off_text(color_quantize)
+	# A setting's value (ON, 50% ...) is a child node called Value.
+	retro_effects_row.get_node("Value").text = _on_off_text(retro_effects)
+	snap_row.get_node("Value").text = _strength_text(snap_strength)
+	light_bands_row.get_node("Value").text = _strength_text(light_band_strength)
+	color_quantize_row.get_node("Value").text = _on_off_text(color_quantize)
 
 	for i in rows.size():
+		var row := rows[i]
 		var row_color := normal_color
 		if i == selected:
 			row_color = selected_color
-		elif not retro_effects and i in [Row.VERTEX_SNAP, Row.LIGHT_BANDS, Row.COLOR_QUANTIZE]:
+		elif not retro_effects and row in [snap_row, light_bands_row, color_quantize_row]:
 			row_color = inactive_color
-		rows[i].color = row_color
-		# A row's value (ON, 50% ...) is a child node with its own colour.
-		if rows[i].has_node("Value"):
-			rows[i].get_node("Value").color = row_color
+		row.color = row_color
+		# The Value child has its own colour.
+		if row.has_node("Value"):
+			row.get_node("Value").color = row_color
 
 	# Put the cursor level with the selected row, just to the left of it.
-	cursor.position.y = row_list.position.y + rows[selected].position.y
+	# (Each page fills the menu, so only its Rows node is offset.)
+	cursor.position.y = rows[selected].get_parent().position.y + rows[selected].position.y
 
 
 ## Which row is under a point on the screen, or -1 if none is.

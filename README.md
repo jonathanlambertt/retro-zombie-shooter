@@ -27,7 +27,7 @@ Godot_v4.7-stable_win64_console.exe --path .
 | Right mouse button | Machine gun: fire a grenade. Shotgun: double shot |
 | 1 / 2 / 3 / 4 | Switch to pistol / machine gun / rocket launcher / shotgun |
 | Mouse wheel | Next / previous weapon |
-| Esc | Pause menu: turn the retro effects down or off, or quit. Esc again resumes |
+| Esc | Pause menu: resume, graphics settings (the retro effects), or quit. Esc again resumes |
 | F1 | Toggle the colour quantization post-process (also works while paused) |
 | F2 / F3 | Next / previous level |
 
@@ -72,8 +72,10 @@ levels/
   test_facility.tscn   Half-Life-style research facility: lobby, lab, storage, test chamber
   test_room.tscn       Small single room, handy for trying shader settings
   half-life-level.tscn Office complex full of zombies, with a slime pit
+  test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
   quake-level.tscn     Brick castle hall with a lava channel and an altar
 scripts/             One script per scene, plus:
+  level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
   pixel_text.gd        Tiny built-in 3x5 pixel font for the HUD and menu
   surface_mark.gd      Shared by bullet holes and blood stains
   placeholder_sound.gd Generates stand-in gunshot noise from code
@@ -117,14 +119,16 @@ The HUD is anchored to the corners, so it adapts to the new size.
 
 ### Turning the effects down (pause menu)
 
-Press **Esc** while playing to pause the game and open the menu:
+Press **Esc** while playing to pause the game and open the menu, which has
+three lines: **Resume**, **Graphics** and **Quit**. Graphics opens a second
+page (Back or Esc returns from it):
 
-| Line | What it does |
-| --- | --- |
-| Retro Effects | Master switch. `OFF` turns off every effect below (and affine warping) without forgetting their settings. |
-| Vertex Snap | How strong the vertex snapping is: the jittery "wobble" as you move. `100%`, `75%`, `50%`, `25%` or `OFF`. |
-| Light Bands | How strong the banded lighting is. Lower = more, subtler bands. `OFF` = smooth lighting. |
-| Color Quantize | The colour-reducing post-process (the same switch as F1). |
+| Line | Starts as | What it does |
+| --- | --- | --- |
+| Retro Effects | `ON` | Master switch. `OFF` turns off every effect below (and affine warping) without forgetting their settings. |
+| Vertex Snap | `25%` | How strong the vertex snapping is: the jittery "wobble" as you move. `100%`, `75%`, `50%`, `25%` or `OFF`. |
+| Light Bands | `OFF` | How strong the banded lighting is. Lower = more, subtler bands. `OFF` = smooth lighting. |
+| Color Quantize | `ON` | The colour-reducing post-process (the same switch as F1). |
 
 Up/down (or W/S) choose a line, left/right (or A/D) turn it down or up.
 Enter or a click steps it down, and from `OFF` back round to `100%`. The
@@ -287,12 +291,36 @@ The levels are listed on the `Main` node in `scenes/main.tscn`, under
 top to start there instead. A new level has to be added to this list before
 F2 will reach it.
 
+You can also open a level in the editor and press **F6** (Run Current Scene).
+A level on its own has no HUD, pause menu or low-res picture, so
+`scripts/level_launcher.gd` (an autoload, under **Project Settings > Globals >
+Autoload**) notices that a scene from `levels/` was started and restarts it
+inside `scenes/main.tscn`. This works for a level that isn't on the list yet
+too; it is added to the end of the list for that run.
+
 ### The Half-Life level
 
 `levels/half-life-level.tscn` is a security checkpoint, a long hallway with
 two offices, a loading bay full of crates, and a core room with a pit of
 toxic slime crossed by a catwalk. Its only enemies are zombies, sixteen of
 them. Standing in the slime hurts.
+
+### The test map
+
+`levels/test-map.tscn` (the second level, so one press of F2) is a bigger
+facility in the style of the Half-Life level, laid out for holding off waves
+of zombies. You start in a security checkpoint on the south side, which opens
+onto a tall 20 x 20 m hub with four pillars and some crates for cover. The
+hub has a wide doorway in each wall: the checkpoint to the south, a loading
+bay to the east, a core room with a slime pit to the west, and a long hallway
+with two offices to the north. A passage at each end of the hallway leads
+down into the bay and the core, so you can run a loop instead of being
+cornered.
+
+There is no wave spawner yet: the 27 zombies stand at fixed points under the
+level's `Enemies` node, named after the room they are in (`ZombieHub1`,
+`ZombieBay3`, ...). They only notice you within 14 m and with a clear line of
+sight, so they arrive in groups as you move through the level.
 
 ### The Quake level
 

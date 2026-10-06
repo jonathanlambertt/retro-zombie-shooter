@@ -27,9 +27,9 @@ size = Vector3(0.1, 0.1, 0.55)
 shading_mode = 0
 albedo_color = Color(0.9, 0.15, 0.1, 1)
 
-[sub_resource type="BoxMesh" id="BoxMesh_eyes"]
+[sub_resource type="BoxMesh" id="BoxMesh_eye"]
 material = SubResource("StandardMaterial3D_eyes")
-size = Vector3(0.2, 0.05, 0.04)
+size = Vector3(0.07, 0.05, 0.04)
 
 [node name="Zombie" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_script")
@@ -77,9 +77,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
 mesh = SubResource("BoxMesh_head")
 
-[node name="Eyes" type="MeshInstance3D" parent="Model/Upper/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, -0.145)
-mesh = SubResource("BoxMesh_eyes")
+[node name="EyeLeft" type="MeshInstance3D" parent="Model/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.17, -0.145)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Model/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.17, -0.145)
+mesh = SubResource("BoxMesh_eye")
 
 [node name="ArmLeft" type="Node3D" parent="Model/Upper"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.26, 0.56, 0)
