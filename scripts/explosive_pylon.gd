@@ -11,6 +11,10 @@ extends CharacterBody3D
 ## Pylons standing close together set each other off one after another.
 ## That isn't special code: the blast of one simply damages the next, which
 ## then lights its own fuse.
+##
+## Online, the host keeps track of its health (hits anywhere else are sent
+## there) and lights the fuse for everyone. Every computer shows the blast,
+## but only the host's deals the damage.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 const EXPLOSION_SCENE := preload("res://scenes/explosion.tscn")
@@ -88,6 +92,12 @@ func _physics_process(delta: float) -> void:
 ## spot that was hit and the direction pointing straight out of the surface
 ## there. A pylon throws a shower of sparks from the hit.
 func bleed(at: Vector3, spray_direction: Vector3, _drop_count := 12) -> void:
+	# rpc() runs _spark here and on every other computer.
+	_spark.rpc(at, spray_direction)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func _spark(at: Vector3, spray_direction: Vector3) -> void:
 	if lit:
 		return
 	sparks.global_position = at
@@ -100,15 +110,31 @@ func bleed(at: Vector3, spray_direction: Vector3, _drop_count := 12) -> void:
 	sparks.restart()  # start the one-shot burst again from the beginning
 
 
-## Called by weapons and explosions when they hit this pylon.
+## Called by weapons and explosions when they hit this pylon. The @rpc line
+## lets a hit on another computer be sent to the host (see
+## scripts/enemy.gd, which works the same way).
+@rpc("any_peer", "call_remote", "reliable")
 func take_damage(amount: int) -> void:
+	if not is_multiplayer_authority():
+		take_damage.rpc_id(get_multiplayer_authority(), amount)
+		return
 	if lit:
 		return
 	health -= amount
+	# The others need the health too: the lamp blinks faster as it drops.
+	_set_health.rpc(health)
 	if health <= 0:
-		_light_fuse()
+		# So that players who join later don't see it either.
+		Network.record_destroyed(self)
+		_light_fuse.rpc()
 
 
+@rpc("authority", "call_remote", "reliable")
+func _set_health(new_health: int) -> void:
+	health = new_health
+
+
+@rpc("authority", "call_local", "reliable")
 func _light_fuse() -> void:
 	lit = true
 	fuse_sound_player.play()
@@ -133,6 +159,8 @@ func _explode() -> void:
 	# the same way a rocket's is (see scripts/rocket.gd).
 	explosion.max_damage = blast_damage
 	explosion.radius = blast_radius
+	# Every computer shows the blast, but only the host's does damage.
+	explosion.deals_damage = is_multiplayer_authority()
 	get_parent().add_child(explosion)
 	explosion.global_position = centre
 	# Scaling the explosion node scales everything drawn under it, which

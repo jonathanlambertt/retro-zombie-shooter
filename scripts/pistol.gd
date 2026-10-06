@@ -7,6 +7,10 @@ extends Node3D
 ##
 ## This scene is a child of the player's camera, so the gun model stays in
 ## the corner of the view wherever you look.
+##
+## Online, the other players' games repeat each shot with replay_shot(),
+## which leaves the same bullet hole but does no damage (the damage was
+## already dealt by the game that fired).
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
@@ -61,17 +65,28 @@ func fire() -> void:
 	cooldown = fire_interval
 	ammo -= 1
 
-	_trace_shot()
-	_play_effects()
-
-
-## Traces the ray and damages whatever it hits.
-func _trace_shot() -> void:
-	var camera := get_viewport().get_camera_3d()
+	# The ray goes from the player's eyes straight out through the middle of
+	# the view. ("owner" is the player; its camera is the first-person one,
+	# whichever view is showing.) A camera looks along its negative Z axis.
+	var camera: Camera3D = owner.camera
 	var from := camera.global_position
-	# A camera looks along its own negative Z axis.
 	var to := from - camera.global_transform.basis.z * max_range
+	_trace_shot(from, to, true)
+	_play_effects()
+	# Let the other players see it too.
+	owner.share_shot(self, [from, to])
 
+
+## Repeats a shot fired on another computer (see the top of this script).
+## Returns the sound for the shooter's body to play.
+func replay_shot(shot: Array) -> AudioStream:
+	_trace_shot(shot[0], shot[1], false)
+	return shoot_sound
+
+
+## Traces the ray from "from" to "to", and damages whatever it hits if
+## "hurts" is true.
+func _trace_shot(from: Vector3, to: Vector3, hurts: bool) -> void:
 	var query := PhysicsRayQueryParameters3D.create(from, to)
 	# "owner" is the root of the scene this pistol was placed in: the player.
 	# Exclude it so we can never shoot ourselves.
@@ -82,13 +97,14 @@ func _trace_shot() -> void:
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return
-	# Things that bleed spray blood from the spot that was hit.
-	if hit.collider.has_method("bleed"):
-		hit.collider.bleed(hit.position, hit.normal)
-	# Anything with a take_damage() function can be hurt: enemies, crates
-	# and explosive pylons.
+	# Anything with a take_damage() function can be hurt: enemies, crates,
+	# explosive pylons and other players. Things that bleed spray blood from
+	# the spot that was hit first.
 	if hit.collider.has_method("take_damage"):
-		hit.collider.take_damage(damage)
+		if hurts:
+			if hit.collider.has_method("bleed"):
+				hit.collider.bleed(hit.position, hit.normal)
+			hit.collider.take_damage(damage)
 	else:
 		# Walls, floors and crates get a bullet hole. It is added to the
 		# level (the player's parent) so it stays put on the wall.

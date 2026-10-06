@@ -23,13 +23,20 @@ Godot_v4.7-stable_win64_console.exe --path .
 | W A S D | Move |
 | Mouse | Look |
 | Space | Jump |
+| Ctrl or C | Crouch (hold). Crouch in mid-air to pull your legs up and reach higher ledges |
 | Left mouse button | Shoot (hold for the machine gun) |
 | Right mouse button | Machine gun: fire a grenade. Shotgun: double shot |
 | 1 / 2 / 3 / 4 | Switch to pistol / machine gun / rocket launcher / shotgun |
 | Mouse wheel | Next / previous weapon |
-| Esc | Pause menu: resume, graphics settings (the retro effects), or quit. Esc again resumes |
+| Esc | Pause menu: resume, graphics settings (the retro effects), multiplayer, or quit. Esc again resumes |
 | F1 | Toggle the colour quantization post-process (also works while paused) |
-| F2 / F3 | Next / previous level |
+| F2 / F3 | Next / previous level (in multiplayer, only the host) |
+| F4 | Change view: first person, behind your player, in front looking at your face, and back |
+
+Crouching makes you shorter (1.2 m instead of 1.8 m) and slower. Let go and
+you stand up again as soon as there is room above you. Crouching in the air
+works like Half-Life's "crouch-jump": instead of lowering your view, it tucks
+your legs up, so a jump plus crouch gets you onto ledges a plain jump can't.
 
 When you are hurt you grunt and the screen flashes red. If your health
 reaches 0 the game restarts.
@@ -46,7 +53,8 @@ about 4 metres. It hurts you too, so shoot it from a distance.
 project.godot        Project settings (renderer, input map, import defaults)
 scenes/              Reusable scenes
   main.tscn            Entry point: low-res viewport + HUD + the level
-  player.tscn          First-person player (with the pistol attached)
+  player.tscn          First-person player (with the guns attached)
+  player_model.tscn    The player's body, as other players will see it
   pistol.tscn          Hitscan pistol viewmodel
   machine_gun.tscn     Automatic gun that fires bullet.tscn projectiles
   bullet.tscn          One yellow machine gun bullet
@@ -65,7 +73,7 @@ scenes/              Reusable scenes
   crawler.tscn         Small crawling enemy that leaps at your head
   zombie.tscn          Thin, limping enemy (shares scripts/enemy.gd)
   hud.tscn             Health / ammo / crosshair
-  pause_menu.tscn      Esc menu: pauses the game, retro effect settings, quit
+  pause_menu.tscn      Esc menu: pauses the game, retro effect settings, multiplayer, quit
 levels/
   test_level.tscn      The greybox level (CSG)
   backrooms.tscn       Backrooms maze: yellow wallpaper, carpet, ceiling lights
@@ -77,6 +85,7 @@ levels/
   quake-level.tscn     Brick castle hall with a lava channel and an altar
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
+  network.gd           Autoload: multiplayer (hosting, joining, sharing the game)
   pixel_text.gd        Tiny built-in 3x5 pixel font for the HUD and menu
   surface_mark.gd      Shared by bullet holes and blood stains
   placeholder_sound.gd Generates stand-in gunshot noise from code
@@ -121,8 +130,9 @@ The HUD is anchored to the corners, so it adapts to the new size.
 ### Turning the effects down (pause menu)
 
 Press **Esc** while playing to pause the game and open the menu, which has
-three lines: **Resume**, **Graphics** and **Quit**. Graphics opens a second
-page (Back or Esc returns from it):
+four lines: **Resume**, **Graphics**, **Multiplayer** (see "Multiplayer"
+below) and **Quit**. Graphics opens a second page (Back or Esc returns from
+it):
 
 | Line | Starts as | What it does |
 | --- | --- | --- |
@@ -160,6 +170,7 @@ material.
 | `texture_size_meters` | `2.0` | How many metres one copy of the texture covers. |
 | `uv_from_world` | `true` | Lay textures out by world position (walls) or by object (crates, props). |
 | `tint` | white | Multiplies the texture colour. |
+| `viewmodel` | `false` | Draws in front of everything else. Leave it off: the player script switches it on for the guns in your hands (see below). |
 
 ### Colour quantization (`shaders/color_quantize.gdshader`)
 
@@ -182,7 +193,8 @@ Double-click the file in Godot and edit it in the Inspector:
 The placeholder textures are plain PNG files in `assets/textures/`
 (`concrete`, `metal`, `tile`, `crate`, plus `wallpaper`, `carpet` and
 `ceiling_tile` for the Backrooms level, `lab_wall` and `hazard` for the
-facility level, and `pylon` for the explosive pylon). Overwrite them with your own pixel art
+facility level, `pylon` for the explosive pylon, and `armor` and `suit`
+for the player model). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -207,11 +219,31 @@ Select a node and use the Inspector; every value is an exported variable.
   the flash gets is **Damage Tint Strength** on the `HUD` node in
   `scenes/hud.tscn`.
 
+  Under **Crouch**: **Crouch Height** (the collision capsule's height while
+  crouched; standing it is 1.8), **Crouch Speed** and **Crouch Transition
+  Speed** (how fast the view sinks and rises).
+
   To add another weapon: make its scene, place it under `Head/Camera3D` in
   the player scene, add it to the `weapons` list in `scripts/player.gd`, and
   give it a `weapon_5` input action (Project > Project Settings > Input Map).
   The mouse wheel picks it up automatically. Its script needs a `get_hud_text()`
-  function, which returns the words shown in the bottom-right corner.
+  function, which returns the words shown in the bottom-right corner. If it
+  fires projectiles, start them at `owner.get_projectile_start(muzzle)` rather
+  than at the muzzle itself (see "The gun in your hands" below). For the
+  player model to hold it, also add a gun model to `scenes/player_model.tscn`
+  (see below).
+- **Player model** (`scenes/player_model.tscn`): **Armor Color** and **Visor
+  Color** (only show when the game runs; give each multiplayer player their
+  own), **Stride Length** (metres per stride: lower = quicker steps),
+  **Crouch Hip Height** and **Lamp Blink Interval** (the green lamp on the
+  backpack).
+
+  Each weapon has a gun model under `Hips/Upper/Aim/Guns`, named exactly like
+  the weapon's node in the player scene (`Pistol`, `MachineGun`...); the one
+  in hand is shown. Each has two `Marker3D` children, `GripRight` and
+  `GripLeft`, and the arms bend themselves so the hands land on them: move a
+  marker and the hand follows. A weapon with no gun model of its own leaves
+  the arms hanging empty.
 - **Pistol** (`scenes/pistol.tscn`): damage, range, fire interval, ammo, and
   **Shoot Sound** (drag in a `.wav`/`.ogg` to replace the placeholder noise).
 - **Machine gun** (`scenes/machine_gun.tscn`): damage per bullet, fire
@@ -275,7 +307,100 @@ Select a node and use the Inspector; every value is an exported variable.
 The enemies' animations (walking, attacking, flinching, dying...) are not made
 in Godot's animation editor. They are a few lines of maths in the `_animate`
 function of `scripts/enemy.gd` and `scripts/crawler.gd`, which is where to
-change how far or how fast a limb moves.
+change how far or how fast a limb moves. The player model is animated the same
+way, in `scripts/player_model.gd`.
+
+## The player model
+
+You never see your own body in first person (it would only get in the way of
+the view). Press **F4** for a camera behind you, and again for one in front
+of you looking back at your face; a third press returns to first person. In
+multiplayer this is the body the other players see. It is an armoured
+soldier in a hazard suit, built from boxes like the enemies, and it is
+animated from what the player is doing:
+
+- **Running**: the legs swing and the knees lift, and the body bobs and
+  leans into the run. The legs turn to face the way you are moving, so
+  strafing and running backwards look right while the gun stays on target.
+- **Jumping and landing**: one knee pulled up in the air, and the knees give
+  when you land.
+- **Crouching**: a low squat, with a waddle when you move.
+- **Aiming**: the head, arms and gun follow the mouse up and down, and the
+  gun in its hands is the one you are holding.
+- **Firing**: the gun kicks back and its muzzle flashes, and other players
+  hear the shot from where you stand.
+
+It has no collision of its own, so it never blocks your own shots, and the
+third-person cameras never show the first-person gun. Shots always come from
+your eyes, whichever view you are using; the crosshair is hidden in the
+front view.
+
+### The gun in your hands
+
+The gun in front of the first-person camera (the "viewmodel") sticks out
+further than the player's collision capsule, so it used to sink into walls
+you stood against. `scripts/player.gd` now gives every gun part under the
+camera a copy of its material with the shader's `viewmodel` setting on, which
+draws it in front of everything else (Quake did the same). It also puts them
+on render layer 2, which the third-person cameras don't show.
+
+For the same reason, a bullet, grenade or rocket fired from a barrel that is
+poking through a wall would have started on the far side of the wall. Now it
+starts just in front of the wall instead, and hits it.
+
+## Multiplayer
+
+Up to 8 players can play a level together, fighting the same zombies.
+
+**To host**: press Esc, choose **Multiplayer**, then **Host Game**. The level
+you are in starts again, shared. The HUD's top corner shows `HOST` and the
+number of players.
+
+**To join**: press Esc, choose **Multiplayer**, select the **Join** line and
+type the host's IP address (number keys and `.`; Backspace deletes), then
+press Enter. Your own level is put away and the host's arrives. **Leave Game**
+goes back to single player, as does the host quitting.
+
+The host's computer needs UDP port **7777** reachable. On the same home
+network that just works (use the host's local address, like
+`192.168.1.20`); over the internet the host has to forward that port on
+their router. To try it on one computer, start the game twice from a
+terminal:
+
+```
+Godot_v4.7-stable_win64_console.exe --path . -- --host
+Godot_v4.7-stable_win64_console.exe --path . -- --join=127.0.0.1
+```
+
+How it plays:
+
+- Each player gets their own armour colour: orange for the host, then
+  blue, green, red, yellow, purple, white and black.
+- The host chooses the level: F2 and F3 only work for the host, and change
+  it for everyone. Everyone starts where the level's `Player` node stands.
+- Dying respawns you at the start with full health; the game carries on.
+- Esc doesn't pause the game online (the others are still playing). It
+  only opens the menu and stops your player from moving.
+- Players can hurt each other: shots and explosions hit everyone, just as
+  your own rockets always hurt you.
+- Someone joining a game in progress sees it as it is: dead zombies stay
+  dead (with any limbs they lost), and broken crates and exploded pylons
+  are gone.
+
+How it works, in short (`scripts/network.gd` explains it in full):
+
+- The host's game runs the world. Enemies only think and move on the host,
+  and crates and pylons break and explode there. Everyone else is sent the
+  result: each enemy's `Sync` node (a `MultiplayerSynchronizer`) sends its
+  position, state, attacks and lost limbs, and the others animate to match.
+- Each player's own game moves their player and sends its position, aim,
+  crouch and weapon (the `Sync` node in `scenes/player.tscn`).
+- Whoever fires works out what the shot hit, and the damage is sent to
+  whoever looks after that thing: the host for enemies, crates and pylons,
+  the player's own computer for a player. Every other game repeats the shot
+  for show, so everyone sees the tracers, holes and explosions.
+- The level and the players are made on every computer by two
+  `MultiplayerSpawner`s, which also catch up anyone who joins late.
 
 ## Editing the level
 
@@ -379,6 +504,17 @@ out of one block. The glowing lamps, screens and the green sample under
 
 ## Known limitations
 
+- In the view behind you (F4), shots come from your eyes, 30 cm below the
+  camera's line, so at close range they land slightly below the crosshair.
+- Crouching doesn't hide you from enemies that are already looking your way.
+- Multiplayer has no smoothing for bad connections: other players move as
+  often as their updates arrive, so over the internet they can look jerky.
+  It also has no player names, chat or scoreboard.
+- Online, bullet holes, blood and gibs are drawn by each computer for itself,
+  so they can land in slightly different places, and someone who joins late
+  doesn't see the ones made before they arrived.
+- A level only works online if it is in Main's **Levels** list (a level
+  started with F6 that isn't on the list can't be shared).
 - Enemies head straight for the player and can get stuck on walls. They
   will also walk straight into lava or slime.
 - The pylon's warning lamp only glows; it doesn't light up its
@@ -413,5 +549,7 @@ out of one block. The glowing lamps, screens and the green sample under
 - **Look**: baked lightmaps (`LightmapGI`) for Quake-style static shadows, a
   sky texture, ordered dithering in the colour quantize shader, and a real
   pixel font and sprite-based weapon.
-- **Movement**: proper stair stepping, crouching, and holding jump to
-  bunny-hop.
+- **Movement**: proper stair stepping, and holding jump to bunny-hop.
+- **Multiplayer**: player names over heads, a scoreboard, chat, a lobby or
+  server browser instead of typing an address, smoothing (interpolation)
+  for other players' movement, and a switch to turn friendly fire off.

@@ -1,6 +1,10 @@
 extends CanvasLayer
-## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS and QUIT.
-## GRAPHICS opens a second page with switches for the retro effects.
+## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS, MULTIPLAYER
+## and QUIT. GRAPHICS opens a page with switches for the retro effects, and
+## MULTIPLAYER one for hosting or joining a game (see scripts/network.gd).
+##
+## Online, the menu can't freeze the game: the other players carry on. It
+## just frees the mouse, and the player ignores the keyboard while it is open.
 ##
 ## Pausing: setting get_tree().paused to true stops every node whose Process
 ## Mode is "Pausable": no _process, no physics, no input. This menu's mode is
@@ -22,7 +26,8 @@ extends CanvasLayer
 ##
 ## Keys: up/down (or W/S) choose a line, left/right (or A/D) turn a setting
 ## down or up, Enter presses it. With the mouse, point at a line and click.
-## Esc goes back from the graphics page, and resumes from the first page.
+## On the JOIN line, the number keys, "." and Backspace edit the address.
+## Esc goes back from the other pages, and resumes from the first page.
 
 ## The steps VERTEX SNAP and LIGHT BANDS go through. 1 = full strength
 ## (exactly as set in the shader and the materials), 0 = off.
@@ -42,6 +47,9 @@ static var retro_effects := true
 static var snap_strength := 0.25
 static var light_band_strength := 0.0
 static var color_quantize := true
+## The address the JOIN line connects to. Kept between games, like the
+## settings above.
+static var join_address := "127.0.0.1"
 
 ## The lines of the page that is showing, top to bottom.
 var rows: Array[Control] = []
@@ -51,9 +59,11 @@ var selected := 0
 @onready var cursor: Control = $Menu/Cursor
 @onready var main_page: Control = $Menu/MainPage
 @onready var graphics_page: Control = $Menu/GraphicsPage
+@onready var multiplayer_page: Control = $Menu/MultiplayerPage
 
 @onready var resume_row: Control = $Menu/MainPage/Rows/Resume
 @onready var graphics_row: Control = $Menu/MainPage/Rows/Graphics
+@onready var multiplayer_row: Control = $Menu/MainPage/Rows/Multiplayer
 @onready var quit_row: Control = $Menu/MainPage/Rows/Quit
 
 @onready var retro_effects_row: Control = $Menu/GraphicsPage/Rows/RetroEffects
@@ -61,6 +71,12 @@ var selected := 0
 @onready var light_bands_row: Control = $Menu/GraphicsPage/Rows/LightBands
 @onready var color_quantize_row: Control = $Menu/GraphicsPage/Rows/ColorQuantize
 @onready var back_row: Control = $Menu/GraphicsPage/Rows/Back
+
+@onready var host_row: Control = $Menu/MultiplayerPage/Rows/Host
+@onready var join_row: Control = $Menu/MultiplayerPage/Rows/Join
+@onready var leave_row: Control = $Menu/MultiplayerPage/Rows/Leave
+@onready var multiplayer_back_row: Control = $Menu/MultiplayerPage/Rows/Back
+@onready var status_text: Control = $Menu/MultiplayerPage/Status
 
 
 # _static_init runs once, when this script is first loaded. It doesn't run
@@ -93,6 +109,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if visible and graphics_page.visible:
 			_show_page(main_page, graphics_row)
+		elif visible and multiplayer_page.visible:
+			_show_page(main_page, multiplayer_row)
 		else:
 			_set_open(not visible)
 		get_viewport().set_input_as_handled()
@@ -100,6 +118,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# Everything below is only for while the menu is open.
 	if not visible:
+		return
+
+	if rows[selected] == join_row and _edit_address(event):
+		get_viewport().set_input_as_handled()
 		return
 
 	# The "true" lets a held key repeat, so holding down scrolls the cursor.
@@ -130,10 +152,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## Shows or hides the menu, freezing or unfreezing the game with it.
+## Shows or hides the menu, freezing or unfreezing the game with it (but
+## online the game can't be frozen: everyone else is still playing).
 func _set_open(open: bool) -> void:
 	visible = open
-	get_tree().paused = open
+	get_tree().paused = open and not Network.is_online()
 	# Free the mouse pointer to use the menu, and capture it again to look
 	# around once the game carries on.
 	if open:
@@ -148,6 +171,7 @@ func _set_open(open: bool) -> void:
 func _show_page(page: Control, start_row: Control = null) -> void:
 	main_page.visible = page == main_page
 	graphics_page.visible = page == graphics_page
+	multiplayer_page.visible = page == multiplayer_page
 	# assign() copies the children across, checking that each one really is a
 	# Control (get_children() only promises plain Nodes).
 	rows.assign(page.get_node("Rows").get_children())
@@ -172,6 +196,19 @@ func _activate() -> void:
 		_show_page(graphics_page)
 	elif row == back_row:
 		_show_page(main_page, graphics_row)
+	elif row == multiplayer_row:
+		_show_page(multiplayer_page)
+	elif row == multiplayer_back_row:
+		_show_page(main_page, multiplayer_row)
+	elif row == host_row and not Network.is_online():
+		_set_open(false)
+		Network.host()
+	elif row == join_row and not Network.is_online():
+		_set_open(false)
+		Network.join(join_address)
+	elif row == leave_row and Network.is_online():
+		_set_open(false)
+		Network.leave()
 	elif row == quit_row:
 		get_tree().quit()
 	else:
@@ -223,6 +260,31 @@ func _apply_settings() -> void:
 	RenderingServer.global_shader_parameter_set(&"retro_color_quantize", color_quantize)
 
 
+## Typing on the JOIN line: digits and "." add to the address, Backspace
+## takes the last character off. Returns true if the key was used.
+func _edit_address(event: InputEvent) -> bool:
+	if not (event is InputEventKey and event.pressed):
+		return false
+	if event.keycode == KEY_BACKSPACE:
+		join_address = join_address.left(-1)  # everything but the last one
+	elif event.unicode == 0:
+		return false  # unicode is the character a key types; 0 for keys like Enter
+	else:
+		var character := char(event.unicode)
+		if not (character.is_valid_int() or character == ".") or join_address.length() >= 21:
+			return false
+		join_address += character
+	_refresh()
+	return true
+
+
+# The multiplayer status can change while the menu is open (CONNECTING...),
+# so keep it up to date. This menu runs even while the game is paused.
+func _process(_delta: float) -> void:
+	if visible and multiplayer_page.visible:
+		status_text.text = Network.status
+
+
 ## Updates the words, colours and cursor to match the current settings.
 func _refresh() -> void:
 	# A setting's value (ON, 50% ...) is a child node called Value.
@@ -230,6 +292,13 @@ func _refresh() -> void:
 	snap_row.get_node("Value").text = _strength_text(snap_strength)
 	light_bands_row.get_node("Value").text = _strength_text(light_band_strength)
 	color_quantize_row.get_node("Value").text = _on_off_text(color_quantize)
+	join_row.get_node("Value").text = join_address
+	status_text.text = Network.status
+	# Hosting and joining only make sense in single player, leaving online.
+	var online := Network.is_online()
+	var unavailable: Array[Control] = [leave_row]
+	if online:
+		unavailable = [host_row, join_row]
 
 	for i in rows.size():
 		var row := rows[i]
@@ -237,6 +306,8 @@ func _refresh() -> void:
 		if i == selected:
 			row_color = selected_color
 		elif not retro_effects and row in [snap_row, light_bands_row, color_quantize_row]:
+			row_color = inactive_color
+		elif row in unavailable:
 			row_color = inactive_color
 		row.color = row_color
 		# The Value child has its own colour.

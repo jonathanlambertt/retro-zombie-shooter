@@ -5,10 +5,40 @@
 [ext_resource type="PackedScene" path="res://scenes/machine_gun.tscn" id="3_machine_gun"]
 [ext_resource type="PackedScene" path="res://scenes/rocket_launcher.tscn" id="4_rocket_launcher"]
 [ext_resource type="PackedScene" path="res://scenes/shotgun.tscn" id="5_shotgun"]
+[ext_resource type="PackedScene" path="res://scenes/player_model.tscn" id="6_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.4
 height = 1.8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_chase"]
+radius = 0.2
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_player"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:velocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath("Head:rotation")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:grounded")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:crouching")
+properties/5/spawn = true
+properties/5/replication_mode = 2
+properties/6/path = NodePath(".:crouch_amount")
+properties/6/spawn = true
+properties/6/replication_mode = 2
+properties/7/path = NodePath(".:weapon_index")
+properties/7/spawn = true
+properties/7/replication_mode = 2
 
 [node name="Player" type="CharacterBody3D" unique_id=1273569406 groups=["player"]]
 script = ExtResource("1_player")
@@ -17,11 +47,15 @@ script = ExtResource("1_player")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_body")
 
+[node name="Model" parent="." instance=ExtResource("6_model")]
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_player")
+
 [node name="Head" type="Node3D" parent="." unique_id=274639742]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Head" unique_id=341156438]
-current = true
 fov = 74.0
 far = 60.0
 
@@ -39,6 +73,24 @@ visible = false
 [node name="Shotgun" parent="Head/Camera3D" unique_id=1683390208 instance=ExtResource("5_shotgun")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.17, -0.16, -0.28)
 visible = false
+
+[node name="ChaseArm" type="SpringArm3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+shape = SubResource("SphereShape3D_chase")
+spring_length = 2.6
+
+[node name="ChaseCamera" type="Camera3D" parent="Head/ChaseArm"]
+fov = 74.0
+far = 60.0
+
+[node name="FrontArm" type="SpringArm3D" parent="Head"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+shape = SubResource("SphereShape3D_chase")
+spring_length = 2.0
+
+[node name="FrontCamera" type="Camera3D" parent="Head/FrontArm"]
+fov = 74.0
+far = 60.0
 
 [node name="HurtSound" type="AudioStreamPlayer" parent="." unique_id=1532284453]
 volume_db = -14.0

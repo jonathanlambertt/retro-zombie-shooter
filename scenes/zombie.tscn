@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_script"]
 [ext_resource type="Material" path="res://assets/materials/zombie.tres" id="2_body"]
@@ -30,6 +30,29 @@ albedo_color = Color(0.9, 0.15, 0.1, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_eye"]
 material = SubResource("StandardMaterial3D_eyes")
 size = Vector3(0.07, 0.05, 0.04)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:velocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:death_direction")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+properties/4/path = NodePath(".:state")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:attacks")
+properties/5/spawn = true
+properties/5/replication_mode = 2
+properties/6/path = NodePath(".:severed")
+properties/6/spawn = true
+properties/6/replication_mode = 2
 
 [node name="Zombie" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_script")
@@ -98,3 +121,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 0.56, 0)
 [node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmRight"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
 mesh = SubResource("BoxMesh_arm")
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="."]
+replication_interval = 0.05
+replication_config = SubResource("SceneReplicationConfig_sync")

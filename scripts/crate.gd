@@ -6,6 +6,9 @@ extends CharacterBody3D
 ##
 ## Weapons hurt it the same way they hurt enemies, by calling take_damage().
 ## Explosions find it through the "breakable" group (see scripts/explosion.gd).
+##
+## Online, the host keeps track of its health (hits anywhere else are sent
+## there) and tells everyone when it breaks.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 
@@ -57,15 +60,25 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
-## Called by weapons and explosions when they hit this crate.
+## Called by weapons and explosions when they hit this crate. The @rpc line
+## lets a hit on another computer be sent to the host (see
+## scripts/enemy.gd, which works the same way).
+@rpc("any_peer", "call_remote", "reliable")
 func take_damage(amount: int) -> void:
+	if not is_multiplayer_authority():
+		take_damage.rpc_id(get_multiplayer_authority(), amount)
+		return
 	if broken:
 		return
 	health -= amount
 	if health <= 0:
-		_break()
+		# So that players who join later don't see it either.
+		Network.record_destroyed(self)
+		# rpc() runs _break here and on every other computer.
+		_break.rpc()
 
 
+@rpc("authority", "call_local", "reliable")
 func _break() -> void:
 	broken = true
 	# Take it off every collision layer so shots and the player pass through

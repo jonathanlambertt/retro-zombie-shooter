@@ -42,6 +42,9 @@ func _init() -> void:
 	_save(_make_liquid(Color(0.08, 0.25, 0.04), Color(0.6, 1.0, 0.25)), "slime")
 	# The explosive pylon (scenes/explosive_pylon.tscn).
 	_save(_make_pylon(), "pylon")
+	# The player's armour and undersuit (scenes/player_model.tscn).
+	_save(_make_armor(), "armor")
+	_save(_make_suit(), "suit")
 	quit()
 
 
@@ -429,4 +432,65 @@ func _make_pylon() -> Image:
 			if color == paint and rng.randf() < 0.04:
 				color = steel.lerp(paint, 0.3)
 			image.set_pixel(x, y, _shade(color, brightness))
+	return image
+
+
+## Scuffed armour plating for the player model, painted a pale grey so the
+## material can tint it any colour (see armor_color in
+## scripts/player_model.gd). Two rows of plates with offset seams, a bolt in
+## each corner, and paint chipped away along the edges.
+func _make_armor() -> Image:
+	var image := _new_image()
+	var paint := Color(0.80, 0.78, 0.74)
+	var bare := Color(0.42, 0.42, 0.44)
+	var grime := _make_blotch_grid(4)
+
+	for y in SIZE:
+		for x in SIZE:
+			# The top row of plates is 36 pixels tall, the bottom one 28. The
+			# bottom row's seams are shifted along, like bricks.
+			var row_top := 0 if y < 36 else 36
+			var shift := 0 if y < 36 else 16
+			var plate_x := (x + shift) % 32
+			var plate_y := y - row_top
+			var plate_height := 36 if y < 36 else 28
+			# How close this pixel is to the nearest edge of its plate.
+			var edge := mini(mini(plate_x, 31 - plate_x), mini(plate_y, plate_height - 1 - plate_y))
+
+			var color := paint
+			# Paint wears off near the edges first.
+			if edge <= 3 and rng.randf() < 0.18 - edge * 0.04:
+				color = bare
+			var brightness := 0.8 + 0.25 * _blotch(grime, 4, x, y)
+			brightness += rng.randf_range(-0.04, 0.04)
+			if edge == 0:
+				brightness *= 0.35  # the dark seam between plates
+			elif edge == 1 and (plate_x == 1 or plate_y == 1):
+				brightness *= 1.2  # light catching the top and left bevel
+			elif edge == 1:
+				brightness *= 0.75  # shadow on the bottom and right bevel
+			elif (plate_x == 4 or plate_x == 27) and (plate_y == 4 or plate_y == plate_height - 5):
+				color = bare
+				brightness *= 1.3  # bolt head
+			image.set_pixel(x, y, _shade(color, brightness))
+	return image
+
+
+## The player's dark undersuit: thick rubberised fabric with ribs across it
+## every 4 pixels and a stitched seam down the middle.
+func _make_suit() -> Image:
+	var image := _new_image()
+	var fabric := Color(0.30, 0.31, 0.30)
+	var wear := _make_blotch_grid(4)
+	for y in SIZE:
+		for x in SIZE:
+			var brightness := 0.85 + 0.2 * _blotch(wear, 4, x, y)
+			brightness += rng.randf_range(-0.05, 0.05)
+			if y % 4 == 0:
+				brightness *= 0.7  # the groove between two ribs
+			elif y % 4 == 1:
+				brightness *= 1.1  # the top of a rib catching the light
+			if x == 31 and y % 3 != 0:
+				brightness *= 1.35  # stitches
+			image.set_pixel(x, y, _shade(fabric, brightness))
 	return image

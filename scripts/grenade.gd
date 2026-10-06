@@ -17,6 +17,9 @@ const EXPLOSION_SCENE := preload("res://scenes/explosion.tscn")
 var velocity := Vector3.ZERO
 ## Whoever fired the grenade, so it can't hit them on the way out.
 var shooter: CollisionObject3D
+## False for a copy of another player's shot, which explodes only for show:
+## the damage is dealt by the one in the game that fired it.
+var deals_damage := true
 
 
 ## Called by the gun right after the grenade is added to the level.
@@ -52,6 +55,7 @@ func _physics_process(delta: float) -> void:
 ## surface that was hit, and "collider" is the thing that was hit (or null).
 func _explode(at: Vector3, normal: Vector3, collider: Object) -> void:
 	var explosion := EXPLOSION_SCENE.instantiate()
+	explosion.deals_damage = deals_damage
 	get_parent().add_child(explosion)
 	# Start the blast a little way out from the wall, not inside it.
 	explosion.global_position = at + normal * 0.2

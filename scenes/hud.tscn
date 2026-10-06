@@ -59,3 +59,14 @@ offset_right = 1.0
 offset_bottom = 1.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
+
+[node name="NetworkText" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 316.0
+offset_bottom = 10.0
+mouse_filter = 2
+script = ExtResource("2_text")
+pixel_size = 1

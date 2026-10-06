@@ -14,6 +14,9 @@ var damage := 6
 var shooter: CollisionObject3D
 ## Seconds until the bullet removes itself if it hasn't hit anything.
 var lifetime := 2.0
+## False for a copy of another player's bullet, which is only for show: the
+## damage is dealt by the bullet in the game that fired it.
+var deals_damage := true
 
 
 ## Called by the gun right after the bullet is added to the level.
@@ -38,10 +41,11 @@ func _physics_process(delta: float) -> void:
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
 		# Things that bleed spray blood from the spot that was hit.
-		if hit.collider.has_method("bleed"):
-			hit.collider.bleed(hit.position, hit.normal)
 		if hit.collider.has_method("take_damage"):
-			hit.collider.take_damage(damage)
+			if deals_damage:
+				if hit.collider.has_method("bleed"):
+					hit.collider.bleed(hit.position, hit.normal)
+				hit.collider.take_damage(damage)
 		else:
 			# Walls, floors and crates get a bullet hole. (Enemies don't:
 			# they move, and the hole would be left hanging in the air.)

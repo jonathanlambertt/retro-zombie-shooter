@@ -15,7 +15,8 @@ extends Control
 ##      pause menu (scripts/pause_menu.gd) switch it on and off.
 ##
 ## It also loads the level, and swaps it for the next or previous one in its
-## Levels list when F2 or F3 is pressed.
+## Levels list when F2 or F3 is pressed. In multiplayer only the host does
+## that: scripts/network.gd shares the host's level with everyone else.
 
 ## The resolution the game is rendered at. THIS IS THE ONE PLACE TO CHANGE IT.
 ## Try Vector2i(640, 480) for a sharper, late-90s "high-res mode" look.
@@ -63,8 +64,9 @@ func _ready() -> void:
 	# whenever the window does (it is anchored to fill the whole window).
 	resized.connect(_fit_to_window)
 	_fit_to_window()
+	Network.register_main(self)
 	_use_direct_level()
-	_load_level()
+	load_level()
 
 
 ## Handles a level scene that was run on its own: makes sure it is in Levels
@@ -91,29 +93,50 @@ func _use_direct_level() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# In multiplayer the host picks the level for everyone.
+	if Network.is_client():
+		return
 	# F2 and F3 step forwards and backwards through the levels. posmod wraps
 	# around, so going past the last level comes back to the first.
 	if event.is_action_pressed("level_next"):
 		level_index = posmod(level_index + 1, levels.size())
-		_load_level()
+		load_level()
 	elif event.is_action_pressed("level_previous"):
 		level_index = posmod(level_index - 1, levels.size())
-		_load_level()
+		load_level()
 
 
 ## Removes the level being played (if any) and puts levels[level_index] in
-## its place.
-func _load_level() -> void:
+## its place. When hosting, everyone else gets the new level too.
+func load_level() -> void:
+	clear_level()
+	if Network.is_online():
+		if multiplayer.is_server():
+			# The network's level spawner makes the level on every computer
+			# and hands it back through adopt_level().
+			Network.spawn_level(level_index)
+		return
+	adopt_level(levels[level_index].instantiate())
+
+
+## Removes the level being played, and everything in it.
+func clear_level() -> void:
 	if is_instance_valid(level):
 		game_viewport.remove_child(level)
-		level.queue_free()  # removes the old level and everything in it
+		level.queue_free()
+	level = null
 
-	level = levels[level_index].instantiate()
+
+## Makes "new_level" the level being played, adding it to the viewport if it
+## isn't there yet. (The network's spawner adds the levels it makes itself.)
+func adopt_level(new_level: Node) -> void:
+	level = new_level
 	# The ViewportContainer is set to keep running while the game is paused
 	# (so the pause menu still gets the keyboard and mouse), and everything
 	# inside it copies that. Make the level freeze with the pause instead.
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
-	game_viewport.add_child(level)
+	if not level.is_inside_tree():
+		game_viewport.add_child(level)
 	# Keep the level first in the list, so the HUD is drawn on top of it.
 	game_viewport.move_child(level, 0)
 
