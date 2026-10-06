@@ -1,6 +1,7 @@
 extends CanvasLayer
 ## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS and QUIT.
-## GRAPHICS opens a second page with switches for the retro effects.
+## GRAPHICS opens a second page with switches for the retro effects and the
+## view bob.
 ##
 ## Pausing: setting get_tree().paused to true stops every node whose Process
 ## Mode is "Pausable": no _process, no physics, no input. This menu's mode is
@@ -42,6 +43,9 @@ static var retro_effects := true
 static var snap_strength := 0.25
 static var light_band_strength := 0.0
 static var color_quantize := true
+## Whether the camera bobs up and down as the player walks. This one isn't a
+## shader setting: scripts/player.gd reads it every frame.
+static var view_bob := true
 
 ## The lines of the page that is showing, top to bottom.
 var rows: Array[Control] = []
@@ -60,6 +64,7 @@ var selected := 0
 @onready var snap_row: Control = $Menu/GraphicsPage/Rows/VertexSnap
 @onready var light_bands_row: Control = $Menu/GraphicsPage/Rows/LightBands
 @onready var color_quantize_row: Control = $Menu/GraphicsPage/Rows/ColorQuantize
+@onready var view_bob_row: Control = $Menu/GraphicsPage/Rows/ViewBob
 @onready var back_row: Control = $Menu/GraphicsPage/Rows/Back
 
 
@@ -191,6 +196,8 @@ func _change(direction: int, wrap: bool) -> void:
 		light_band_strength = _step(light_band_strength, direction, wrap)
 	elif row == color_quantize_row:
 		color_quantize = not color_quantize
+	elif row == view_bob_row:
+		view_bob = not view_bob
 	else:
 		return  # the button lines have nothing to turn up or down
 	_apply_settings()
@@ -230,6 +237,7 @@ func _refresh() -> void:
 	snap_row.get_node("Value").text = _strength_text(snap_strength)
 	light_bands_row.get_node("Value").text = _strength_text(light_band_strength)
 	color_quantize_row.get_node("Value").text = _on_off_text(color_quantize)
+	view_bob_row.get_node("Value").text = _on_off_text(view_bob)
 
 	for i in rows.size():
 		var row := rows[i]

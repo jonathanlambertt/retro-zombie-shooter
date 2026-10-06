@@ -123,6 +123,7 @@ page (Back or Esc returns from it):
 | Vertex Snap | `25%` | How strong the vertex snapping is: the jittery "wobble" as you move. `100%`, `75%`, `50%`, `25%` or `OFF`. |
 | Light Bands | `OFF` | How strong the banded lighting is. Lower = more, subtler bands. `OFF` = smooth lighting. |
 | Color Quantize | `ON` | The colour-reducing post-process (the same switch as F1). |
+| View Bob | `ON` | The slight rise, fall and sway of the camera as you walk. Not one of the retro effects, so the master switch leaves it alone. |
 
 Up/down (or W/S) choose a line, left/right (or A/D) turn it down or up.
 Enter or a click steps it down, and from `OFF` back round to `100%`. The
@@ -132,7 +133,7 @@ settings are kept when you die, but not when you quit.
 `snap_resolution` and `light_bands` values below); `50%` makes the snapping
 jumps half as big, or the light bands twice as many.
 
-These four switches are **shader globals**: values shared by every shader
+The first four switches are **shader globals**: values shared by every shader
 in the project, found under **Project Settings > Globals > Shader Globals**
 as `retro_effects`, `retro_snap_strength`, `retro_light_band_strength` and
 `retro_color_quantize`. The game starts with the values set there. The editor
@@ -196,7 +197,9 @@ Select a node and use the Inspector; every value is an exported variable.
 
 - **Player** (`scenes/player.tscn`): speed, acceleration, friction, gravity,
   jump height, air control, mouse sensitivity, health, **Hurt Sound** (the
-  grunt) and **Hurt Fade Speed** (how fast the red flash clears). How red
+  grunt) and **Hurt Fade Speed** (how fast the red flash clears). Under
+  **View Bob**: **Height** and **Sway** (how far the camera moves, in
+  metres), **Steps Per Meter** and **Fade Speed**. How red
   the flash gets is **Damage Tint Strength** on the `HUD` node in
   `scenes/hud.tscn`.
 

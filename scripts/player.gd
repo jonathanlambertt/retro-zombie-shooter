@@ -18,6 +18,8 @@ extends CharacterBody3D
 ##     gives "air control" (and, as a side effect, strafe-jumping).
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
+## The pause menu's script, which keeps the VIEW BOB on/off setting.
+const PauseMenu := preload("res://scripts/pause_menu.gd")
 
 @export_group("Movement")
 ## Top running speed, in metres per second.
@@ -46,6 +48,17 @@ const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 ## Radians of turn per pixel of mouse movement.
 @export var mouse_sensitivity := 0.0025
 
+@export_group("View bob")
+## How far the camera rises and falls with each step, in metres. 0 = none.
+## (The pause menu's VIEW BOB setting switches the whole effect off.)
+@export var view_bob_height := 0.035
+## How far it sways from side to side, in metres.
+@export var view_bob_sway := 0.02
+## Steps per metre walked. Higher = quicker, shorter steps.
+@export var view_bob_steps_per_meter := 0.35
+## How quickly the bob fades in when you set off and out when you stop.
+@export var view_bob_fade_speed := 8.0
+
 @export_group("Health")
 @export var max_health := 100
 ## SOUND HOOK: drag a .wav or .ogg file here in the Inspector to use your own
@@ -58,6 +71,10 @@ var health := 0
 ## How strong the red "you are being hurt" tint is right now, from 0 (none)
 ## to 1 (full). It jumps to 1 on every hit and then fades. The HUD reads it.
 var hurt_flash := 0.0
+## How far through the walking cycle the view bob is, in steps.
+var bob_phase := 0.0
+## How strong the bob is right now, from 0 (standing still) to 1 (running).
+var bob_amount := 0.0
 
 @onready var head: Node3D = $Head
 ## Every weapon the player carries, in the order of the number keys.
@@ -124,6 +141,27 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	hurt_flash = maxf(hurt_flash - hurt_fade_speed * delta, 0.0)
+	_bob_view(delta)
+
+
+## Nudges the camera up, down and sideways in time with the player's steps.
+## The weapons are children of the camera, so they ride along with it.
+func _bob_view(delta: float) -> void:
+	var speed := Vector3(velocity.x, 0.0, velocity.z).length()
+	# Bob only while walking on the ground, and less when moving slowly.
+	var wanted := 0.0
+	if PauseMenu.view_bob and is_on_floor():
+		wanted = clampf(speed / max_speed, 0.0, 1.0)
+	# move_toward steps a number towards a target without overshooting it.
+	bob_amount = move_toward(bob_amount, wanted, view_bob_fade_speed * delta)
+
+	# Advance by distance covered rather than by time, so the steps keep
+	# pace with the feet. TAU is a full circle (2 x PI): one step.
+	bob_phase += speed * delta * view_bob_steps_per_meter
+	var angle := bob_phase * TAU
+	# Down and up once per step; left and right once per pair of steps.
+	camera.position.y = sin(angle) * view_bob_height * bob_amount
+	camera.position.x = sin(angle * 0.5) * view_bob_sway * bob_amount
 
 
 # _physics_process runs at a fixed rate (60 times a second by default),

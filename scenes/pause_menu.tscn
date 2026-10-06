@@ -122,7 +122,7 @@ anchors_preset = 0
 offset_left = 16.0
 offset_top = 48.0
 offset_right = 224.0
-offset_bottom = 128.0
+offset_bottom = 144.0
 mouse_filter = 2
 
 [node name="RetroEffects" type="Control" parent="Menu/GraphicsPage/Rows"]
@@ -208,11 +208,32 @@ script = ExtResource("2_text")
 text = "ON"
 align_right = true
 
-[node name="Back" type="Control" parent="Menu/GraphicsPage/Rows"]
+[node name="ViewBob" type="Control" parent="Menu/GraphicsPage/Rows"]
 anchors_preset = 0
 offset_top = 64.0
 offset_right = 208.0
 offset_bottom = 80.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "VIEW BOB"
+
+[node name="Value" type="Control" parent="Menu/GraphicsPage/Rows/ViewBob"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "ON"
+align_right = true
+
+[node name="Back" type="Control" parent="Menu/GraphicsPage/Rows"]
+anchors_preset = 0
+offset_top = 80.0
+offset_right = 208.0
+offset_bottom = 96.0
 mouse_filter = 2
 script = ExtResource("2_text")
 text = "BACK"
