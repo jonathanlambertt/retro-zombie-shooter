@@ -364,14 +364,39 @@ type the host's IP address (number keys and `.`; Backspace deletes), then
 press Enter. Your own level is put away and the host's arrives. **Leave Game**
 goes back to single player, as does the host quitting.
 
-The host's computer needs UDP port **7777** reachable. On the same home
-network that just works (use the host's local address, like
-`192.168.1.20`); over the internet the host has to forward that port on
-their router. To try it on one computer, start the game twice from a
-terminal:
+**Playing on the same home network** just works: join with the host's local
+address, like `192.168.1.20`.
+
+**Playing over the internet**: the host's router has to let UDP port **7777**
+through to the host's computer. Hosting asks the router to do that itself
+(UPnP), and the Multiplayer page's status line, and the HUD's top corner,
+say how it went:
+
+| Status | Meaning |
+| --- | --- |
+| `PORT OPEN - FRIENDS JOIN 203.0.113.45` | Done. Friends join that address (the host's public IP). |
+| `NO UPNP ROUTER - FORWARD UDP PORT 7777` | No router answered. UPnP is probably switched off in the router's settings: turn it on, or forward the port by hand. |
+| `ROUTER SAID NO - FORWARD UDP PORT 7777` | The router answered but refused. Forward the port by hand. |
+| `BEHIND ISP NAT - TRY TAILSCALE OR ZEROTIER` | Your internet provider shares one address between customers (carrier-grade NAT), so no forwarding on your router can help. |
+
+To forward the port by hand, open the router's settings page (often
+`192.168.1.1`), find "port forwarding", and send UDP port 7777 to the host
+computer's local address. Friends then join the host's public IP (shown by
+any "what is my IP" website).
+
+If neither works, a virtual network such as **Tailscale** or **ZeroTier**
+needs no ports at all: everyone installs it and joins the same network, and
+friends join the host's address on it (like `100.101.102.103`).
+
+The game closes the port again when you stop hosting or quit. (If it
+crashes, the router keeps forwarding the port to a game that isn't running,
+which is harmless; restarting the router clears it.)
+
+To try it on one computer, start the game twice from a terminal (`--no-upnp`
+leaves the router alone):
 
 ```
-Godot_v4.7-stable_win64_console.exe --path . -- --host
+Godot_v4.7-stable_win64_console.exe --path . -- --host --no-upnp
 Godot_v4.7-stable_win64_console.exe --path . -- --join=127.0.0.1
 ```
 
@@ -554,5 +579,6 @@ out of one block. The glowing lamps, screens and the green sample under
   pixel font and sprite-based weapon.
 - **Movement**: proper stair stepping, and holding jump to bunny-hop.
 - **Multiplayer**: player names over heads, a scoreboard, chat, a lobby or
-  server browser instead of typing an address, smoothing (interpolation)
+  server browser instead of typing an address (with a relay server, nobody
+  would need to open a port), smoothing (interpolation)
   for other players' movement, and a switch to turn friendly fire off.

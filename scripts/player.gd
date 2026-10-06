@@ -209,9 +209,14 @@ func _ready() -> void:
 ## level's collision is only built during its first frame, so wait a moment
 ## before looking.
 func _step_aside() -> void:
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	global_position = Network.find_spawn_position(self)
+	for i in 2:
+		# (Give up if the player has been removed meanwhile, for example by
+		# the host changing the level straight away.)
+		if not is_inside_tree():
+			return
+		await get_tree().physics_frame
+	if is_inside_tree():
+		global_position = Network.find_spawn_position(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:

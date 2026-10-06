@@ -9,8 +9,10 @@ extends Node
 ## How a game is shared, using Godot's "high-level multiplayer":
 ##   - One player HOSTS. Their game is the "server" and has peer ID 1. The
 ##     others JOIN it by its address and are given IDs of their own. The
-##     connection is ENet (UDP) on port 7777: on a home network that just
-##     works; over the internet the host has to forward that port.
+##     connection is ENet (UDP) on port 7777. On a home network that just
+##     works. For players on other networks, the host's router has to let
+##     that port through: hosting asks the router to do so itself, with UPnP
+##     (see "Opening the router's port" below).
 ##   - The host runs the world. Only the host's enemies think, chase and
 ##     bite; everyone else is sent where they are and what they are doing.
 ##     Crates break and pylons explode on the host, which tells the others.
@@ -33,6 +35,7 @@ extends Node
 ## To try it on one computer, start the game twice from a terminal:
 ##   Godot_v4.7-stable_win64_console.exe --path . -- --host
 ##   Godot_v4.7-stable_win64_console.exe --path . -- --join=127.0.0.1
+## (Add --no-upnp after --host to leave the router alone while testing.)
 
 const DEFAULT_PORT := 7777
 ## Most players in one game, the host included.
@@ -76,6 +79,23 @@ var destroyed := PackedStringArray()
 ## has arrived. It is applied as soon as the level is in place.
 var pending_destroyed := PackedStringArray()
 
+## If true, hosting asks the router to open the port (UPnP). The --no-upnp
+## command line option turns it off.
+var use_upnp := true
+## The router, once it has opened the port for us, so we can close it again.
+var router: UPNP
+## The port it opened.
+var router_port := 0
+## Asking the router takes a few seconds, so it happens on this separate
+## thread while the game carries on. null when not asking.
+var router_thread: Thread
+## What the thread found out. The main thread only reads it once the thread
+## has finished (see _finish_asking).
+var router_answer := {}
+## How hosting is going with the router, for the HUD: "OPENING PORT", the
+## address friends should join, or "PORT NOT OPEN".
+var router_note := ""
+
 
 func _ready() -> void:
 	# Keep working while single player is paused. (Online, nobody pauses.)
@@ -110,7 +130,10 @@ func _add_spawner(spawner_name: String, spawn_function: Callable) -> Multiplayer
 ## Handles "-- --host" and "-- --join=ADDRESS" on the command line. (Godot
 ## keeps everything after a lone "--" for the game itself.)
 func _read_command_line() -> void:
-	for argument in OS.get_cmdline_user_args():
+	var arguments := OS.get_cmdline_user_args()
+	if "--no-upnp" in arguments:
+		use_upnp = false
+	for argument in arguments:
 		if argument == "--host":
 			host()
 		elif argument.begins_with("--join="):
@@ -142,7 +165,7 @@ func hud_text() -> String:
 	var count := multiplayer.get_peers().size() + 1
 	var players := "1 PLAYER" if count == 1 else "%d PLAYERS" % count
 	if multiplayer.is_server():
-		return "HOST  " + players
+		return "HOST  %s  %s" % [players, router_note]
 	if multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
 		return "CONNECTING"
 	return "ONLINE  " + players
@@ -161,6 +184,8 @@ func host(port := DEFAULT_PORT) -> void:
 	multiplayer.multiplayer_peer = peer
 	join_order = [1]
 	status = "HOSTING ON PORT %d" % port
+	if use_upnp:
+		_open_router_port(port)
 	# Start the level again, this time as a shared one.
 	main.load_level()
 
@@ -190,12 +215,124 @@ func _on_connected() -> void:
 
 
 func _go_offline(message: String) -> void:
+	_close_router_port()
 	multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	status = message
 	join_order.clear()
 	# Back to a fresh single-player game. (main.gd remembers the level.)
 	get_tree().reload_current_scene()
+
+
+# The game quitting (or this autoload going away for any other reason).
+func _exit_tree() -> void:
+	_close_router_port()
+
+
+# --- Opening the router's port -----------------------------------------------
+#
+# A home router lets messages out to the internet, but drops messages coming
+# in unless it has been told which computer they are for ("port
+# forwarding"). UPnP (Universal Plug and Play) is a way for a program to ask
+# the router for that itself: find the router on the network, ask it to send
+# UDP port 7777 to this computer, and ask it for the address the internet
+# sees ("public IP"), which is the address friends type in to join.
+#
+# Some routers have UPnP switched off, and some internet providers put
+# several customers behind one shared address ("carrier-grade NAT"), where
+# no forwarding on your own router can help. Then the status says so.
+
+func _open_router_port(port: int) -> void:
+	status = "HOSTING - OPENING PORT %d ON THE ROUTER" % port
+	router_note = "OPENING PORT"
+	router_thread = Thread.new()
+	# start() runs the function on the new thread; bind() fills in its
+	# argument in advance.
+	router_thread.start(_ask_router.bind(port))
+
+
+## Runs on router_thread. It must not touch the game (no nodes, no status):
+## it leaves its answer in router_answer and has the main thread called.
+func _ask_router(port: int) -> void:
+	var new_router := UPNP.new()
+	var opened := false
+	var address := ""
+	# discover() listens for routers answering on the network, for up to two
+	# seconds. That wait is why this runs on its own thread.
+	if new_router.discover() == UPNP.UPNP_RESULT_SUCCESS:
+		var gateway := new_router.get_gateway()
+		if gateway and gateway.is_valid_gateway():
+			address = new_router.query_external_address()
+			var description: String = ProjectSettings.get_setting("application/config/name")
+			opened = new_router.add_port_mapping(port, port, description, "UDP") == UPNP.UPNP_RESULT_SUCCESS
+	router_answer = {router = new_router, opened = opened, address = address, port = port}
+	# call_deferred is safe from another thread: the call waits for the main
+	# thread to pick it up.
+	_router_answered.call_deferred()
+
+
+## Waits for router_thread to finish (if there is one) and returns its
+## answer, or an empty Dictionary if it has already been dealt with.
+func _finish_asking() -> Dictionary:
+	if router_thread:
+		# A thread has to be "joined" once it is done, even a finished one.
+		router_thread.wait_to_finish()
+		router_thread = null
+	var answer := router_answer
+	router_answer = {}
+	if answer.get("opened", false):
+		router = answer.router
+		router_port = answer.port
+	return answer
+
+
+## Back on the main thread with the router's answer.
+func _router_answered() -> void:
+	var answer := _finish_asking()
+	if answer.is_empty():
+		return  # _close_router_port() got there first
+	if not (is_online() and multiplayer.is_server()):
+		_close_router_port()  # we stopped hosting while the router was thinking
+		return
+
+	var address: String = answer.address
+	if answer.opened and not _is_private_address(address):
+		status = "PORT OPEN - FRIENDS JOIN " + address
+		router_note = "IP " + address
+	elif _is_private_address(address):
+		# The router's own internet address is a private one, so there is
+		# another router (the internet provider's) in front of it.
+		status = "BEHIND ISP NAT - TRY TAILSCALE OR ZEROTIER"
+		router_note = "PORT NOT OPEN"
+	elif address != "":
+		status = "ROUTER SAID NO - FORWARD UDP PORT %d" % answer.port
+		router_note = "PORT NOT OPEN"
+	else:
+		status = "NO UPNP ROUTER - FORWARD UDP PORT %d" % answer.port
+		router_note = "PORT NOT OPEN"
+
+
+## Asks the router to stop forwarding the port, if it was (waiting for it to
+## answer first, if it is still being asked).
+func _close_router_port() -> void:
+	_finish_asking()
+	if router:
+		router.delete_port_mapping(router_port, "UDP")
+		router = null
+	router_note = ""
+
+
+## True for addresses that only mean something inside a private network
+## (10.x.x.x, 172.16-31.x.x, 192.168.x.x, and 100.64-127.x.x, which internet
+## providers use for carrier-grade NAT).
+static func _is_private_address(address: String) -> bool:
+	var parts := address.split(".")
+	if parts.size() != 4:
+		return false
+	var first := parts[0].to_int()
+	var second := parts[1].to_int()
+	return (first == 10 or (first == 172 and second >= 16 and second <= 31)
+			or (first == 192 and second == 168) or (first == 100 and second >= 64 and second <= 127))
 
 
 # --- Players coming and going (on the host) ----------------------------------
