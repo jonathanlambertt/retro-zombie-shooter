@@ -31,6 +31,10 @@ const EXPLOSION_SCENE := preload("res://scenes/explosion.tscn")
 ## How far the blast reaches, in metres. Damage fades to nothing at this
 ## distance.
 @export var blast_radius := 5.0
+## Damage to walls and floors at the centre (see scripts/explosion.gd), and
+## how far that reaches. Set one off against a pillar to bring it down.
+@export var structure_damage := 320.0
+@export var structure_radius := 3.0
 ## How much bigger the fireball is than a grenade's.
 @export var fireball_size := 1.5
 ## How often the warning lamp blinks, in blinks per second. It blinks
@@ -159,6 +163,8 @@ func _explode() -> void:
 	# the same way a rocket's is (see scripts/rocket.gd).
 	explosion.max_damage = blast_damage
 	explosion.radius = blast_radius
+	explosion.structure_damage = structure_damage
+	explosion.structure_radius = structure_radius
 	# Every computer shows the blast, but only the host's does damage.
 	explosion.deals_damage = is_multiplayer_authority()
 	get_parent().add_child(explosion)

@@ -1,0 +1,58 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/debris.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dust"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_dust"]
+material = SubResource("StandardMaterial3D_dust")
+size = Vector2(0.3, 0.3)
+
+[sub_resource type="Gradient" id="Gradient_dust"]
+colors = PackedColorArray(0.35, 0.33, 0.3, 1, 0.62, 0.6, 0.56, 1)
+
+[node name="Debris" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Chunks" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 30
+lifetime = 1.1
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.4
+emission_shape = 3
+direction = Vector3(0, 1, 0)
+spread = 70.0
+gravity = Vector3(0, -20, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+scale_amount_min = 0.5
+scale_amount_max = 1.5
+
+[node name="Dust" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 30
+lifetime = 2.2
+one_shot = true
+explosiveness = 0.9
+lifetime_randomness = 0.5
+mesh = SubResource("QuadMesh_dust")
+emission_shape = 3
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -0.5, 0)
+initial_velocity_min = 0.5
+initial_velocity_max = 2.5
+damping_min = 1.0
+damping_max = 2.0
+scale_amount_min = 1.0
+scale_amount_max = 3.0
+color_initial_ramp = SubResource("Gradient_dust")
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="."]
+volume_db = -4.0

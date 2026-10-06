@@ -12,6 +12,11 @@ const EXPLOSION_SCENE := preload("res://scenes/explosion.tscn")
 @export var blast_damage := 90
 ## How far the blast reaches, in metres.
 @export var blast_radius := 4.5
+## Damage to walls and floors at the centre (see scripts/explosion.gd), and
+## how far that reaches. A rocket opens a hole about 2.4 m across in a
+## concrete wall.
+@export var structure_damage := 260.0
+@export var structure_radius := 2.25
 ## Seconds until it explodes in mid-air if it hasn't hit anything.
 @export var lifetime := 5.0
 
@@ -58,6 +63,8 @@ func _explode(at: Vector3, normal: Vector3, collider: Object) -> void:
 	# A rocket's blast is bigger than the explosion scene's usual settings.
 	explosion.max_damage = blast_damage
 	explosion.radius = blast_radius
+	explosion.structure_damage = structure_damage
+	explosion.structure_radius = structure_radius
 	get_parent().add_child(explosion)
 	# Start the blast a little way out from the wall, not inside it.
 	explosion.global_position = at + normal * 0.2

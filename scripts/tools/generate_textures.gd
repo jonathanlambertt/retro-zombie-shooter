@@ -45,6 +45,8 @@ func _init() -> void:
 	# The player's armour and undersuit (scenes/player_model.tscn).
 	_save(_make_armor(), "armor")
 	_save(_make_suit(), "suit")
+	# Rubble left by collapsing structures (scripts/structure.gd).
+	_save(_make_rubble(), "rubble")
 	quit()
 
 
@@ -493,4 +495,42 @@ func _make_suit() -> Image:
 			if x == 31 and y % 3 != 0:
 				brightness *= 1.35  # stitches
 			image.set_pixel(x, y, _shade(fabric, brightness))
+	return image
+
+
+## Broken concrete for rubble heaps: lumps of different shades with dark
+## cracks between them. Each pixel belongs to the nearest of a handful of
+## random points, which carves the image into irregular lumps; where two
+## points are almost equally near, the pixel is on a crack. Distances wrap
+## around the edges so the texture tiles.
+func _make_rubble() -> Image:
+	var image := _new_image()
+	var base := Color(0.40, 0.38, 0.35)
+	var centres: Array[Vector2] = []
+	var shades: Array[float] = []
+	for i in 18:
+		centres.append(Vector2(rng.randf() * SIZE, rng.randf() * SIZE))
+		shades.append(rng.randf_range(0.65, 1.15))
+	for y in SIZE:
+		for x in SIZE:
+			var nearest := INF
+			var second := INF
+			var lump := 0
+			for i in centres.size():
+				var offset := (Vector2(x, y) - centres[i]).abs()
+				# The shorter way round, so the edges join up.
+				offset = Vector2(minf(offset.x, SIZE - offset.x), minf(offset.y, SIZE - offset.y))
+				var distance := offset.length()
+				if distance < nearest:
+					second = nearest
+					nearest = distance
+					lump = i
+				elif distance < second:
+					second = distance
+			var brightness := shades[lump] + rng.randf_range(-0.08, 0.08)
+			if second - nearest < 1.5:
+				brightness *= 0.35  # crack between two lumps
+			elif nearest < 3.0:
+				brightness *= 1.1  # a lighter, chipped middle
+			image.set_pixel(x, y, _shade(base, brightness))
 	return image

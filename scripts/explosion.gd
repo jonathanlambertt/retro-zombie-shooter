@@ -16,6 +16,12 @@ const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
 ## How far the blast reaches, in metres. Damage fades to nothing at this
 ## distance.
 @export var radius := 3.5
+## Damage to the blocks of walls and floors (scripts/structure.gd) right at
+## the centre. Concrete blocks take 120 to break, lab walls 70.
+@export var structure_damage := 180.0
+## How far the damage to walls and floors reaches, in metres. Smaller than
+## "radius": a blast hurts people further away than it breaks concrete.
+@export var structure_radius := 1.75
 ## SOUND HOOK: drag a .wav or .ogg file here in the Inspector to use your own
 ## explosion. If left empty, a burst of noise is generated as a stand-in.
 @export var explosion_sound: AudioStream
@@ -61,6 +67,11 @@ func detonate() -> void:
 ## radius. The closer they are, the more it hurts. Yes, that includes
 ## whoever fired it!
 func _damage_everything_nearby() -> void:
+	# Walls, floors, ceilings and pillars. (Only the blocks near the blast
+	# are looked at, see blast() in scripts/structure.gd.)
+	for structure in get_tree().get_nodes_in_group("structure"):
+		structure.blast(global_position, structure_radius, structure_damage)
+
 	var targets := get_tree().get_nodes_in_group("enemy")
 	targets.append_array(get_tree().get_nodes_in_group("player"))
 	targets.append_array(get_tree().get_nodes_in_group("breakable"))

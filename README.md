@@ -2,7 +2,10 @@
 
 A small retro first-person shooter made with **Godot 4.7** and GDScript,
 aiming for the look of Quake and the early Half-Life alpha: chunky low-res
-pixels, blocky levels, muddy textures, banded lighting and dark fog.
+pixels, blocky levels, muddy textures, banded lighting and dark fog. Levels
+are built from half-metre blocks, and explosions tear them apart: blast
+holes in walls and floors, knock out pillars and watch what they held up
+come down.
 
 ## How to run
 
@@ -63,6 +66,7 @@ scenes/              Reusable scenes
   rocket_launcher.tscn Slow, powerful launcher that fires rocket.tscn
   rocket.tscn          One rocket, with its smoke trail
   explosion.tscn       The blast a grenade makes when it lands
+  debris.tscn          Chunks and dust thrown out when blocks are destroyed
   crate.tscn           Wooden crate that can be shot to pieces
   explosive_pylon.tscn Red canister that explodes when shot
   blood_splash.tscn    Spray of square blood drops when an enemy is hit
@@ -75,31 +79,28 @@ scenes/              Reusable scenes
   hud.tscn             Health / ammo / crosshair
   pause_menu.tscn      Esc menu: pauses the game, retro effect settings, multiplayer, quit
 levels/
-  test_level.tscn      The greybox level (CSG)
-  backrooms.tscn       Backrooms maze: yellow wallpaper, carpet, ceiling lights
-  test_facility.tscn   Half-Life-style research facility: lobby, lab, storage, test chamber
-  test_room.tscn       Small single room, handy for trying shader settings
-  half-life-level.tscn Office complex full of zombies, with a slime pit
-  test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
-  test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
-  quake-level.tscn     Brick castle hall with a lava channel and an altar
+  test_room.tscn       Two-storey test building for destruction, weapons and enemies
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
   network.gd           Autoload: multiplayer (hosting, joining, sharing the game)
+  structure.gd         The destructible part of a level (on its Structure GridMap)
+  blocks.gd            The list of block types: name, material, toughness, span
   pixel_text.gd        Tiny built-in 3x5 pixel font for the HUD and menu
   surface_mark.gd      Shared by bullet holes and blood stains
   placeholder_sound.gd Generates stand-in gunshot noise from code
   damage_zone.gd       Area that hurts whatever stands in it (lava, slime)
   tools/generate_textures.gd   Generates the placeholder textures
+  tools/generate_blocks.gd     Builds assets/blocks.tres from scripts/blocks.gd
+  tools/build_test_room.gd     Builds levels/test_room.tscn
 shaders/
   retro_surface.gdshader    Every 3D surface: snapping, banded light, UVs
   color_quantize.gdshader   Post-process: limits the number of colours
 assets/
   textures/            64x64 PNG textures
   materials/           One material per texture, all using the retro shader
+  blocks.tres          The block palette levels are painted with (a MeshLibrary)
   retro_environment.tres    Fog, ambient light and background colour
-  backrooms_environment.tres   The same, tuned yellow for the Backrooms level
-  quake_environment.tres       The same, dark and brown for the Quake level
+  backrooms_environment.tres, quake_environment.tres   Left from the old levels
 ```
 
 ## How the low-res look works
@@ -191,10 +192,10 @@ Double-click the file in Godot and edit it in the Inspector:
 ## Using your own textures
 
 The placeholder textures are plain PNG files in `assets/textures/`
-(`concrete`, `metal`, `tile`, `crate`, plus `wallpaper`, `carpet` and
-`ceiling_tile` for the Backrooms level, `lab_wall` and `hazard` for the
-facility level, `pylon` for the explosive pylon, and `armor` and `suit`
-for the player model). Overwrite them with your own pixel art
+(`concrete`, `metal`, `tile`, `crate`, `ceiling_tile`, `lab_wall`,
+`hazard` and `rubble` for the blocks, `pylon` for the explosive pylon, and
+`armor` and `suit` for the player model; `wallpaper`, `carpet`, `brick`,
+`lava` and `slime` belonged to the old levels and are unused for now). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -260,19 +261,24 @@ Select a node and use the Inspector; every value is an exported variable.
   pistol shots), fuse time (the hiss before the bang, which is also the
   delay between pylons in a chain reaction), blast damage (100), blast
   radius (5 m), fireball size, how fast the lamp blinks (it speeds up as
-  the pylon is damaged) and **Fuse Sound**. Its `Sparks` node is the shower
+  the pylon is damaged), **Structure Damage** and **Structure Radius** (320
+  and 3 m: enough to cut through a pillar) and **Fuse Sound**. Its `Sparks` node is the shower
   from a bullet hit and `Debris` is the scrap metal. To add one to a level,
   drag `scenes/explosive_pylon.tscn` under the level's `Props` node. Two
   pylons closer than about 4 m set each other off; further apart, the blast
   is too weak at that distance.
-- **Lava and slime** (the `Hazards` node in a level): damage per bite and
-  seconds between bites.
+- **Lava and slime** (`scripts/damage_zone.gd` on an `Area3D`): damage per
+  bite and seconds between bites. (No level uses them at the moment.)
 - **Rocket launcher** (`scenes/rocket_launcher.tscn`): time between rockets,
   rocket speed and **Shoot Sound**. **Rocket** (`scenes/rocket.tscn`): blast
-  damage, blast radius and fuse time; its `Trail` node is the smoke.
+  damage, blast radius, **Structure Damage** and **Structure Radius** (how
+  hard and how far it smashes walls; see "Destruction" below) and fuse
+  time; its `Trail` node is the smoke.
 - **Grenade** (`scenes/grenade.tscn`): gravity and fuse time.
-  **Explosion** (`scenes/explosion.tscn`): damage, blast radius and
-  **Explosion Sound**. A blast hurts you too if you stand too close. Its
+  **Explosion** (`scenes/explosion.tscn`): damage, blast radius,
+  **Structure Damage** and **Structure Radius** (a grenade's: 180 and
+  1.75 m) and **Explosion Sound**. A blast hurts you too if you stand too
+  close. Its
   `Smoke` node is the cloud of grey and black specks: change **Amount**,
   **Lifetime**, the velocities or the colours under **Color Initial Ramp**.
 - **Blood** (`scenes/blood_splash.tscn`): how fast, how far and how long the
@@ -427,13 +433,74 @@ How it works, in short (`scripts/network.gd` explains it in full):
 - The level and the players are made on every computer by two
   `MultiplayerSpawner`s, which also catch up anyone who joins late.
 
-## Editing the level
+## Destruction
 
-`levels/test_level.tscn` is carved out of one solid block. Under the `World`
-node, the `Carve...` boxes are set to **Subtraction** and cut rooms out of
-`Solid`; floors, the ledge and the steps are then added back. Children are
-applied top to bottom, so keep carves above the pieces added afterwards.
-Crates live under `Props` and enemies under `Enemies`.
+Rockets, grenades and exploding pylons smash the blocks levels are built
+from. Bullets and pellets only leave holes in the surface.
+
+- **Blasts**: each explosion damages the blocks around it, hardest at the
+  centre and fading to nothing at its **Structure Radius**. A block with
+  other blocks between it and the blast gets much less, so a blast on one
+  side of a wall barely touches the other side, but it does punch through
+  whatever it destroys. Damage adds up: a wall that survives one rocket
+  breaks under the next. A rocket opens a hole about 2.4 m across in
+  concrete.
+- **Collapse**: blocks need holding up. A block resting on another is held
+  by it, and a block can hold up its neighbours sideways (or one hanging
+  underneath it) for a limited distance: its type's **span**, 6 m for
+  concrete and 12 m for metal. So a floor between walls stays up, a wide hall
+  needs its pillars, and a hole in a wall doesn't bring down the wall above
+  it. Whatever is no longer held up falls as one piece, smashes, hurts
+  anyone underneath, and leaves a heap of rubble, which can itself be blasted
+  away.
+- **The shell**: every level has an indestructible outer layer (the
+  `Shell` GridMap): its foundation and outer walls. Outer walls are two
+  blocks thick, shell outside and ordinary blocks inside, so explosions leave
+  craters in them but nobody can blast their way out.
+
+The block types, how tough each one is (**health**: the blast damage it
+takes to break) and how far it reaches (**span**, in blocks) are listed in
+`scripts/blocks.gd`. On the level's `Structure` node: **Rubble Left** (how
+much of a fallen piece stays as rubble), **Crush Damage** (to anything a
+falling piece lands on) and **Gravity** (how fast pieces fall).
+
+Online, the host decides what breaks and what falls, and sends the result to
+everyone, so every game has exactly the same building, and players who join
+later get it as it is. Only the chunks and dust are drawn by each computer
+for itself.
+
+## Building levels
+
+A level is painted from half-metre blocks with Godot's **GridMap** tool,
+using the palette in `assets/blocks.tres`. Each level has two GridMaps:
+
+- `Shell` (a plain GridMap): what can never be destroyed. The foundation
+  under the floors and the outer skin of the outer walls (and a lid on top,
+  unless the roof is meant to be blasted open to the sky).
+- `Structure` (with `scripts/structure.gd`, its **Shell** set to the Shell
+  node): everything else. Floors, walls, ceilings, pillars, stairs.
+
+Select one, pick a block in the palette at the bottom of the editor, and
+paint. Both use cells of 0.5 m. Things to keep in mind:
+
+- A level that has blocks nothing holds up prints a warning when it starts
+  (in the Output panel), saying where. Those blocks stay put but hold
+  nothing up. Put a wall or a pillar under them, or use metal (which
+  reaches twice as far) for wide floors.
+- Doors need to be at least 2 blocks wide and 4 tall (1 x 2 m).
+- The player can't yet step up a block, so stairs need an invisible ramp
+  over them (see `StairRamp` in the test room).
+- A lamp can only light 8 "objects", and a GridMap draws in chunks of
+  8 x 8 x 8 cells, so several lamps in a level are fine.
+- To add a block type: add it to the end of `scripts/blocks.gd` and run
+  `scripts/tools/generate_blocks.gd`:
+
+  ```
+  Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/tools/generate_blocks.gd
+  ```
+
+Props go under `Props`, enemies under `Enemies`, and the level's `Player`
+node marks where players start.
 
 ## Choosing which level to play
 
@@ -441,10 +508,9 @@ Press **F2** in the game for the next level and **F3** for the previous one.
 If you die, you restart in the level you were playing.
 
 The levels are listed on the `Main` node in `scenes/main.tscn`, under
-**Levels** in the Inspector. The game starts in the first one on the list
-(currently `levels/half-life-level.tscn`), so drag a different level to the
-top to start there instead. A new level has to be added to this list before
-F2 will reach it.
+**Levels** in the Inspector. The game starts in the first one on the list.
+Right now there is only the test room; the campaign levels are still to
+come. A new level has to be added to this list before F2 will reach it.
 
 You can also open a level in the editor and press **F6** (Run Current Scene).
 A level on its own has no HUD, pause menu or low-res picture, so
@@ -453,79 +519,21 @@ Autoload**) notices that a scene from `levels/` was started and restarts it
 inside `scenes/main.tscn`. This works for a level that isn't on the list yet
 too; it is added to the end of the list for that run.
 
-### The Half-Life level
+### The test room
 
-`levels/half-life-level.tscn` is a security checkpoint, a long hallway with
-two offices, a loading bay full of crates, and a core room with a pit of
-toxic slime crossed by a catwalk. Its only enemies are zombies, sixteen of
-them. Standing in the slime hurts.
+`levels/test_room.tscn` is a two-storey building, 24 x 16 m. The ground
+floor is a hall with six pillars holding up the upper floor, with stairs
+behind a lab wall at the east end. Upstairs there are pillars too, and a
+partition wall. There is a pylon beside each of the two middle pillars: set
+them off and the middle of the upper floor comes down. Five zombies wait on
+the two floors.
 
-### The test map
+It is built by `scripts/tools/build_test_room.gd` rather than painted by
+hand. Running that again rebuilds it, losing any changes made in the editor:
 
-`levels/test-map.tscn` (the second level, so one press of F2) is a bigger
-facility in the style of the Half-Life level, laid out for holding off waves
-of zombies. You start in a security checkpoint on the south side, which opens
-onto a tall 20 x 20 m hub with four pillars and some crates for cover. The
-hub has a wide doorway in each wall: the checkpoint to the south, a loading
-bay to the east, a core room with a slime pit to the west, and a long hallway
-with two offices to the north. A passage at each end of the hallway leads
-down into the bay and the core, so you can run a loop instead of being
-cornered.
-
-There is no wave spawner yet: the 27 zombies stand at fixed points under the
-level's `Enemies` node, named after the room they are in (`ZombieHub1`,
-`ZombieBay3`, ...). They only notice you within 14 m and with a clear line of
-sight, so they arrive in groups as you move through the level.
-
-### Test map 2
-
-`levels/test-map-2.tscn` (the third level, so two presses of F2) is larger
-than the test map and mixes open rooms with tight ones. You start in a small
-checkpoint that opens onto a tall 24 x 24 m atrium. From there:
-
-- **Upstairs**: stairs along the atrium's east wall climb 4 m to an L-shaped
-  balcony round the north and west sides. A narrow corridor leads off it to a
-  control room above the lab. There are no railings, so you (and the zombies)
-  can drop off the balcony.
-- **Open**: a door in the east wall leads to a 22 x 36 m warehouse with
-  shipping containers, pillars and crates.
-- **Tight**: two openings under the west balcony lead into maintenance
-  tunnels 1.6 m wide with a 2.4 m ceiling. They pass a small pump room with a
-  slime pit and come out in the lab north of the atrium. Another narrow
-  passage joins the lab to the warehouse, so every area is on a loop.
-
-Forty zombies stand at fixed points, named after their room as in the test
-map. Like the stairs in `test_level.tscn`, these are steps with an invisible
-`StairRamp` slope over them.
-
-### The Quake level
-
-`levels/quake-level.tscn` is a brick start room and corridor leading to a
-tall hall. A channel of lava cuts the hall in two, with one stone bridge
-across; fall in and it burns until you jump out. Beyond it is an altar on
-two steps (jump up them), and there is a crypt and an alcove off the sides.
-All three kinds of enemy live here.
-
-### The Backrooms level
-
-`levels/backrooms.tscn` is one 40 x 40 m room cut out of a solid block, with
-the `Wall...` boxes under `World` added back to make the maze. Move, resize,
-duplicate or delete them freely. The wall colour comes from
-`assets/textures/wallpaper.png`.
-
-The glowing panels under `LightPanels` are only pictures of lights. The real
-light comes from the bright ambient colour in
-`assets/backrooms_environment.tres`, a faint `FaceShading` light that makes
-walls facing different ways slightly different shades, and six `PanelLight`
-lamps. Keep it to six: this renderer lets at most 8 lamps shine on one
-object, and the whole maze is one object.
-
-### The facility test level
-
-`levels/test_facility.tscn` is built the same way as `test_level.tscn`: a
-lobby, a corridor, a lab, a storage room and a tall test chamber are carved
-out of one block. The glowing lamps, screens and the green sample under
-`Details` are only for show; the six lamps under `Lights` do the lighting.
+```
+Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/tools/build_test_room.gd
+```
 
 ## Known limitations
 
@@ -548,8 +556,15 @@ out of one block. The glowing lamps, screens and the green sample under
 - Shots leave no bullet holes on crates, since the crate may not be there
   for long.
 - Lights cast no shadows, so a light with a large range shines through walls.
-- The player cannot step up ledges; the stairs use an invisible ramp
-  (`StairRamp` in the level).
+- The player and the enemies can't step up a block, so a heap of rubble
+  has to be jumped onto (and stops enemies), and stairs need an invisible
+  ramp (`StairRamp` in the test room) that doesn't break with them.
+- Destruction is simple physics: falling pieces drop straight down without
+  tipping, and nothing is heavy: a pillar holds up any amount of floor
+  within reach. Pieces that fall at the same moment as another blast can
+  land a little oddly.
+- Props, lamps and enemies standing on a block that is destroyed simply
+  drop; lamps don't fall or break yet.
 - Bullet holes, scorch marks and blood stains are flat squares, not true
   decals (Godot's `Decal` node needs the Forward+ or Mobile renderer), so
   they can't wrap around a corner. One that would hang over an edge is not
@@ -561,8 +576,8 @@ out of one block. The glowing lamps, screens and the green sample under
 
 - **More weapons**: a shotgun (several rays with spread), ammo pickups,
   and weapons you find in the level instead of starting with.
-- **Level tools**: build levels in TrenchBroom and import the `.map` files
-  with an addon such as func_godot, instead of CSG.
+- **Campaign**: the story levels (escape the facility, then go back down
+  and destroy it), exits that need every player, objectives on the HUD.
 - **Audio**: real gunshot, footstep and enemy sounds; `AudioStreamPlayer3D`
   for positional sound; ambient loops per room.
 - **Enemy AI**: pathfinding with `NavigationRegion3D` / `NavigationAgent3D`,
@@ -574,7 +589,8 @@ out of one block. The glowing lamps, screens and the green sample under
 - **Look**: baked lightmaps (`LightmapGI`) for Quake-style static shadows, a
   sky texture, ordered dithering in the colour quantize shader, and a real
   pixel font and sprite-based weapon.
-- **Movement**: proper stair stepping, and holding jump to bunny-hop.
+- **Movement**: stepping up a block (for stairs and rubble, players and
+  enemies), and holding jump to bunny-hop.
 - **Multiplayer**: player names over heads, a scoreboard, chat, a lobby or
   server browser instead of typing an address (with a relay server, nobody
   would need to open a port), smoothing (interpolation)
