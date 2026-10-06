@@ -73,6 +73,7 @@ levels/
   test_room.tscn       Small single room, handy for trying shader settings
   half-life-level.tscn Office complex full of zombies, with a slime pit
   test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
+  test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
   quake-level.tscn     Brick castle hall with a lava channel and an altar
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
@@ -260,9 +261,13 @@ Select a node and use the Inspector; every value is an exported variable.
   (how far it stoops). Turn those up on the ordinary enemy and it limps too.
   Under **Dismemberment**: **Loses Limbs** (on for the zombie), **Limb
   Health** (damage a limb takes before it comes off; 12 is two pistol
-  shots) and **Crawl Speed Factor**. Shooting off the head kills it, each
-  lost arm halves its attack, and losing a leg makes it crawl. Grenades and
-  rockets take off a random limb.
+  shots), **Head Loss Chance**, **Leg Loss Chance** and **Arm Loss Chance**
+  (how often a limb that has taken that much damage really comes off: 35%,
+  60% and 75%) and **Crawl Speed Factor**. Shooting off the head kills it,
+  each lost arm halves its attack, and losing a leg makes it crawl. A limb
+  that holds on can't be shot off afterwards, so a zombie that keeps its
+  head has to be killed the ordinary way. Grenades and rockets take off a
+  random limb.
 - **Crawler** (`scenes/crawler.tscn`): health, crawl speed, sight range, leap
   range, leap speed, leap damage, time between leaps, crouch time (the
   wind-up before a leap) and step speed.
@@ -321,6 +326,27 @@ There is no wave spawner yet: the 27 zombies stand at fixed points under the
 level's `Enemies` node, named after the room they are in (`ZombieHub1`,
 `ZombieBay3`, ...). They only notice you within 14 m and with a clear line of
 sight, so they arrive in groups as you move through the level.
+
+### Test map 2
+
+`levels/test-map-2.tscn` (the third level, so two presses of F2) is larger
+than the test map and mixes open rooms with tight ones. You start in a small
+checkpoint that opens onto a tall 24 x 24 m atrium. From there:
+
+- **Upstairs**: stairs along the atrium's east wall climb 4 m to an L-shaped
+  balcony round the north and west sides. A narrow corridor leads off it to a
+  control room above the lab. There are no railings, so you (and the zombies)
+  can drop off the balcony.
+- **Open**: a door in the east wall leads to a 22 x 36 m warehouse with
+  shipping containers, pillars and crates.
+- **Tight**: two openings under the west balcony lead into maintenance
+  tunnels 1.6 m wide with a 2.4 m ceiling. They pass a small pump room with a
+  slime pit and come out in the lab north of the atrium. Another narrow
+  passage joins the lab to the warehouse, so every area is on a loop.
+
+Forty zombies stand at fixed points, named after their room as in the test
+map. Like the stairs in `test_level.tscn`, these are steps with an invisible
+`StairRamp` slope over them.
 
 ### The Quake level
 

@@ -69,6 +69,14 @@ const PAIN_TIME := 0.25
 @export var loses_limbs := false
 ## How much damage one limb can take before it comes off.
 @export var limb_health := 12
+## The chance that the head really comes off once it has taken that much
+## damage. 1 = always, 0 = never. The dice are rolled once: a head that
+## stays on then stays on for good, and headshots just do their damage.
+@export_range(0.0, 1.0) var head_loss_chance := 0.35
+## The same for each leg. Lower = fewer enemies end up crawling.
+@export_range(0.0, 1.0) var leg_loss_chance := 0.6
+## The same for each arm.
+@export_range(0.0, 1.0) var arm_loss_chance := 0.75
 ## How much of its speed is left once it is crawling.
 @export_range(0.0, 1.0) var crawl_speed_factor := 0.4
 
@@ -95,6 +103,9 @@ var pain_timer := 0.0
 var limb_damage := {}
 ## The names of the limbs that have been shot off.
 var lost_limbs: Array[String] = []
+## The names of the limbs that took enough damage to come off but held on
+## (see head_loss_chance). They can't be shot off any more.
+var sturdy_limbs: Array[String] = []
 ## Which limb the latest wound is on: "head", "arm_left", "arm_right",
 ## "leg_left", "leg_right", "random" (a blast, which could take any of
 ## them) or "" (the body, or no wound). bleed() sets this from where the
@@ -385,17 +396,31 @@ func _damage_limb(limb: String, amount: int) -> void:
 		# A blast picks any limb that is still attached (but spares the head).
 		var attached: Array[String] = []
 		for candidate: String in ["arm_left", "arm_right", "leg_left", "leg_right"]:
-			if candidate not in lost_limbs:
+			if candidate not in lost_limbs and candidate not in sturdy_limbs:
 				attached.append(candidate)
 		if attached.is_empty():
 			return
 		limb = attached.pick_random()
-	if limb == "" or limb in lost_limbs:
+	if limb == "" or limb in lost_limbs or limb in sturdy_limbs:
 		return
 
 	limb_damage[limb] = limb_damage.get(limb, 0) + amount
 	if limb_damage[limb] >= limb_health:
-		_lose_limb(limb)
+		# randf() gives a random number from 0 to 1, so this is true
+		# "chance" of the time.
+		if randf() < _loss_chance(limb):
+			_lose_limb(limb)
+		else:
+			sturdy_limbs.append(limb)
+
+
+## How likely a limb is to come off once it has taken limb_health damage.
+func _loss_chance(limb: String) -> float:
+	if limb == "head":
+		return head_loss_chance
+	if limb.begins_with("leg"):
+		return leg_loss_chance
+	return arm_loss_chance
 
 
 func _lose_limb(limb: String) -> void:
