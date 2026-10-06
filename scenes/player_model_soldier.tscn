@@ -1,0 +1,608 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/player_model.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/soldier_camo.tres" id="2_camo"]
+[ext_resource type="Material" path="res://assets/materials/soldier_webbing.tres" id="3_webbing"]
+[ext_resource type="Material" path="res://assets/materials/soldier_black.tres" id="4_black"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_body.tres" id="6_mg_body"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_barrel.tres" id="7_mg_barrel"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_magazine.tres" id="8_mg_magazine"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_launcher.tres" id="9_mg_launcher"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_grip.tres" id="g1_grip"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_stock.tres" id="g2_mg_stock"]
+[ext_resource type="Material" path="res://assets/materials/pistol_slide.tres" id="g3_pistol_slide"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_receiver.tres" id="g4_sg_receiver"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_barrel.tres" id="g5_sg_barrel"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_tube.tres" id="g6_sg_tube"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_pump.tres" id="g7_sg_pump"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_stock.tres" id="g8_sg_stock"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_tube.tres" id="g9_rl_tube"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_muzzle.tres" id="g10_rl_muzzle"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_sight.tres" id="g11_rl_sight"]
+[ext_resource type="Material" path="res://assets/materials/soldier_marker.tres" id="10_marker"]
+[ext_resource type="Material" path="res://assets/materials/soldier_head.tres" id="11_head"]
+[ext_resource type="Material" path="res://assets/materials/soldier_helmet.tres" id="12_helmet"]
+[ext_resource type="Material" path="res://assets/materials/soldier_vest.tres" id="13_vest"]
+[ext_resource type="Material" path="res://assets/materials/soldier_backpack.tres" id="14_backpack"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_visor"]
+shading_mode = 0
+albedo_color = Color(0.45, 1, 0.5, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
+shading_mode = 0
+albedo_color = Color(1, 0.3, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
+shading_mode = 0
+albedo_color = Color(1, 0.85, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_flash"]
+material = SubResource("StandardMaterial3D_flash")
+size = Vector3(0.14, 0.14, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pelvis"]
+material = ExtResource("2_camo")
+size = Vector3(0.36, 0.16, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_belt"]
+material = ExtResource("3_webbing")
+size = Vector3(0.38, 0.06, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pouch"]
+material = ExtResource("3_webbing")
+size = Vector3(0.1, 0.09, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_canteen"]
+material = ExtResource("4_black")
+size = Vector3(0.07, 0.12, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_thigh"]
+material = ExtResource("2_camo")
+size = Vector3(0.15, 0.44, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_holster"]
+material = ExtResource("4_black")
+size = Vector3(0.05, 0.16, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg_pouch"]
+material = ExtResource("3_webbing")
+size = Vector3(0.05, 0.14, 0.11)
+
+[sub_resource type="BoxMesh" id="BoxMesh_shin"]
+material = ExtResource("2_camo")
+size = Vector3(0.14, 0.36, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_knee_pad"]
+material = ExtResource("4_black")
+size = Vector3(0.14, 0.1, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_boot_top"]
+material = ExtResource("4_black")
+size = Vector3(0.15, 0.12, 0.17)
+
+[sub_resource type="BoxMesh" id="BoxMesh_boot"]
+material = ExtResource("4_black")
+size = Vector3(0.16, 0.1, 0.27)
+
+[sub_resource type="BoxMesh" id="BoxMesh_torso"]
+material = ExtResource("2_camo")
+size = Vector3(0.4, 0.48, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vest"]
+material = ExtResource("13_vest")
+size = Vector3(0.42, 0.4, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_radio"]
+material = ExtResource("4_black")
+size = Vector3(0.05, 0.09, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_backpack"]
+material = ExtResource("14_backpack")
+size = Vector3(0.34, 0.44, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bedroll"]
+material = ExtResource("2_camo")
+size = Vector3(0.38, 0.11, 0.13)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pack_pouch"]
+material = ExtResource("3_webbing")
+size = Vector3(0.05, 0.18, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pack_panel"]
+material = ExtResource("10_marker")
+size = Vector3(0.16, 0.05, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lamp"]
+material = SubResource("StandardMaterial3D_lamp")
+size = Vector3(0.05, 0.05, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_antenna"]
+material = ExtResource("4_black")
+size = Vector3(0.02, 0.36, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_neck"]
+material = ExtResource("4_black")
+size = Vector3(0.12, 0.1, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_face"]
+material = ExtResource("11_head")
+size = Vector3(0.22, 0.22, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_helmet"]
+material = ExtResource("12_helmet")
+size = Vector3(0.27, 0.14, 0.29)
+
+[sub_resource type="BoxMesh" id="BoxMesh_goggles"]
+material = ExtResource("4_black")
+size = Vector3(0.16, 0.07, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_goggle_mount"]
+material = ExtResource("4_black")
+size = Vector3(0.03, 0.07, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_visor"]
+material = SubResource("StandardMaterial3D_visor")
+size = Vector3(0.13, 0.045, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ear"]
+material = ExtResource("4_black")
+size = Vector3(0.04, 0.1, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_microphone"]
+material = ExtResource("4_black")
+size = Vector3(0.015, 0.015, 0.09)
+
+[sub_resource type="BoxMesh" id="BoxMesh_upper_arm"]
+material = ExtResource("2_camo")
+size = Vector3(0.11, 0.3, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_armband"]
+material = ExtResource("10_marker")
+size = Vector3(0.12, 0.06, 0.13)
+
+[sub_resource type="BoxMesh" id="BoxMesh_forearm"]
+material = ExtResource("2_camo")
+size = Vector3(0.11, 0.22, 0.12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_elbow_pad"]
+material = ExtResource("4_black")
+size = Vector3(0.12, 0.08, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_glove"]
+material = ExtResource("4_black")
+size = Vector3(0.1, 0.1, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gun_grip"]
+material = ExtResource("g1_grip")
+size = Vector3(0.05, 0.12, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pistol_slide"]
+material = ExtResource("g3_pistol_slide")
+size = Vector3(0.055, 0.07, 0.24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mg_body"]
+material = ExtResource("6_mg_body")
+size = Vector3(0.08, 0.11, 0.46)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mg_barrel"]
+material = ExtResource("7_mg_barrel")
+size = Vector3(0.04, 0.04, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mg_magazine"]
+material = ExtResource("8_mg_magazine")
+size = Vector3(0.06, 0.18, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mg_launcher"]
+material = ExtResource("9_mg_launcher")
+size = Vector3(0.07, 0.07, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_stock"]
+material = ExtResource("g2_mg_stock")
+size = Vector3(0.06, 0.1, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sg_stock"]
+material = ExtResource("g8_sg_stock")
+size = Vector3(0.06, 0.1, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sg_receiver"]
+material = ExtResource("g4_sg_receiver")
+size = Vector3(0.08, 0.11, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sg_barrel"]
+material = ExtResource("g5_sg_barrel")
+size = Vector3(0.045, 0.045, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sg_tube"]
+material = ExtResource("g6_sg_tube")
+size = Vector3(0.05, 0.05, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sg_pump"]
+material = ExtResource("g7_sg_pump")
+size = Vector3(0.085, 0.08, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rl_tube"]
+material = ExtResource("g9_rl_tube")
+size = Vector3(0.14, 0.14, 0.86)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rl_muzzle"]
+material = ExtResource("g10_rl_muzzle")
+size = Vector3(0.18, 0.18, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rl_front_grip"]
+material = ExtResource("g1_grip")
+size = Vector3(0.045, 0.09, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rl_sight"]
+material = ExtResource("g11_rl_sight")
+size = Vector3(0.03, 0.06, 0.08)
+
+[node name="PlayerModelSoldier" type="Node3D"]
+script = ExtResource("1_script")
+tinted_material = ExtResource("10_marker")
+armor_color = Color(0.7, 0.18, 0.14, 1)
+visor_color = Color(0.45, 1, 0.5, 1)
+
+[node name="Hips" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+
+[node name="Legs" type="Node3D" parent="Hips"]
+
+[node name="Pelvis" type="MeshInstance3D" parent="Hips/Legs"]
+mesh = SubResource("BoxMesh_pelvis")
+
+[node name="Belt" type="MeshInstance3D" parent="Hips/Legs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("BoxMesh_belt")
+
+[node name="PouchLeft" type="MeshInstance3D" parent="Hips/Legs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.02, -0.13)
+mesh = SubResource("BoxMesh_pouch")
+
+[node name="PouchRight" type="MeshInstance3D" parent="Hips/Legs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.02, -0.13)
+mesh = SubResource("BoxMesh_pouch")
+
+[node name="Canteen" type="MeshInstance3D" parent="Hips/Legs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 0.14)
+mesh = SubResource("BoxMesh_canteen")
+
+[node name="LegLeft" type="Node3D" parent="Hips/Legs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 0)
+
+[node name="Thigh" type="MeshInstance3D" parent="Hips/Legs/LegLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+mesh = SubResource("BoxMesh_thigh")
+
+[node name="LegPouch" type="MeshInstance3D" parent="Hips/Legs/LegLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.19, 0)
+mesh = SubResource("BoxMesh_leg_pouch")
+
+[node name="Knee" type="Node3D" parent="Hips/Legs/LegLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.42, 0)
+
+[node name="Shin" type="MeshInstance3D" parent="Hips/Legs/LegLeft/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("BoxMesh_shin")
+
+[node name="KneePad" type="MeshInstance3D" parent="Hips/Legs/LegLeft/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.085)
+mesh = SubResource("BoxMesh_knee_pad")
+
+[node name="BootTop" type="MeshInstance3D" parent="Hips/Legs/LegLeft/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.33, 0)
+mesh = SubResource("BoxMesh_boot_top")
+
+[node name="Ankle" type="Node3D" parent="Hips/Legs/LegLeft/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 0)
+
+[node name="Boot" type="MeshInstance3D" parent="Hips/Legs/LegLeft/Knee/Ankle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, -0.05)
+mesh = SubResource("BoxMesh_boot")
+
+[node name="LegRight" type="Node3D" parent="Hips/Legs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
+
+[node name="Thigh" type="MeshInstance3D" parent="Hips/Legs/LegRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21, 0)
+mesh = SubResource("BoxMesh_thigh")
+
+[node name="Holster" type="MeshInstance3D" parent="Hips/Legs/LegRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.18, 0)
+mesh = SubResource("BoxMesh_holster")
+
+[node name="Knee" type="Node3D" parent="Hips/Legs/LegRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.42, 0)
+
+[node name="Shin" type="MeshInstance3D" parent="Hips/Legs/LegRight/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+mesh = SubResource("BoxMesh_shin")
+
+[node name="KneePad" type="MeshInstance3D" parent="Hips/Legs/LegRight/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.085)
+mesh = SubResource("BoxMesh_knee_pad")
+
+[node name="BootTop" type="MeshInstance3D" parent="Hips/Legs/LegRight/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.33, 0)
+mesh = SubResource("BoxMesh_boot_top")
+
+[node name="Ankle" type="Node3D" parent="Hips/Legs/LegRight/Knee"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 0)
+
+[node name="Boot" type="MeshInstance3D" parent="Hips/Legs/LegRight/Knee/Ankle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, -0.05)
+mesh = SubResource("BoxMesh_boot")
+
+[node name="Upper" type="Node3D" parent="Hips"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+
+[node name="Torso" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+mesh = SubResource("BoxMesh_torso")
+
+[node name="Vest" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("BoxMesh_vest")
+
+[node name="Radio" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.41, -0.15)
+mesh = SubResource("BoxMesh_radio")
+
+[node name="Backpack" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0.23)
+mesh = SubResource("BoxMesh_backpack")
+
+[node name="Bedroll" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.545, 0.245)
+mesh = SubResource("BoxMesh_bedroll")
+
+[node name="PackPouchLeft" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.195, 0.2, 0.23)
+mesh = SubResource("BoxMesh_pack_pouch")
+
+[node name="PackPouchRight" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.195, 0.2, 0.23)
+mesh = SubResource("BoxMesh_pack_pouch")
+
+[node name="PackPanel" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.44, 0.326)
+mesh = SubResource("BoxMesh_pack_panel")
+
+[node name="PackLamp" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.44, 0.33)
+mesh = SubResource("BoxMesh_lamp")
+
+[node name="Antenna" type="MeshInstance3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.66, 0.3)
+mesh = SubResource("BoxMesh_antenna")
+
+[node name="Head" type="Node3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="Neck" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+mesh = SubResource("BoxMesh_neck")
+
+[node name="Face" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
+mesh = SubResource("BoxMesh_face")
+
+[node name="Helmet" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0.01)
+mesh = SubResource("BoxMesh_helmet")
+
+[node name="Goggles" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, -0.155)
+mesh = SubResource("BoxMesh_goggles")
+
+[node name="GoggleMount" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.235, -0.15)
+mesh = SubResource("BoxMesh_goggle_mount")
+
+[node name="Visor" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, -0.195)
+mesh = SubResource("BoxMesh_visor")
+
+[node name="EarLeft" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.125, 0.15, 0.02)
+mesh = SubResource("BoxMesh_ear")
+
+[node name="EarRight" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.125, 0.15, 0.02)
+mesh = SubResource("BoxMesh_ear")
+
+[node name="Microphone" type="MeshInstance3D" parent="Hips/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.125, 0.1, -0.07)
+mesh = SubResource("BoxMesh_microphone")
+
+[node name="Aim" type="Node3D" parent="Hips/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+
+[node name="ArmLeft" type="Node3D" parent="Hips/Upper/Aim"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 0, 0)
+
+[node name="UpperArm" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, 0)
+mesh = SubResource("BoxMesh_upper_arm")
+
+[node name="Armband" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("BoxMesh_armband")
+
+[node name="Elbow" type="Node3D" parent="Hips/Upper/Aim/ArmLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.28, 0)
+
+[node name="Forearm" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmLeft/Elbow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("BoxMesh_forearm")
+
+[node name="ElbowPad" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmLeft/Elbow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0.045)
+mesh = SubResource("BoxMesh_elbow_pad")
+
+[node name="Glove" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmLeft/Elbow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.27, 0)
+mesh = SubResource("BoxMesh_glove")
+
+[node name="ArmRight" type="Node3D" parent="Hips/Upper/Aim"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0, 0)
+
+[node name="UpperArm" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, 0)
+mesh = SubResource("BoxMesh_upper_arm")
+
+[node name="Armband" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("BoxMesh_armband")
+
+[node name="Elbow" type="Node3D" parent="Hips/Upper/Aim/ArmRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.28, 0)
+
+[node name="Forearm" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmRight/Elbow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("BoxMesh_forearm")
+
+[node name="ElbowPad" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmRight/Elbow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0.045)
+mesh = SubResource("BoxMesh_elbow_pad")
+
+[node name="Glove" type="MeshInstance3D" parent="Hips/Upper/Aim/ArmRight/Elbow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.27, 0)
+mesh = SubResource("BoxMesh_glove")
+
+[node name="ShotSound" type="AudioStreamPlayer3D" parent="Hips/Upper/Aim"]
+volume_db = -8.0
+
+[node name="Guns" type="Node3D" parent="Hips/Upper/Aim"]
+
+[node name="Pistol" type="Node3D" parent="Hips/Upper/Aim/Guns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, -0.12, -0.38)
+
+[node name="Grip" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Pistol"]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, -0.01, 0)
+mesh = SubResource("BoxMesh_gun_grip")
+
+[node name="Slide" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Pistol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, -0.05)
+mesh = SubResource("BoxMesh_pistol_slide")
+
+[node name="GripRight" type="Marker3D" parent="Hips/Upper/Aim/Guns/Pistol"]
+
+[node name="GripLeft" type="Marker3D" parent="Hips/Upper/Aim/Guns/Pistol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, -0.02, 0.015)
+
+[node name="Flash" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Pistol"]
+transform = Transform3D(0.707, -0.707, 0, 0.707, 0.707, 0, 0, 0, 1.0, 0, 0.06, -0.2)
+visible = false
+mesh = SubResource("BoxMesh_flash")
+
+[node name="MachineGun" type="Node3D" parent="Hips/Upper/Aim/Guns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, -0.18, -0.18)
+
+[node name="Grip" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, -0.01, 0)
+mesh = SubResource("BoxMesh_gun_grip")
+
+[node name="Body" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, -0.1)
+mesh = SubResource("BoxMesh_mg_body")
+
+[node name="Barrel" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -0.44)
+mesh = SubResource("BoxMesh_mg_barrel")
+
+[node name="Magazine" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, -0.17)
+mesh = SubResource("BoxMesh_mg_magazine")
+
+[node name="Launcher" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -0.34)
+mesh = SubResource("BoxMesh_mg_launcher")
+
+[node name="Stock" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 0.2)
+mesh = SubResource("BoxMesh_stock")
+
+[node name="GripRight" type="Marker3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+
+[node name="GripLeft" type="Marker3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.26)
+
+[node name="Flash" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/MachineGun"]
+transform = Transform3D(0.707, -0.707, 0, 0.707, 0.707, 0, 0, 0, 1.0, 0, 0.1, -0.57)
+visible = false
+mesh = SubResource("BoxMesh_flash")
+
+[node name="RocketLauncher" type="Node3D" parent="Hips/Upper/Aim/Guns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, 0.02, -0.25)
+
+[node name="Tube" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, 0.13)
+mesh = SubResource("BoxMesh_rl_tube")
+
+[node name="Muzzle" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, -0.32)
+mesh = SubResource("BoxMesh_rl_muzzle")
+
+[node name="Exhaust" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.16, 0.58)
+mesh = SubResource("BoxMesh_rl_muzzle")
+
+[node name="Grip" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, 0.03, 0)
+mesh = SubResource("BoxMesh_gun_grip")
+
+[node name="FrontGrip" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.05, -0.11)
+mesh = SubResource("BoxMesh_rl_front_grip")
+
+[node name="Sight" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.26, -0.05)
+mesh = SubResource("BoxMesh_rl_sight")
+
+[node name="GripRight" type="Marker3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+
+[node name="GripLeft" type="Marker3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.02, -0.11)
+
+[node name="Flash" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
+transform = Transform3D(1.131, -1.131, 0, 1.131, 1.131, 0, 0, 0, 1.6, 0, 0.16, -0.38)
+visible = false
+mesh = SubResource("BoxMesh_flash")
+
+[node name="Shotgun" type="Node3D" parent="Hips/Upper/Aim/Guns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, -0.18, -0.18)
+
+[node name="Grip" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, -0.01, 0)
+mesh = SubResource("BoxMesh_gun_grip")
+
+[node name="Receiver" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, -0.05)
+mesh = SubResource("BoxMesh_sg_receiver")
+
+[node name="Barrel" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.115, -0.47)
+mesh = SubResource("BoxMesh_sg_barrel")
+
+[node name="MagazineTube" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, -0.4)
+mesh = SubResource("BoxMesh_sg_tube")
+
+[node name="Pump" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.065, -0.26)
+mesh = SubResource("BoxMesh_sg_pump")
+
+[node name="Stock" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0.16)
+mesh = SubResource("BoxMesh_sg_stock")
+
+[node name="GripRight" type="Marker3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+
+[node name="GripLeft" type="Marker3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.26)
+
+[node name="Flash" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
+transform = Transform3D(0.919, -0.919, 0, 0.919, 0.919, 0, 0, 0, 1.3, 0, 0.115, -0.76)
+visible = false
+mesh = SubResource("BoxMesh_flash")

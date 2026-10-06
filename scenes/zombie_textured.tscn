@@ -1,35 +1,38 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_script"]
-[ext_resource type="Material" path="res://assets/materials/enemy.tres" id="2_body"]
+[ext_resource type="Material" path="res://assets/materials/zombie_head.tres" id="2_head"]
+[ext_resource type="Material" path="res://assets/materials/zombie_torso.tres" id="3_torso"]
+[ext_resource type="Material" path="res://assets/materials/zombie_arm.tres" id="4_arm"]
+[ext_resource type="Material" path="res://assets/materials/zombie_leg.tres" id="5_leg"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.35
+radius = 0.28
 height = 1.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_leg"]
-material = ExtResource("2_body")
-size = Vector3(0.22, 0.6, 0.3)
+material = ExtResource("5_leg")
+size = Vector3(0.14, 0.62, 0.18)
 
 [sub_resource type="BoxMesh" id="BoxMesh_torso"]
-material = ExtResource("2_body")
-size = Vector3(0.7, 0.7, 0.35)
+material = ExtResource("3_torso")
+size = Vector3(0.4, 0.68, 0.22)
 
 [sub_resource type="BoxMesh" id="BoxMesh_head"]
-material = ExtResource("2_body")
-size = Vector3(0.35, 0.35, 0.35)
+material = ExtResource("2_head")
+size = Vector3(0.28, 0.28, 0.28)
 
 [sub_resource type="BoxMesh" id="BoxMesh_arm"]
-material = ExtResource("2_body")
-size = Vector3(0.15, 0.15, 0.5)
+material = ExtResource("4_arm")
+size = Vector3(0.1, 0.1, 0.55)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eyes"]
 shading_mode = 0
-albedo_color = Color(1, 0.8, 0.2, 1)
+albedo_color = Color(0.9, 0.15, 0.1, 1)
 
-[sub_resource type="BoxMesh" id="BoxMesh_eyes"]
+[sub_resource type="BoxMesh" id="BoxMesh_eye"]
 material = SubResource("StandardMaterial3D_eyes")
-size = Vector3(0.26, 0.06, 0.04)
+size = Vector3(0.07, 0.05, 0.04)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
 properties/0/path = NodePath(".:position")
@@ -54,8 +57,17 @@ properties/6/path = NodePath(".:severed")
 properties/6/spawn = true
 properties/6/replication_mode = 2
 
-[node name="Enemy" type="CharacterBody3D" groups=["enemy"]]
+[node name="ZombieTextured" type="CharacterBody3D" groups=["enemy"]]
 script = ExtResource("1_script")
+max_health = 40
+move_speed = 2.8
+attack_damage = 5
+attack_interval = 1.3
+step_speed = 6.0
+blood_color = Color(0.45, 0.03, 0.05, 1)
+limp = 1.0
+hunch = 0.3
+loses_limbs = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
@@ -64,49 +76,53 @@ shape = SubResource("CapsuleShape3D_body")
 [node name="Model" type="Node3D" parent="."]
 
 [node name="LegLeft" type="Node3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.62, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Model/LegLeft"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31, 0)
 mesh = SubResource("BoxMesh_leg")
 
 [node name="LegRight" type="Node3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 0.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.62, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Model/LegRight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31, 0)
 mesh = SubResource("BoxMesh_leg")
 
 [node name="Upper" type="Node3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
 
 [node name="Torso" type="MeshInstance3D" parent="Model/Upper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
 mesh = SubResource("BoxMesh_torso")
 
 [node name="Head" type="Node3D" parent="Model/Upper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Model/Upper/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
 mesh = SubResource("BoxMesh_head")
 
-[node name="Eyes" type="MeshInstance3D" parent="Model/Upper/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -0.18)
-mesh = SubResource("BoxMesh_eyes")
+[node name="EyeLeft" type="MeshInstance3D" parent="Model/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.17, -0.145)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Model/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.17, -0.145)
+mesh = SubResource("BoxMesh_eye")
 
 [node name="ArmLeft" type="Node3D" parent="Model/Upper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.43, 0.55, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.26, 0.56, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmLeft"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
 mesh = SubResource("BoxMesh_arm")
 
 [node name="ArmRight" type="Node3D" parent="Model/Upper"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43, 0.55, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 0.56, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Model/Upper/ArmRight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
 mesh = SubResource("BoxMesh_arm")
 
 [node name="Sync" type="MultiplayerSynchronizer" parent="."]

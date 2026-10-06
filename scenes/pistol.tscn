@@ -1,14 +1,15 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/pistol.gd" id="1_script"]
-[ext_resource type="Material" path="res://assets/materials/gun.tres" id="2_gun"]
+[ext_resource type="Material" path="res://assets/materials/pistol_slide.tres" id="2_slide"]
+[ext_resource type="Material" path="res://assets/materials/pistol_grip.tres" id="3_grip"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_slide"]
-material = ExtResource("2_gun")
+material = ExtResource("2_slide")
 size = Vector3(0.05, 0.06, 0.22)
 
 [sub_resource type="BoxMesh" id="BoxMesh_grip"]
-material = ExtResource("2_gun")
+material = ExtResource("3_grip")
 size = Vector3(0.045, 0.11, 0.06)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]

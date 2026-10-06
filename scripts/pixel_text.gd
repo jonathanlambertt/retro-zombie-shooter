@@ -9,8 +9,8 @@ extends Control
 ## give them a pixel .ttf/.fnt font with antialiasing turned off in its
 ## import settings.
 
-## The text to show. Supports A-Z, 0-9, spaces and > % . : - (lower case is
-## upper-cased).
+## The text to show. Supports A-Z, 0-9, spaces and > % . , : - ' ! ? (lower case
+## is upper-cased). A line break in the text starts a new line below.
 @export var text := "":
 	set(value):
 		if value == text:
@@ -27,6 +27,12 @@ extends Control
 ## If true, the text ends at the right edge of this Control instead of
 ## starting at the left edge.
 @export var align_right := false
+## If true, a black copy is drawn behind the text, one pixel down and to the
+## right. That keeps it readable over the game; turn it off for dark writing
+## on a plain light background, where it would only smudge the letters.
+@export var shadow := true
+## The empty rows between one line of text and the next, in font pixels.
+@export var line_gap := 2
 
 const GLYPH_WIDTH := 3
 const GLYPH_HEIGHT := 5
@@ -74,6 +80,10 @@ const GLYPHS := {
 	".": ["...", "...", "...", "...", ".#."],
 	":": ["...", ".#.", "...", ".#.", "..."],
 	"-": ["...", "...", "###", "...", "..."],
+	",": ["...", "...", "...", ".#.", "#.."],
+	"'": [".#.", ".#.", "...", "...", "..."],
+	"!": [".#.", ".#.", ".#.", "...", ".#."],
+	"?": ["##.", "..#", ".#.", "...", ".#."],
 }
 
 
@@ -82,14 +92,23 @@ func _draw() -> void:
 	# Each letter takes its width plus one empty column of spacing.
 	var advance := (GLYPH_WIDTH + 1) * pixel_size
 	var x := 0.0
+	var y := 0.0
+	# (Right-aligning measures the whole text, so it is for single lines.)
 	if align_right:
 		x = size.x - text.length() * advance
+	var line_start := x
 
 	for character in text.to_upper():
-		# Draw a black copy one pixel down-right first, as a drop shadow,
-		# so the text stays readable over bright walls.
-		_draw_glyph(character, Vector2(x + pixel_size, pixel_size), Color.BLACK)
-		_draw_glyph(character, Vector2(x, 0.0), color)
+		if character == "\n":
+			# A line break: back to the left edge, one line further down.
+			x = line_start
+			y += (GLYPH_HEIGHT + line_gap) * pixel_size
+			continue
+		if shadow:
+			# Draw a black copy one pixel down-right first, as a drop shadow,
+			# so the text stays readable over bright walls.
+			_draw_glyph(character, Vector2(x + pixel_size, y + pixel_size), Color.BLACK)
+		_draw_glyph(character, Vector2(x, y), color)
 		x += advance
 
 

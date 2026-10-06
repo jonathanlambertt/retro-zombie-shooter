@@ -211,7 +211,7 @@ func _add_things() -> void:
 
 	var crate_scene: PackedScene = load("res://scenes/crate.tscn")
 	var pylon_scene: PackedScene = load("res://scenes/explosive_pylon.tscn")
-	var zombie_scene: PackedScene = load("res://scenes/zombie.tscn")
+	var zombie_scene: PackedScene = load("res://scenes/zombie_textured.tscn")
 	var props := Node3D.new()
 	props.name = "Props"
 	_add(props, level)

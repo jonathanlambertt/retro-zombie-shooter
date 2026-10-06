@@ -5,6 +5,21 @@
 [ext_resource type="Material" path="res://assets/materials/player_suit.tres" id="3_suit"]
 [ext_resource type="Material" path="res://assets/materials/player_gear.tres" id="4_gear"]
 [ext_resource type="Material" path="res://assets/materials/gun.tres" id="5_gun"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_body.tres" id="6_mg_body"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_barrel.tres" id="7_mg_barrel"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_magazine.tres" id="8_mg_magazine"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_launcher.tres" id="9_mg_launcher"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_grip.tres" id="g1_grip"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_stock.tres" id="g2_mg_stock"]
+[ext_resource type="Material" path="res://assets/materials/pistol_slide.tres" id="g3_pistol_slide"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_receiver.tres" id="g4_sg_receiver"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_barrel.tres" id="g5_sg_barrel"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_tube.tres" id="g6_sg_tube"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_pump.tres" id="g7_sg_pump"]
+[ext_resource type="Material" path="res://assets/materials/shotgun_stock.tres" id="g8_sg_stock"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_tube.tres" id="g9_rl_tube"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_muzzle.tres" id="g10_rl_muzzle"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_sight.tres" id="g11_rl_sight"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_visor"]
 shading_mode = 0
@@ -123,67 +138,72 @@ material = ExtResource("4_gear")
 size = Vector3(0.1, 0.1, 0.1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_gun_grip"]
-material = ExtResource("5_gun")
+material = ExtResource("g1_grip")
 size = Vector3(0.05, 0.12, 0.06)
 
 [sub_resource type="BoxMesh" id="BoxMesh_pistol_slide"]
-material = ExtResource("5_gun")
+material = ExtResource("g3_pistol_slide")
 size = Vector3(0.055, 0.07, 0.24)
 
 [sub_resource type="BoxMesh" id="BoxMesh_mg_body"]
-material = ExtResource("5_gun")
+material = ExtResource("6_mg_body")
 size = Vector3(0.08, 0.11, 0.46)
 
 [sub_resource type="BoxMesh" id="BoxMesh_mg_barrel"]
-material = ExtResource("5_gun")
+material = ExtResource("7_mg_barrel")
 size = Vector3(0.04, 0.04, 0.22)
 
 [sub_resource type="BoxMesh" id="BoxMesh_mg_magazine"]
-material = ExtResource("5_gun")
+material = ExtResource("8_mg_magazine")
 size = Vector3(0.06, 0.18, 0.07)
 
 [sub_resource type="BoxMesh" id="BoxMesh_mg_launcher"]
-material = ExtResource("5_gun")
+material = ExtResource("9_mg_launcher")
 size = Vector3(0.07, 0.07, 0.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_stock"]
-material = ExtResource("5_gun")
+material = ExtResource("g2_mg_stock")
+size = Vector3(0.06, 0.1, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sg_stock"]
+material = ExtResource("g8_sg_stock")
 size = Vector3(0.06, 0.1, 0.16)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sg_receiver"]
-material = ExtResource("5_gun")
+material = ExtResource("g4_sg_receiver")
 size = Vector3(0.08, 0.11, 0.3)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sg_barrel"]
-material = ExtResource("5_gun")
+material = ExtResource("g5_sg_barrel")
 size = Vector3(0.045, 0.045, 0.55)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sg_tube"]
-material = ExtResource("5_gun")
+material = ExtResource("g6_sg_tube")
 size = Vector3(0.05, 0.05, 0.42)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sg_pump"]
-material = ExtResource("5_gun")
+material = ExtResource("g7_sg_pump")
 size = Vector3(0.085, 0.08, 0.16)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rl_tube"]
-material = ExtResource("5_gun")
+material = ExtResource("g9_rl_tube")
 size = Vector3(0.14, 0.14, 0.86)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rl_muzzle"]
-material = ExtResource("5_gun")
+material = ExtResource("g10_rl_muzzle")
 size = Vector3(0.18, 0.18, 0.08)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rl_front_grip"]
-material = ExtResource("5_gun")
+material = ExtResource("g1_grip")
 size = Vector3(0.045, 0.09, 0.05)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rl_sight"]
-material = ExtResource("5_gun")
+material = ExtResource("g11_rl_sight")
 size = Vector3(0.03, 0.06, 0.08)
 
 [node name="PlayerModel" type="Node3D"]
 script = ExtResource("1_script")
+tinted_material = ExtResource("2_armor")
 
 [node name="Hips" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -443,7 +463,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, -0.32)
 mesh = SubResource("BoxMesh_rl_muzzle")
 
 [node name="Exhaust" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16, 0.58)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.16, 0.58)
 mesh = SubResource("BoxMesh_rl_muzzle")
 
 [node name="Grip" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/RocketLauncher"]
@@ -493,7 +513,7 @@ mesh = SubResource("BoxMesh_sg_pump")
 
 [node name="Stock" type="MeshInstance3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0.16)
-mesh = SubResource("BoxMesh_stock")
+mesh = SubResource("BoxMesh_sg_stock")
 
 [node name="GripRight" type="Marker3D" parent="Hips/Upper/Aim/Guns/Shotgun"]
 

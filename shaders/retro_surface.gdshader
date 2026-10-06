@@ -30,6 +30,11 @@ uniform vec3 tint : source_color = vec3(1.0);
 uniform bool uv_from_world = true;
 // How many metres one copy of the texture covers.
 uniform float texture_size_meters = 2.0;
+// If true, skip all of the above and use the UVs stored in the mesh. A
+// BoxMesh's UVs give each of its six sides its own piece of the texture, so
+// a head can have a face on the front and hair on the back (see the zombie
+// textures in scripts/tools/generate_textures.gd).
+uniform bool uv_from_mesh = false;
 
 group_uniforms Retro;
 // Vertex snapping grid, in cells across and down the screen. Smaller numbers
@@ -93,6 +98,9 @@ void vertex() {
 		surface_uv = vec2(position.x, -position.y); // walls facing north/south
 	}
 	surface_uv /= texture_size_meters;
+	if (uv_from_mesh) {
+		surface_uv = UV;
+	}
 
 	// --- 2. Vertex snapping -------------------------------------------------
 	// Project the vertex to "clip space" ourselves. After dividing by w, x and

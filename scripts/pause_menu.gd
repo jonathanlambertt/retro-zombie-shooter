@@ -1,7 +1,9 @@
 extends CanvasLayer
-## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS, MULTIPLAYER
-## and QUIT. GRAPHICS opens a page with switches for the retro effects, and
-## MULTIPLAYER one for hosting or joining a game (see scripts/network.gd).
+## Pause menu: Esc freezes the game and shows RESUME, GRAPHICS, AUDIO,
+## MULTIPLAYER and QUIT. GRAPHICS opens a page with switches for the retro
+## effects, the view bob and fullscreen, AUDIO one with the master volume,
+## and MULTIPLAYER one for hosting or joining a game (see
+## scripts/network.gd).
 ##
 ## Online, the menu can't freeze the game: the other players carry on. It
 ## just frees the mouse, and the player ignores the keyboard while it is open.
@@ -47,6 +49,13 @@ static var retro_effects := true
 static var snap_strength := 0.25
 static var light_band_strength := 0.0
 static var color_quantize := true
+## Whether the camera bobs up and down as the player walks. This one isn't a
+## shader setting: scripts/player.gd reads it every frame.
+static var view_bob := true
+## How loud everything is, from 0 (silent) to 1 (full volume). Not a shader
+## setting either: it sets the volume of the "Master" audio bus, which every
+## sound in the game plays through.
+static var master_volume := 1.0
 ## The address the JOIN line connects to. Kept between games, like the
 ## settings above.
 static var join_address := "127.0.0.1"
@@ -59,10 +68,12 @@ var selected := 0
 @onready var cursor: Control = $Menu/Cursor
 @onready var main_page: Control = $Menu/MainPage
 @onready var graphics_page: Control = $Menu/GraphicsPage
+@onready var audio_page: Control = $Menu/AudioPage
 @onready var multiplayer_page: Control = $Menu/MultiplayerPage
 
 @onready var resume_row: Control = $Menu/MainPage/Rows/Resume
 @onready var graphics_row: Control = $Menu/MainPage/Rows/Graphics
+@onready var audio_row: Control = $Menu/MainPage/Rows/Audio
 @onready var multiplayer_row: Control = $Menu/MainPage/Rows/Multiplayer
 @onready var quit_row: Control = $Menu/MainPage/Rows/Quit
 
@@ -70,7 +81,13 @@ var selected := 0
 @onready var snap_row: Control = $Menu/GraphicsPage/Rows/VertexSnap
 @onready var light_bands_row: Control = $Menu/GraphicsPage/Rows/LightBands
 @onready var color_quantize_row: Control = $Menu/GraphicsPage/Rows/ColorQuantize
+@onready var view_bob_row: Control = $Menu/GraphicsPage/Rows/ViewBob
+@onready var fullscreen_row: Control = $Menu/GraphicsPage/Rows/Fullscreen
 @onready var back_row: Control = $Menu/GraphicsPage/Rows/Back
+@onready var graphics_hint: Control = $Menu/GraphicsPage/Hint
+
+@onready var master_volume_row: Control = $Menu/AudioPage/Rows/MasterVolume
+@onready var audio_back_row: Control = $Menu/AudioPage/Rows/Back
 
 @onready var host_row: Control = $Menu/MultiplayerPage/Rows/Host
 @onready var join_row: Control = $Menu/MultiplayerPage/Rows/Join
@@ -109,6 +126,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if visible and graphics_page.visible:
 			_show_page(main_page, graphics_row)
+		elif visible and audio_page.visible:
+			_show_page(main_page, audio_row)
 		elif visible and multiplayer_page.visible:
 			_show_page(main_page, multiplayer_row)
 		else:
@@ -171,6 +190,7 @@ func _set_open(open: bool) -> void:
 func _show_page(page: Control, start_row: Control = null) -> void:
 	main_page.visible = page == main_page
 	graphics_page.visible = page == graphics_page
+	audio_page.visible = page == audio_page
 	multiplayer_page.visible = page == multiplayer_page
 	# assign() copies the children across, checking that each one really is a
 	# Control (get_children() only promises plain Nodes).
@@ -196,6 +216,10 @@ func _activate() -> void:
 		_show_page(graphics_page)
 	elif row == back_row:
 		_show_page(main_page, graphics_row)
+	elif row == audio_row:
+		_show_page(audio_page)
+	elif row == audio_back_row:
+		_show_page(main_page, audio_row)
 	elif row == multiplayer_row:
 		_show_page(multiplayer_page)
 	elif row == multiplayer_back_row:
@@ -228,6 +252,19 @@ func _change(direction: int, wrap: bool) -> void:
 		light_band_strength = _step(light_band_strength, direction, wrap)
 	elif row == color_quantize_row:
 		color_quantize = not color_quantize
+	elif row == view_bob_row:
+		view_bob = not view_bob
+	elif row == fullscreen_row:
+		_set_fullscreen(not _is_fullscreen())
+	elif row == master_volume_row:
+		# Ten steps of 10%. snappedf rounds to the nearest 0.1, which keeps
+		# tiny rounding errors from building up over many presses.
+		var volume := snappedf(master_volume + 0.1 * direction, 0.1)
+		if wrap:
+			# A click turns it down, and from silent back round to full.
+			master_volume = 1.0 if volume < 0.0 else minf(volume, 1.0)
+		else:
+			master_volume = clampf(volume, 0.0, 1.0)
 	else:
 		return  # the button lines have nothing to turn up or down
 	_apply_settings()
@@ -258,6 +295,40 @@ func _apply_settings() -> void:
 	RenderingServer.global_shader_parameter_set(&"retro_snap_strength", snap_strength)
 	RenderingServer.global_shader_parameter_set(&"retro_light_band_strength", light_band_strength)
 	RenderingServer.global_shader_parameter_set(&"retro_color_quantize", color_quantize)
+	# Bus 0 is "Master". Loudness is measured in decibels, which aren't a
+	# simple scale: linear_to_db turns "half as loud" (0.5) into about -6 dB.
+	# Nothing at all would be minus infinity, so silence mutes the bus instead.
+	AudioServer.set_bus_mute(0, master_volume <= 0.0)
+	if master_volume > 0.0:
+		AudioServer.set_bus_volume_db(0, linear_to_db(master_volume))
+
+
+## True if the game fills the whole screen. This asks the window itself
+## instead of keeping a copy of the setting here: the window isn't rebuilt
+## when the game reloads after a death, so it remembers on its own.
+func _is_fullscreen() -> bool:
+	var mode := DisplayServer.window_get_mode()
+	return mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+
+
+## True when the game is running inside the editor's own window (the Game
+## tab at the top of the editor, which is where Play puts it unless "Embed
+## Game on Next Play" is unticked in that tab's menu). The game is then a
+## panel of the editor rather than a window of its own, and Godot ignores
+## requests to make it fullscreen.
+func _is_embedded() -> bool:
+	return Engine.is_embedded_in_editor()
+
+
+## Switches between filling the screen and an ordinary window. Either way
+## scripts/main.gd notices the new size and rescales the picture to fit.
+func _set_fullscreen(on: bool) -> void:
+	if _is_embedded():
+		return
+	if on:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
 
 ## Typing on the JOIN line: digits and "." add to the address, Backspace
@@ -292,6 +363,9 @@ func _refresh() -> void:
 	snap_row.get_node("Value").text = _strength_text(snap_strength)
 	light_bands_row.get_node("Value").text = _strength_text(light_band_strength)
 	color_quantize_row.get_node("Value").text = _on_off_text(color_quantize)
+	view_bob_row.get_node("Value").text = _on_off_text(view_bob)
+	fullscreen_row.get_node("Value").text = _on_off_text(_is_fullscreen())
+	master_volume_row.get_node("Value").text = _strength_text(master_volume)
 	join_row.get_node("Value").text = join_address
 	status_text.text = Network.status
 	# Hosting and joining only make sense in single player, leaving online.
@@ -299,6 +373,13 @@ func _refresh() -> void:
 	var unavailable: Array[Control] = [leave_row]
 	if online:
 		unavailable = [host_row, join_row]
+	if _is_embedded():
+		unavailable.append(fullscreen_row)
+	# Say why FULLSCREEN does nothing, in place of the usual hint.
+	if _is_embedded() and rows[selected] == fullscreen_row:
+		graphics_hint.text = "NOT INSIDE THE EDITOR WINDOW"
+	else:
+		graphics_hint.text = "LEFT RIGHT OR CLICK TO CHANGE"
 
 	for i in rows.size():
 		var row := rows[i]

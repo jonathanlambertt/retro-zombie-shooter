@@ -4,7 +4,7 @@ extends CharacterBody3D
 ## Node layout (see scenes/player.tscn):
 ##   Player (CharacterBody3D)  - turns left/right with the mouse, and moves
 ##     CollisionShape3D        - the capsule that bumps into the world
-##     Model                   - the body other players see (player_model.tscn)
+##     Model                   - the body other players see (player_model_soldier.tscn)
 ##     Sync                  - sends this player's state to the others online
 ##     Head (Node3D)           - tilts up/down with the mouse
 ##       Camera3D              - what you see, with the guns in front of it
@@ -39,6 +39,8 @@ extends CharacterBody3D
 ##     gives "air control" (and, as a side effect, strafe-jumping).
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
+## The pause menu's script, which keeps the VIEW BOB on/off setting.
+const PauseMenu := preload("res://scripts/pause_menu.gd")
 ## The render layer the viewmodel is drawn on. Cameras have a "cull mask"
 ## saying which layers they show; the chase camera's leaves this one out.
 const VIEWMODEL_LAYER := 2
@@ -82,6 +84,22 @@ enum View { FIRST_PERSON, BEHIND, FRONT }
 ## Radians of turn per pixel of mouse movement.
 @export var mouse_sensitivity := 0.0025
 
+@export_group("View bob")
+## How far the camera rises and falls with each step, in metres. 0 = none.
+## (The pause menu's VIEW BOB setting switches the whole effect off.)
+@export var view_bob_height := 0.035
+## How far it sways from side to side, in metres.
+@export var view_bob_sway := 0.02
+## Steps per metre walked. Higher = quicker, shorter steps.
+@export var view_bob_steps_per_meter := 0.35
+## How quickly the bob fades in when you set off and out when you stop.
+@export var view_bob_fade_speed := 8.0
+## How far the gun in your hands swings from side to side as you walk, in
+## metres, on top of moving with the camera. 0 = it stays put on screen.
+@export var weapon_bob_sway := 0.012
+## How far the gun dips at each end of that swing, in metres.
+@export var weapon_bob_drop := 0.008
+
 @export_group("Health")
 @export var max_health := 100
 ## SOUND HOOK: drag a .wav or .ogg file here in the Inspector to use your own
@@ -94,6 +112,13 @@ var health := 0
 ## How strong the red "you are being hurt" tint is right now, from 0 (none)
 ## to 1 (full). It jumps to 1 on every hit and then fades. The HUD reads it.
 var hurt_flash := 0.0
+## How far through the walking cycle the view bob is, in steps.
+var bob_phase := 0.0
+## How strong the bob is right now, from 0 (standing still) to 1 (running).
+var bob_amount := 0.0
+## Where each weapon sits in front of the camera in the scene, in the order
+## of the weapons list. The bob moves the weapon in hand away from this.
+var weapon_rest_positions: Array[Vector3] = []
 ## True while crouched (the small capsule is in use).
 var crouching := false
 ## How far the view has sunk into the crouch, from 0 (standing) to 1 (fully
@@ -151,6 +176,8 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	is_local = is_multiplayer_authority()
 	health = max_health
+	for weapon in weapons:
+		weapon_rest_positions.append(weapon.position)
 	_select_weapon(0)
 	if hurt_sound == null:
 		hurt_sound = PlaceholderSound.make_grunt()
@@ -250,6 +277,37 @@ func _process(delta: float) -> void:
 			_select_weapon(weapon_index)
 		if crouching != (collision_shape.shape == crouch_shape):
 			_use_shape(crouch_shape if crouching else stand_shape)
+		return  # nobody looks through its camera, so there is nothing to bob
+	_bob_view(delta)
+
+
+## Nudges the camera up, down and sideways in time with the player's steps.
+## The weapons are children of the camera, so they ride along with it; the
+## one in hand also swings a little on its own, or it would look glued to
+## the screen.
+func _bob_view(delta: float) -> void:
+	var speed := Vector3(velocity.x, 0.0, velocity.z).length()
+	# Bob only while walking on the ground, and less when moving slowly.
+	var wanted := 0.0
+	if PauseMenu.view_bob and is_on_floor():
+		wanted = clampf(speed / max_speed, 0.0, 1.0)
+	# move_toward steps a number towards a target without overshooting it.
+	bob_amount = move_toward(bob_amount, wanted, view_bob_fade_speed * delta)
+
+	# Advance by distance covered rather than by time, so the steps keep
+	# pace with the feet. TAU is a full circle (2 x PI): one step.
+	bob_phase += speed * delta * view_bob_steps_per_meter
+	var angle := bob_phase * TAU
+	# Down and up once per step; left and right once per pair of steps.
+	camera.position.y = sin(angle) * view_bob_height * bob_amount
+	camera.position.x = sin(angle * 0.5) * view_bob_sway * bob_amount
+
+	# The gun swings left and right with the sway and is lowest at each end
+	# of the swing, tracing a shallow "U". This moves the weapon node; the
+	# weapons' own recoil moves their Model child, so the two don't clash.
+	var swing := sin(angle * 0.5)
+	var offset := Vector3(swing * weapon_bob_sway, -absf(swing) * weapon_bob_drop, 0.0)
+	current_weapon.position = weapon_rest_positions[weapon_index] + offset * bob_amount
 
 
 # _physics_process runs at a fixed rate (60 times a second by default),

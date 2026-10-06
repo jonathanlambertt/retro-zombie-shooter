@@ -1,22 +1,25 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/rocket_launcher.gd" id="1_script"]
-[ext_resource type="Material" path="res://assets/materials/gun.tres" id="2_gun"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_tube.tres" id="2_tube"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_muzzle.tres" id="3_muzzle"]
+[ext_resource type="Material" path="res://assets/materials/machine_gun_grip.tres" id="4_grip"]
+[ext_resource type="Material" path="res://assets/materials/rocket_launcher_sight.tres" id="5_sight"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_tube"]
-material = ExtResource("2_gun")
+material = ExtResource("2_tube")
 size = Vector3(0.1, 0.1, 0.6)
 
 [sub_resource type="BoxMesh" id="BoxMesh_muzzle"]
-material = ExtResource("2_gun")
+material = ExtResource("3_muzzle")
 size = Vector3(0.13, 0.13, 0.08)
 
 [sub_resource type="BoxMesh" id="BoxMesh_grip"]
-material = ExtResource("2_gun")
+material = ExtResource("4_grip")
 size = Vector3(0.045, 0.11, 0.05)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sight"]
-material = ExtResource("2_gun")
+material = ExtResource("5_sight")
 size = Vector3(0.02, 0.05, 0.06)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
