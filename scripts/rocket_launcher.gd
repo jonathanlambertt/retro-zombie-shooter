@@ -4,6 +4,10 @@ extends Node3D
 ## runs out of rockets; the wait between shots is the only limit.
 ##
 ## Careful: the blast hurts you too, so don't fire it at something close.
+##
+## Online, the other players' games repeat each rocket with replay_shot().
+## Their copy flies the same way and explodes for show, but does no damage:
+## only the copy in the game that fired does.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 ## preload() loads the rocket scene once, ready to be copied for every shot.
@@ -44,6 +48,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	cooldown = maxf(cooldown - delta, 0.0)
+	# Online the pause menu doesn't pause, so let go of the trigger when it
+	# frees the mouse (it takes the button release for itself).
+	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		trigger_held = false
 	# A weapon that isn't in the player's hand is hidden, and must not fire.
 	if trigger_held and visible:
 		fire()
@@ -66,16 +74,29 @@ func fire() -> void:
 
 func _spawn_rocket() -> void:
 	# "owner" is the root of the scene this launcher was placed in: the
-	# player, who works out where the crosshair is pointing.
-	var start := muzzle_flash.global_position
+	# player, who works out where the rocket starts (the barrel may be
+	# poking through a wall) and where the crosshair is pointing.
+	var start: Vector3 = owner.get_projectile_start(muzzle_flash.global_position)
 	var direction: Vector3 = owner.get_aim_direction(start)
+	_launch_rocket(start, direction, true)
+	owner.share_shot(self, [start, direction])
 
+
+func _launch_rocket(start: Vector3, direction: Vector3, hurts: bool) -> void:
 	var rocket := ROCKET_SCENE.instantiate()
+	rocket.deals_damage = hurts
 	rocket.shooter = owner as CollisionObject3D
 	# Add the rocket to the level (the player's parent), not to the launcher.
 	# Otherwise it would swing around with the camera as you turn.
 	owner.get_parent().add_child(rocket)
 	rocket.launch(start, direction, rocket_speed)
+
+
+## Repeats a rocket fired on another computer (see the top of this script).
+## Returns the sound for the shooter's body to play.
+func replay_shot(shot: Array) -> AudioStream:
+	_launch_rocket(shot[0], shot[1], false)
+	return shoot_sound
 
 
 ## Muzzle flash, a heavy recoil kick and sound.

@@ -42,6 +42,11 @@ uniform float affine_amount : hint_range(0.0, 1.0) = 0.0;
 uniform float light_bands : hint_range(0.0, 16.0, 1.0) = 6.0;
 group_uniforms;
 
+// Draw in front of everything else. Only for the gun in your hands:
+// scripts/player.gd gives it a copy of its material with this switched on,
+// so it never disappears into a wall you are standing against.
+uniform bool viewmodel = false;
+
 // "global uniform" values don't belong to any one material. They are
 // defined once in Project Settings > Globals > Shader Globals (saved in
 // project.godot), every shader that declares them reads the same value, and
@@ -103,6 +108,21 @@ void vertex() {
 		// precision, which is what made early 3D geometry jitter.
 		screen_position = floor(screen_position * grid + 0.5) / grid;
 		clip_position.xy = screen_position * clip_position.w;
+	}
+	if (viewmodel) {
+		// Quake's trick for the gun in your hands: lie about its depth. A
+		// point "distance" metres in front of the camera is given the depth
+		// of a point between 6 and 11 cm away instead (anything closer would
+		// be cut off by the camera's near plane at 5 cm). Further parts are
+		// still deeper, so the gun's parts hide each other correctly, but
+		// it is now "closer" than any wall, so a long barrel poking through
+		// the wall in front of you stays visible. Only the depth changes:
+		// the gun appears in the same place on screen. (Asking
+		// PROJECTION_MATRIX for the depth, instead of writing a number,
+		// works whichever way round the renderer stores depth.)
+		float distance = -(MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).z;
+		vec4 fake = PROJECTION_MATRIX * vec4(0.0, 0.0, -(0.06 + 0.05 * distance), 1.0);
+		clip_position.z = fake.z / fake.w * clip_position.w;
 	}
 	// Writing POSITION tells Godot to use our value as the final position.
 	POSITION = clip_position;

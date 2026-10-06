@@ -15,6 +15,11 @@ var cooldown := 0.0
 
 
 func _physics_process(delta: float) -> void:
+	# Online, only the host bites, or everyone standing in it would be
+	# bitten once by every computer in the game. (A player's damage is then
+	# passed on to that player's own computer, see scripts/player.gd.)
+	if not multiplayer.is_server():
+		return
 	cooldown -= delta
 	if cooldown > 0.0:
 		return

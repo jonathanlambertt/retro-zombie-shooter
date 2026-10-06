@@ -9,7 +9,7 @@ extends Control
 ## give them a pixel .ttf/.fnt font with antialiasing turned off in its
 ## import settings.
 
-## The text to show. Supports A-Z, 0-9, spaces, ">" and "%" (lower case is
+## The text to show. Supports A-Z, 0-9, spaces and > % . : - (lower case is
 ## upper-cased).
 @export var text := "":
 	set(value):
@@ -71,6 +71,9 @@ const GLYPHS := {
 	"9": ["###", "#.#", "###", "..#", "##."],
 	">": ["#..", ".#.", "..#", ".#.", "#.."],
 	"%": ["#.#", "..#", ".#.", "#..", "#.#"],
+	".": ["...", "...", "...", "...", ".#."],
+	":": ["...", ".#.", "...", ".#.", "..."],
+	"-": ["...", "...", "###", "...", "..."],
 }
 
 

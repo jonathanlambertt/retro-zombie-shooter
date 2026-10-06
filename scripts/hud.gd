@@ -1,5 +1,6 @@
 extends CanvasLayer
-## Heads-up display: health, ammo and a crosshair.
+## Heads-up display: health, ammo, a crosshair, and the multiplayer status
+## in the top corner.
 ##
 ## A CanvasLayer draws 2D things on top of the 3D world. Because this HUD is
 ## placed inside the low-res SubViewport (see scenes/main.tscn), it is drawn
@@ -11,6 +12,8 @@ var player: Node
 @onready var health_text: Control = $HealthText
 @onready var ammo_text: Control = $AmmoText
 @onready var damage_tint: ColorRect = $DamageTint
+@onready var crosshair: ColorRect = $Crosshair
+@onready var network_text: Control = $NetworkText
 
 ## How see-through the red tint is at its strongest. 0 = invisible,
 ## 1 = solid red.
@@ -18,9 +21,13 @@ var player: Node
 
 
 func _process(_delta: float) -> void:
+	# "HOST  2 PLAYERS", "CONNECTING"... (empty in single player).
+	network_text.text = Network.hud_text()
+
 	# Find the player the first time (and again if the level was reloaded).
+	# Online there are several players: ours is the one in "local_player".
 	if not is_instance_valid(player):
-		player = get_tree().get_first_node_in_group("player")
+		player = get_tree().get_first_node_in_group("local_player")
 		if player == null:
 			return
 
@@ -34,3 +41,4 @@ func _process(_delta: float) -> void:
 	# how solid it is: the player sets hurt_flash to 1 when hurt and lets it
 	# fade back to 0, and the tint simply follows it.
 	damage_tint.color.a = player.hurt_flash * damage_tint_strength
+	crosshair.visible = player.wants_crosshair()

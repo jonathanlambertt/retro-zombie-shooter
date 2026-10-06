@@ -1,0 +1,136 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/explosive_pylon.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/pylon.tres" id="2_pylon"]
+[ext_resource type="Material" path="res://assets/materials/gun.tres" id="3_metal"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_pylon"]
+height = 1.4
+radius = 0.42
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+material = ExtResource("3_metal")
+top_radius = 0.5
+bottom_radius = 0.5
+height = 0.12
+radial_segments = 8
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+material = ExtResource("2_pylon")
+top_radius = 0.3
+bottom_radius = 0.42
+height = 1.1
+radial_segments = 8
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cap"]
+material = ExtResource("3_metal")
+top_radius = 0.24
+bottom_radius = 0.32
+height = 0.1
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
+shading_mode = 0
+albedo_color = Color(1, 0.15, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lamp"]
+material = SubResource("StandardMaterial3D_lamp")
+size = Vector3(0.16, 0.12, 0.16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spark"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_spark"]
+material = SubResource("StandardMaterial3D_spark")
+size = Vector2(0.06, 0.06)
+
+[sub_resource type="Gradient" id="Gradient_spark"]
+colors = PackedColorArray(1, 0.5, 0.1, 1, 1, 0.95, 0.6, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_scrap"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_scrap"]
+material = SubResource("StandardMaterial3D_scrap")
+size = Vector3(0.16, 0.04, 0.12)
+
+[sub_resource type="Gradient" id="Gradient_scrap"]
+colors = PackedColorArray(0.15, 0.15, 0.16, 1, 0.62, 0.13, 0.08, 1)
+
+[node name="ExplosivePylon" type="CharacterBody3D" groups=["breakable"]]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("CylinderShape3D_pylon")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Base" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("CylinderMesh_base")
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.67, 0)
+mesh = SubResource("CylinderMesh_body")
+
+[node name="Cap" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27, 0)
+mesh = SubResource("CylinderMesh_cap")
+
+[node name="Lamp" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, 0)
+mesh = SubResource("BoxMesh_lamp")
+
+[node name="Sparks" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+emitting = false
+amount = 12
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.4
+mesh = SubResource("QuadMesh_spark")
+direction = Vector3(0, 1, 0)
+spread = 35.0
+gravity = Vector3(0, -12, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 5.0
+scale_amount_min = 0.6
+scale_amount_max = 1.4
+color_initial_ramp = SubResource("Gradient_spark")
+
+[node name="Debris" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+emitting = false
+amount = 24
+lifetime = 1.2
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.3
+mesh = SubResource("BoxMesh_scrap")
+emission_shape = 1
+emission_sphere_radius = 0.35
+particle_flag_rotate_y = true
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -14, 0)
+initial_velocity_min = 3.0
+initial_velocity_max = 9.0
+angular_velocity_min = -500.0
+angular_velocity_max = 500.0
+angle_max = 360.0
+scale_amount_min = 0.6
+scale_amount_max = 1.6
+color_initial_ramp = SubResource("Gradient_scrap")
+
+[node name="FuseSound" type="AudioStreamPlayer" parent="."]
+volume_db = -24.0
+pitch_scale = 2.0

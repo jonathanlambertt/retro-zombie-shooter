@@ -22,6 +22,14 @@ extends CharacterBody3D
 ## Loses Limbs switched on: shoot it in an arm, a leg or the head often enough
 ## and that part comes off (see "Dismemberment" further down).
 ##
+## With several players it goes after the nearest one it can see.
+##
+## Multiplayer (see scripts/network.gd): only the host's copy thinks and
+## moves. Its Sync node sends the position, turn, speed, state, attacks and
+## lost limbs to everyone else, whose copies just animate to match (the
+## setters on those variables below start the matching animation). Shots
+## can hit any copy: take_damage() passes the damage on to the host.
+##
 ## Limitation: it walks in a straight line towards the player, so it can get
 ## stuck behind walls. Proper pathfinding (NavigationAgent3D) is a next step.
 
@@ -81,12 +89,33 @@ const PAIN_TIME := 0.25
 @export_range(0.0, 1.0) var crawl_speed_factor := 0.4
 
 var health := 0
-var state := State.IDLE
+## What it is doing. Online the host's copy decides, and the others are sent
+## each change; the setter starts the animation that goes with it.
+var state := State.IDLE:
+	set(value):
+		var previous := state
+		state = value
+		if value == State.CHASE and previous == State.IDLE:
+			alert_timer = ALERT_TIME
+		elif value == State.DEAD and previous != State.DEAD:
+			_play_death()
+## Which way it falls when it dies: 1 = onto its back, -1 = onto its face.
+## Picked by the host and sent along with the state, so it falls the same
+## way for everyone.
+var death_direction := 1.0
+## How many attacks it has made. The number itself doesn't matter: each time
+## it goes up (here or over the network) the attack animation plays.
+var attacks := 0:
+	set(value):
+		attacks = value
+		attack_timer = ATTACK_TIME
 var attack_cooldown := 0.0
 ## Seconds until the next line-of-sight check. Looking only a few times a
 ## second is plenty, and the short initial wait gives the level's collision
 ## time to be built before the first check (CSG builds it on the first frame).
 var sight_check_cooldown := 0.5
+## The player it is after (or null). With several players it picks again
+## every so often, so it goes for whoever is closest.
 var player: Node3D
 
 ## A clock for the animations that repeat (breathing, looking around). It
@@ -103,6 +132,14 @@ var pain_timer := 0.0
 var limb_damage := {}
 ## The names of the limbs that have been shot off.
 var lost_limbs: Array[String] = []
+## The same list, as sent over the network by the host. When it arrives with
+## a new limb in it, that limb comes off here too.
+var severed := PackedStringArray():
+	set(value):
+		severed = value
+		for limb in value:
+			if limb not in lost_limbs:
+				_lose_limb(limb)
 ## The names of the limbs that took enough damage to come off but held on
 ## (see head_loss_chance). They can't be shot off any more.
 var sturdy_limbs: Array[String] = []
@@ -126,9 +163,6 @@ var crawling := false
 
 func _ready() -> void:
 	health = max_health
-	# The player scene is in the "player" group, which lets us find it
-	# without knowing where it sits in the scene tree.
-	player = get_tree().get_first_node_in_group("player")
 	# Start with the arms already hanging down.
 	arm_left.rotation.x = ARMS_DOWN
 	arm_right.rotation.x = ARMS_DOWN
@@ -137,22 +171,41 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if state == State.DEAD or player == null:
+	if state == State.DEAD:
+		return
+	if not is_multiplayer_authority():
+		# Someone else is the host, and sends where this enemy is. Between
+		# their updates, keep it moving at the speed it was last sent, so it
+		# glides along instead of jumping from spot to spot.
+		global_position += Vector3(velocity.x, 0.0, velocity.z) * delta
 		return
 
 	attack_cooldown = maxf(attack_cooldown - delta, 0.0)
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
+	# A few times a second: while idle, look for a player near enough and
+	# not hidden behind a wall; while chasing, switch to whichever player is
+	# closest now.
+	sight_check_cooldown -= delta
+	if sight_check_cooldown <= 0.0:
+		sight_check_cooldown = 0.25
+		if state == State.IDLE:
+			var seen := _closest_player(true)
+			if seen:
+				player = seen
+				_wake_up()
+		else:
+			player = _closest_player(false)
+	if not is_instance_valid(player):
+		player = null
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		return
+
 	var to_player := player.global_position - global_position
 	var distance := to_player.length()
-
-	# Wake up when the player is near enough and not hidden behind a wall.
-	sight_check_cooldown -= delta
-	if state == State.IDLE and sight_check_cooldown <= 0.0:
-		sight_check_cooldown = 0.25
-		if distance < sight_range and _can_see_player():
-			_wake_up()
 
 	velocity.x = 0.0
 	velocity.z = 0.0
@@ -171,7 +224,7 @@ func _physics_process(delta: float) -> void:
 			velocity.z = flat_direction.z * speed
 		elif attack_cooldown == 0.0:
 			attack_cooldown = attack_interval
-			attack_timer = ATTACK_TIME
+			attacks += 1  # plays the attack animation everywhere
 			player.take_damage(_attack_strength())
 
 	move_and_slide()
@@ -294,16 +347,27 @@ func _animate(delta: float) -> void:
 	model.position.y = lerpf(model.position.y, bob, blend)
 
 
-## Switches from standing around to chasing the player.
+## Switches from standing around to chasing the player. (Setting the state
+## plays the "alert" animation, see the setter on "state".)
 func _wake_up() -> void:
 	if state != State.IDLE:
 		return
 	state = State.CHASE
-	alert_timer = ALERT_TIME
+	if player == null:
+		player = _closest_player(false)
 
 
 ## Called by weapons when a shot hits this enemy.
+##
+## The @rpc line lets other computers call this function on this one. Only
+## the host's copy keeps track of health, so a hit on any other copy (from
+## a player who joined the host's game) is sent to the host: rpc_id runs
+## this same function there. (In single player we are the host.)
+@rpc("any_peer", "call_remote", "reliable")
 func take_damage(amount: int) -> void:
+	if not is_multiplayer_authority():
+		take_damage.rpc_id(get_multiplayer_authority(), amount)
+		return
 	if state == State.DEAD:
 		return
 	health -= amount
@@ -320,11 +384,21 @@ func take_damage(amount: int) -> void:
 ## Sprays blood from a wound. Weapons call this with the spot they hit and
 ## the direction pointing straight out of it. Vector3.ZERO means "no
 ## particular direction": the blood goes up and lands all around.
+##
+## Blood is for everyone to see, so this sends the wound to every computer
+## (rpc() runs _bleed here and on all the others). The host's copy also
+## notes which limb was hit; the damage that follows arrives after this.
 func bleed(at: Vector3, spray_direction: Vector3, drop_count := 12) -> void:
+	_bleed.rpc(at, spray_direction, drop_count)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func _bleed(at: Vector3, spray_direction: Vector3, drop_count: int) -> void:
 	if state == State.DEAD:
 		return
 	# Remember which limb this wound is on, for take_damage().
 	wounded_limb = _limb_at(at) if spray_direction != Vector3.ZERO else "random"
+	pain_timer = PAIN_TIME
 	_spray_blood(at, spray_direction, drop_count)
 
 
@@ -336,18 +410,22 @@ func _spray_blood(at: Vector3, spray_direction: Vector3, drop_count: int) -> voi
 	splash.splash(at, spray_direction, blood_color, drop_count)
 
 
+## Runs on the host. Setting the state sends it to everyone, and its
+## setter plays the death below on every computer.
 func _die() -> void:
-	# One last, bigger burst from the chest. (This has to come before the
-	# state changes, because the dead don't bleed.)
-	_spray_blood(global_position + Vector3.UP * 1.0, Vector3.ZERO, 40)
+	death_direction = 1.0 if randf() < 0.5 else -1.0
 	state = State.DEAD
+
+
+func _play_death() -> void:
+	# One last, bigger burst from the chest.
+	_spray_blood(global_position + Vector3.UP * 1.0, Vector3.ZERO, 40)
 	# Turn collision off so the body no longer blocks movement or bullets.
 	# set_deferred waits until the physics engine is ready for the change.
 	collision_shape.set_deferred("disabled", true)
 
-	# Tip the model over and leave it there as a corpse. 1 = onto its back,
-	# -1 = onto its face.
-	var direction := 1.0 if randf() < 0.5 else -1.0
+	# Tip the model over and leave it there as a corpse.
+	var direction := death_direction
 	# A Tween animates properties over time. set_parallel makes every
 	# tween_property below run at once instead of one after another.
 	var tween := create_tween().set_parallel()
@@ -410,6 +488,8 @@ func _damage_limb(limb: String, amount: int) -> void:
 		# "chance" of the time.
 		if randf() < _loss_chance(limb):
 			_lose_limb(limb)
+			# Send the new list to everyone else (see "severed").
+			severed = PackedStringArray(lost_limbs)
 		else:
 			sturdy_limbs.append(limb)
 
@@ -487,13 +567,27 @@ func _start_crawling() -> void:
 	collision_shape.set_deferred("position", Vector3.UP * low_shape.height / 2.0)
 
 
-## Traces a ray from the enemy's eyes to the player's. If the first thing it
-## touches is the player (or nothing at all), the view is clear.
-func _can_see_player() -> bool:
+## The nearest player, or null if there are none. With "must_see" true,
+## only players within sight range and in clear view count.
+func _closest_player(must_see: bool) -> Node3D:
+	var closest: Node3D = null
+	var closest_distance := sight_range if must_see else INF
+	# Every player is in the "player" group, ours and everyone else's.
+	for candidate: Node3D in get_tree().get_nodes_in_group("player"):
+		var distance := global_position.distance_to(candidate.global_position)
+		if distance < closest_distance and (not must_see or _can_see(candidate)):
+			closest = candidate
+			closest_distance = distance
+	return closest
+
+
+## Traces a ray from the enemy's eyes to a player's. If the first thing it
+## touches is that player (or nothing at all), the view is clear.
+func _can_see(target: Node3D) -> bool:
 	# (Player and enemy eyes are both about 1.4 m up, unless it is crawling.)
 	var eye_height := Vector3.UP * (1.4 if not crawling else 0.4)
 	var query := PhysicsRayQueryParameters3D.create(
-			global_position + eye_height, player.global_position + eye_height)
+			global_position + eye_height, target.global_position + eye_height)
 	query.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
-	return hit.is_empty() or hit.collider == player
+	return hit.is_empty() or hit.collider == target

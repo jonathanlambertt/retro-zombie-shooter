@@ -11,7 +11,9 @@ extends CharacterBody3D
 ## It is weak (two pistol shots) but small, quick and hard to hit mid-leap.
 ##
 ## Like scripts/enemy.gd, its animations are made with code: _animate() turns
-## the legs, fangs and body a little every frame.
+## the legs, fangs and body a little every frame. Also like the enemy, it goes
+## for the nearest player, and online only the host's copy thinks: the others
+## are sent its position, speed and state (see the Sync node) and animate.
 ##   idle    - breathes, fangs twitch now and then
 ##   scuttle - legs paddle in diagonal pairs, body rocks from side to side
 ##   crouch  - sinks down, rears back and spreads its legs
@@ -51,7 +53,16 @@ const PAIN_TIME := 0.2
 @export var blood_color := Color(0.78, 0.82, 0.1)
 
 var health := 0
-var state := State.IDLE
+## What it is doing. Online the host's copy decides, and the others are sent
+## each change; the setter starts the animation that goes with it.
+var state := State.IDLE:
+	set(value):
+		var previous := state
+		state = value
+		if previous == State.LEAP and value == State.CHASE:
+			land_timer = LAND_TIME
+		elif value == State.DEAD and previous != State.DEAD:
+			_play_death()
 var leap_cooldown := 0.0
 ## How long the current crouch has lasted.
 var crouch_timer := 0.0
@@ -61,6 +72,7 @@ var leap_time := 0.0
 var leap_has_hit := false
 ## Seconds until the next line-of-sight check (see scripts/enemy.gd).
 var sight_check_cooldown := 0.5
+## The player it is after (or null).
 var player: Node3D
 
 ## A clock for the animations that repeat. It starts at a random value so a
@@ -92,12 +104,24 @@ const LEG_SPLAY := 0.52
 
 func _ready() -> void:
 	health = max_health
-	player = get_tree().get_first_node_in_group("player")
 
 
 func _physics_process(delta: float) -> void:
-	if player == null:
+	if not is_multiplayer_authority():
+		# Someone else is the host, and sends where the crawler is. Between
+		# their updates, keep it moving at the speed it was last sent.
+		if state != State.DEAD:
+			global_position += velocity * delta
 		return
+	# A few times a second, go after whichever player is closest now. (While
+	# idle, _idle() does its own looking.)
+	if state != State.IDLE and state != State.DEAD:
+		sight_check_cooldown -= delta
+		if sight_check_cooldown <= 0.0:
+			sight_check_cooldown = 0.25
+			player = _closest_player(false)
+	if not is_instance_valid(player) and state != State.IDLE and state != State.DEAD:
+		state = State.IDLE
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
@@ -127,8 +151,9 @@ func _idle(delta: float) -> void:
 	sight_check_cooldown -= delta
 	if sight_check_cooldown <= 0.0:
 		sight_check_cooldown = 0.25
-		var distance := global_position.distance_to(player.global_position)
-		if distance < sight_range and _can_see_player():
+		var seen := _closest_player(true)
+		if seen:
+			player = seen
 			state = State.CHASE
 
 
@@ -188,10 +213,10 @@ func _start_leap(direction: Vector3, distance: float, height_difference: float) 
 func _leap(delta: float) -> void:
 	leap_time += delta
 	# Back on the ground (after at least a moment in the air): leap is over.
+	# (Going from LEAP to CHASE plays the landing, see the setter on state.)
 	if leap_time > 0.1 and is_on_floor():
 		state = State.CHASE
 		leap_cooldown = leap_cooldown_time
-		land_timer = LAND_TIME
 
 
 ## After moving, see whether the crawler bumped into the player.
@@ -200,9 +225,10 @@ func _check_leap_hit() -> void:
 		return
 	# move_and_slide() remembers everything the body touched this step.
 	for i in get_slide_collision_count():
-		if get_slide_collision(i).get_collider() == player:
+		var collider := get_slide_collision(i).get_collider() as Node
+		if collider and collider.is_in_group("player"):
 			leap_has_hit = true
-			player.take_damage(leap_damage)
+			collider.take_damage(leap_damage)
 			# Bounce off instead of sticking to the player.
 			velocity.x *= -0.3
 			velocity.z *= -0.3
@@ -278,25 +304,40 @@ func _animate(delta: float) -> void:
 		node.rotation.z = lerpf(node.rotation.z, (LEG_SPLAY + leg_spread) * leg.side, blend)
 
 
-## Called by weapons when a shot hits this enemy.
+## Called by weapons when a shot hits this enemy. Like the enemy's (see
+## scripts/enemy.gd), a hit on any copy but the host's is sent to the host.
+@rpc("any_peer", "call_remote", "reliable")
 func take_damage(amount: int) -> void:
+	if not is_multiplayer_authority():
+		take_damage.rpc_id(get_multiplayer_authority(), amount)
+		return
 	if state == State.DEAD:
 		return
 	health -= amount
-	pain_timer = PAIN_TIME
-	pain_side = 1.0 if randf() < 0.5 else -1.0
 	if state == State.IDLE:
 		state = State.CHASE
+		player = _closest_player(false)
 	if health <= 0:
-		_die()
+		state = State.DEAD  # the setter plays the death on every computer
 
 
-## Sprays blood from a wound. Weapons call this with the spot they hit and
-## the direction pointing straight out of it. Vector3.ZERO means "no
-## particular direction": the blood goes up and lands all around.
+## Sprays blood from a wound, on every computer. Weapons call this with the
+## spot they hit and the direction pointing straight out of it. Vector3.ZERO
+## means "no particular direction": the blood goes up and lands all around.
 func bleed(at: Vector3, spray_direction: Vector3, drop_count := 12) -> void:
+	_bleed.rpc(at, spray_direction, drop_count)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func _bleed(at: Vector3, spray_direction: Vector3, drop_count: int) -> void:
 	if state == State.DEAD:
 		return
+	pain_timer = PAIN_TIME
+	pain_side = 1.0 if randf() < 0.5 else -1.0
+	_spray_blood(at, spray_direction, drop_count)
+
+
+func _spray_blood(at: Vector3, spray_direction: Vector3, drop_count: int) -> void:
 	var splash := BLOOD_SPLASH_SCENE.instantiate()
 	# Add it to the level rather than to this enemy, so the drops fall
 	# where they were shed instead of following the enemy around.
@@ -304,11 +345,9 @@ func bleed(at: Vector3, spray_direction: Vector3, drop_count := 12) -> void:
 	splash.splash(at, spray_direction, blood_color, drop_count)
 
 
-func _die() -> void:
-	# One last, bigger burst. (This has to come before the state changes,
-	# because the dead don't bleed.)
-	bleed(global_position + Vector3.UP * 0.3, Vector3.ZERO, 30)
-	state = State.DEAD
+func _play_death() -> void:
+	# One last, bigger burst.
+	_spray_blood(global_position + Vector3.UP * 0.3, Vector3.ZERO, 30)
 	# Take it off every collision layer so shots and the player pass through
 	# the corpse. It keeps its collision MASK, so it still lands on the floor
 	# if it was killed in mid-air.
@@ -334,10 +373,23 @@ func _die() -> void:
 			twitch.tween_property(node, "rotation:z", curled, randf_range(0.1, 0.2))
 
 
-func _can_see_player() -> bool:
+## The nearest player, or null if there are none. With "must_see" true,
+## only players within sight range and in clear view count.
+func _closest_player(must_see: bool) -> Node3D:
+	var closest: Node3D = null
+	var closest_distance := sight_range if must_see else INF
+	for candidate: Node3D in get_tree().get_nodes_in_group("player"):
+		var distance := global_position.distance_to(candidate.global_position)
+		if distance < closest_distance and (not must_see or _can_see(candidate)):
+			closest = candidate
+			closest_distance = distance
+	return closest
+
+
+func _can_see(target: Node3D) -> bool:
 	# The crawler's eyes are near the floor; the player's are at 1.4 m.
 	var query := PhysicsRayQueryParameters3D.create(
-			global_position + Vector3.UP * 0.3, player.global_position + Vector3.UP * 1.4)
+			global_position + Vector3.UP * 0.3, target.global_position + Vector3.UP * 1.4)
 	query.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
-	return hit.is_empty() or hit.collider == player
+	return hit.is_empty() or hit.collider == target

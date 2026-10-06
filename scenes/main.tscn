@@ -45,6 +45,7 @@ offset_bottom = 240.0
 
 [node name="GameViewport" type="SubViewport" parent="ViewportContainer"]
 handle_input_locally = false
+audio_listener_enable_3d = true
 snap_2d_transforms_to_pixel = true
 canvas_item_default_texture_filter = 0
 msaa_2d = 0

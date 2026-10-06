@@ -9,6 +9,9 @@ extends Node3D
 ## The fire button shoots one shell. The second fire button (right mouse)
 ## shoots two at once, for double the pellets and a longer wait afterwards.
 ## It never runs out of shells.
+##
+## Online, the other players' games repeat each shot with replay_shot(): the
+## same pellets leave the same holes, but do no damage there.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
@@ -74,25 +77,41 @@ func fire(shells: int) -> void:
 		return
 	cooldown = fire_interval if shells == 1 else double_fire_interval
 
-	for i in pellets * shells:
-		_trace_pellet()
-	_play_effects(shells)
-
-
-## Traces one pellet's ray and damages whatever it hits.
-func _trace_pellet() -> void:
-	var camera := get_viewport().get_camera_3d()
+	# The pellets fly from the player's eyes. ("owner" is the player; its
+	# camera is the first-person one, whichever view is showing.)
+	var camera: Camera3D = owner.camera
 	var from := camera.global_position
-	# Start with straight ahead (a camera looks along its own negative Z
-	# axis), then push it off-centre by a random amount up/down and
-	# left/right. "aim.x" and "aim.y" are the camera's right and up.
-	var aim := camera.global_transform.basis
-	var spread := tan(deg_to_rad(spread_degrees))
-	var direction := -aim.z
-	direction += aim.x * randf_range(-spread, spread)
-	direction += aim.y * randf_range(-spread, spread)
-	var to := from + direction.normalized() * max_range
+	# Where each pellet's ray ends. A PackedVector3Array is a compact list
+	# of Vector3s, which is cheap to send over the network.
+	var ends := PackedVector3Array()
+	for i in pellets * shells:
+		# Start with straight ahead (a camera looks along its own negative Z
+		# axis), then push it off-centre by a random amount up/down and
+		# left/right. "aim.x" and "aim.y" are the camera's right and up.
+		var aim := camera.global_transform.basis
+		var spread := tan(deg_to_rad(spread_degrees))
+		var direction := -aim.z
+		direction += aim.x * randf_range(-spread, spread)
+		direction += aim.y * randf_range(-spread, spread)
+		ends.append(from + direction.normalized() * max_range)
 
+	for to in ends:
+		_trace_pellet(from, to, true)
+	_play_effects(shells)
+	# Let the other players see it too.
+	owner.share_shot(self, [from, ends])
+
+
+## Repeats a shot fired on another computer (see the top of this script).
+## Returns the sound for the shooter's body to play.
+func replay_shot(shot: Array) -> AudioStream:
+	for to: Vector3 in shot[1]:
+		_trace_pellet(shot[0], to, false)
+	return shoot_sound
+
+
+## Traces one pellet's ray, and damages whatever it hits if "hurts" is true.
+func _trace_pellet(from: Vector3, to: Vector3, hurts: bool) -> void:
 	var query := PhysicsRayQueryParameters3D.create(from, to)
 	# "owner" is the root of the scene this gun was placed in: the player.
 	# Exclude it so we can never shoot ourselves.
@@ -104,10 +123,11 @@ func _trace_pellet() -> void:
 	if hit.is_empty():
 		return
 	# Things that bleed spray blood from the spot that was hit.
-	if hit.collider.has_method("bleed"):
-		hit.collider.bleed(hit.position, hit.normal, 4)
 	if hit.collider.has_method("take_damage"):
-		hit.collider.take_damage(damage)
+		if hurts:
+			if hit.collider.has_method("bleed"):
+				hit.collider.bleed(hit.position, hit.normal, 4)
+			hit.collider.take_damage(damage)
 	else:
 		# Walls and floors get a bullet hole for every pellet.
 		var hole := BULLET_HOLE_SCENE.instantiate()

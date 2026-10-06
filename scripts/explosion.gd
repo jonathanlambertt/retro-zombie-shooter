@@ -20,6 +20,11 @@ const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
 ## explosion. If left empty, a burst of noise is generated as a stand-in.
 @export var explosion_sound: AudioStream
 
+## False for an explosion that is only for show. Online, every game draws
+## each explosion, but only one of them (the game that fired the rocket or
+## grenade, or the host for a pylon) deals the damage.
+var deals_damage := true
+
 @onready var fireball: MeshInstance3D = $Fireball
 @onready var flash_light: OmniLight3D = $FlashLight
 @onready var sound_player: AudioStreamPlayer = $Sound
@@ -27,7 +32,8 @@ const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")
 
 
 func detonate() -> void:
-	_damage_everything_nearby()
+	if deals_damage:
+		_damage_everything_nearby()
 
 	if explosion_sound == null:
 		explosion_sound = PlaceholderSound.make_noise_burst(0.6)
@@ -51,8 +57,9 @@ func detonate() -> void:
 	tween.tween_callback(queue_free)
 
 
-## Hurts the player, every enemy and every crate within the blast radius. The closer they
-## are, the more it hurts. Yes, that includes whoever fired it!
+## Hurts the player, every enemy and every crate or pylon within the blast
+## radius. The closer they are, the more it hurts. Yes, that includes
+## whoever fired it!
 func _damage_everything_nearby() -> void:
 	var targets := get_tree().get_nodes_in_group("enemy")
 	targets.append_array(get_tree().get_nodes_in_group("player"))
