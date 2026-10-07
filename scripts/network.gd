@@ -68,6 +68,9 @@ var player_spawner: MultiplayerSpawner
 ## Where players start in the current level: the spot where the level's own
 ## Player node stood (see _make_level).
 var spawn_point := Transform3D()
+## The weapon players start the current level with: that Player node's
+## Starting Weapon (its place in the player's weapons list).
+var spawn_weapon := 0
 ## Peer IDs in the order the players joined, host first. Only the host keeps
 ## this; it decides the armour colours.
 var join_order: Array[int] = []
@@ -374,11 +377,13 @@ func spawn_level(index: int) -> void:
 ## The level spawner's spawn function. Runs on every computer.
 func _make_level(index: int) -> Node:
 	var level: Node = main.levels[index].instantiate()
-	# The level's own Player only marks where to start: online, everyone gets
-	# a player of their own instead (see _make_player).
+	# The level's own Player only marks where to start, and with which
+	# weapon: online, everyone gets a player of their own instead (see
+	# _make_player).
 	var placeholder := level.get_node_or_null("Player") as Node3D
 	if placeholder:
 		spawn_point = placeholder.transform
+		spawn_weapon = placeholder.starting_weapon
 		level.remove_child(placeholder)
 		placeholder.free()
 	return level
@@ -434,6 +439,7 @@ func _make_player(data: Dictionary) -> Node:
 	# reads it in _enter_tree() to know whose it is.
 	player.name = str(data.id)
 	player.transform = Transform3D(spawn_point.basis, data.position)
+	player.starting_weapon = spawn_weapon
 	player.get_node("Model").armor_color = PLAYER_COLORS[data.color % PLAYER_COLORS.size()]
 	return player
 

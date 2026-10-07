@@ -103,6 +103,7 @@ levels/
   test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
   test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
   office.tscn          One office break room, testing a window that zombies climb through
+  start-level-demo.tscn Test map 2's control room and labs, copied out on their own
   test_room.tscn       Two-storey block-built building for testing destruction
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
@@ -266,8 +267,18 @@ Select a node and use the Inspector; every value is an exported variable.
   crouched; standing it is 1.8), **Crouch Speed** and **Crouch Transition
   Speed** (how fast the view sinks and rises).
 
+  Under **Weapons**: **Starting Weapon**, the gun in your hands when a level
+  starts (the pistol, unless changed). Every level has a `Player` node of
+  its own, so select that node in a level to change it for that level only,
+  as `levels/start-level-demo.tscn` does (machine gun); changing it in
+  `scenes/player.tscn` changes it for every level that hasn't set its own.
+  It works the same in multiplayer: everyone starts a level with the weapon
+  its `Player` node says.
+
   To add another weapon: make its scene, place it under `Head/Camera3D` in
-  the player scene, add it to the `weapons` list in `scripts/player.gd`, and
+  the player scene, add it to the `weapons` list in `scripts/player.gd` (and
+  its name, in the same place, to the list of names on the `starting_weapon`
+  line near the top of that script), and
   give it a `weapon_5` input action (Project > Project Settings > Input Map).
   The mouse wheel picks it up automatically. Its script needs a `get_hud_text()`
   function, which returns the words shown in the bottom-right corner. If it
@@ -325,8 +336,9 @@ Select a node and use the Inspector; every value is an exported variable.
   **Shoot Sound**. It never runs out of shells.
 - **Breakable glass** (`scenes/breakable_glass.tscn`): **Size** (width and
   height, in metres), health (20 = two pistol shots) and **Break Sound**.
-  Each hit cracks it where it lands; its `Shards` node is the burst of glass
-  when it breaks.
+  Each hit leaves a bullet hole where it lands, with a few cracks running
+  out of it (`glass_crack.png`, turned a different way each time); its
+  `Shards` node is the burst of glass when it breaks.
 - **Crate** (`scenes/crate.tscn`): health (20 = two pistol shots) and size.
   Its `Debris` node is the splinters. To add one to a level, drag
   `scenes/crate.tscn` into the level; set **Size** on it for a bigger one.
@@ -602,7 +614,7 @@ If you die, you restart in the level you were playing.
 
 The levels are listed on the `Main` node in `scenes/main.tscn`, under
 **Levels** in the Inspector. The game starts in the first one on the list
-(currently `levels/half-life-level.tscn`), so drag a different level to the
+(currently `levels/start-level-demo.tscn`), so drag a different level to the
 top to start there instead. A new level has to be added to this list before
 F2 will reach it.
 
@@ -613,16 +625,47 @@ Autoload**) notices that a scene from `levels/` was started and restarts it
 inside `scenes/main.tscn`. This works for a level that isn't on the list yet
 too; it is added to the end of the list for that run.
 
+### The start level demo
+
+`levels/start-level-demo.tscn` is the first level, so it is the one the game
+starts in. It is four pieces of test map 2 copied out on their own: the
+control room, the experimentation lab it looks down into, the lab below the
+control room, and the torn-out containment door that joins those two labs.
+Everything in those rooms is where it is in test map 2 (see "The control
+room and the experimentation lab" below), with the same notebook and eleven
+of its zombies: six in the experimentation lab and five in the lab below.
+
+Two things are different from test map 2. You start with the machine gun in
+your hands instead of the pistol: that is **Starting Weapon** on the
+level's `Player` node, and the other guns are still on their number keys.
+And four of the five monitors show programs. The two on the console in
+front of you have three lines of one, yellow on blue
+(`monitor_screen_code.png`), instead of the alarm and the dead camera. The
+ones on the left and middle desks by the window have a longer one, too
+small to read: green lines on black (`monitor_screen_listing.png`), instead
+of the cells' status and subject 7's heart. The right desk still has the
+abandoned game.
+
+The rest of test map 2 is not there. Where the control room's corridor and
+the lower lab's three exits (to the atrium, the warehouse and the tunnels)
+used to be, there is plain wall. So the only way down from the control room
+is the observation window: shoot out a pane, jump onto the sill and drop
+into the lab. From there the hole in the south wall leads into the lab
+below, which is a dead end.
+
+It is a copy, not a link: changing one of the two levels does not change
+the other.
+
 ### The Half-Life level
 
-`levels/half-life-level.tscn` is a security checkpoint, a long hallway with
-two offices, a loading bay full of crates, and a core room with a pit of
-toxic slime crossed by a catwalk. Its only enemies are zombies, sixteen of
-them. Standing in the slime hurts.
+`levels/half-life-level.tscn` (the second level, so one press of F2) is a
+security checkpoint, a long hallway with two offices, a loading bay full of
+crates, and a core room with a pit of toxic slime crossed by a catwalk. Its
+only enemies are zombies, sixteen of them. Standing in the slime hurts.
 
 ### The test map
 
-`levels/test-map.tscn` (the second level, so one press of F2) is a bigger
+`levels/test-map.tscn` (the third level, so two presses of F2) is a bigger
 facility in the style of the Half-Life level, laid out for holding off waves
 of zombies. You start in a security checkpoint on the south side, which opens
 onto a tall 20 x 20 m hub with four pillars and some crates for cover. The
@@ -639,7 +682,7 @@ sight, so they arrive in groups as you move through the level.
 
 ### Test map 2
 
-`levels/test-map-2.tscn` (the third level, so two presses of F2) is larger
+`levels/test-map-2.tscn` (the fourth level, so three presses of F2) is larger
 than the test map and mixes open rooms with tight ones. A small checkpoint
 opens onto a tall 24 x 24 m atrium. From there:
 
@@ -692,7 +735,7 @@ again, move `Player` back to (0, 0.1, 27).
 
 ### The facility test level
 
-`levels/test_facility.tscn` (the fourth level, so three presses of
+`levels/test_facility.tscn` (the fifth level, so four presses of
 F2) is a lobby, a corridor, a lab, a storage room and a tall test chamber
 carved out of one block, with six zombies in it. The glowing
 lamps, screens and the green sample under `Details` are only for show; the
@@ -701,7 +744,7 @@ at most 8 lamps shine on one object, and a level's walls are one object.
 
 ### The office
 
-`levels/office.tscn` (the fifth level: four presses of F2, or two of F3
+`levels/office.tscn` (the sixth level: five presses of F2, or two of F3
 from the first level) is a single room: an office break room, built
 as a test of a window that zombies climb through. You start facing the
 window. Five zombies wait in a brick yard on the other side of that wall;
@@ -710,7 +753,7 @@ drop in. There is no way out of the room, so it is a short fight.
 
 ### The test room
 
-`levels/test_room.tscn` (the sixth and last level: one press of F3 from the
+`levels/test_room.tscn` (the seventh and last level: one press of F3 from the
 first level) is a two-storey building, 24 x 16 m. The ground
 floor is a hall with six pillars holding up the upper floor, with stairs
 behind a lab wall at the east end. Upstairs there are pillars too, and a
@@ -754,7 +797,7 @@ and change **Title** and **Pages** in the Inspector: Pages is a list with
 one entry for each page, so add an entry to add a page. A page is one
 paragraph of at most 150 words (it has 22 lines of 48 letters; the game
 prints a warning if a page runs off the bottom), and the pixel font only
-has capital letters, digits and `. , : - ' ! ?`. **Reach** is how close you
+has capital letters, digits and `. , : ; = - ' ! ?`. **Reach** is how close you
 must be, and **Aim** how squarely you must look at it.
 
 To add another, drag `scenes/notebook.tscn` under a level's `Props` and set
@@ -811,7 +854,9 @@ editor, so turn that arrow to face into the room.
 - **Monitor** (`scenes/monitor.tscn`): a 40 cm beige box on a foot, solid
   like the furniture. **Screen** is the picture on the glass: drag one of
   the `monitor_screen_*.png` textures onto it (`cells`, `vitals`, `pong`,
-  `signal`, `breach`), or a 26 x 22 pixel picture of your own. The screen
+  `signal`, `breach`, `code`: three lines of a program in yellow on blue,
+  and `listing`: a screen of green lines on black, like a program too small
+  to read), or a 26 x 22 pixel picture of your own. The screen
   glows: the room's lights don't change it.
 - **Keyboard** (`scenes/keyboard.tscn`) and **cup** (`scenes/cup.tscn`): only
   for show, so shots pass through them and you can walk over them if you

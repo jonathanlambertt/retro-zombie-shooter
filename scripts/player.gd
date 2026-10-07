@@ -108,6 +108,14 @@ enum View { FIRST_PERSON, BEHIND, FRONT }
 ## How quickly the red tint fades after being hurt. 2 = gone in half a second.
 @export var hurt_fade_speed := 2.0
 
+@export_group("Weapons")
+## The weapon in your hands when a level starts. Every level has a Player
+## node of its own, so set this on that node to start one level with a
+## different gun from the rest. The number saved is the weapon's place in
+## the weapons list further down (0 = the first), so these names must stay
+## in the same order as that list.
+@export_enum("Pistol", "Machine gun", "Rocket launcher", "Shotgun", "MP40") var starting_weapon := 0
+
 var health := 0
 ## How strong the red "you are being hurt" tint is right now, from 0 (none)
 ## to 1 (full). It jumps to 1 on every hit and then fades. The HUD reads it.
@@ -141,7 +149,8 @@ var crouch_shape: CapsuleShape3D
 var stand_eye_height := 0.0
 
 @onready var head: Node3D = $Head
-## Every weapon the player carries, in the order of the number keys.
+## Every weapon the player carries, in the order of the number keys. (The
+## names offered for Starting Weapon, above, are in this order too.)
 @onready var weapons: Array[Node3D] = [
 	$Head/Camera3D/Pistol,
 	$Head/Camera3D/MachineGun,
@@ -179,7 +188,7 @@ func _ready() -> void:
 	health = max_health
 	for weapon in weapons:
 		weapon_rest_positions.append(weapon.position)
-	_select_weapon(0)
+	_select_weapon(starting_weapon)
 	if hurt_sound == null:
 		hurt_sound = PlaceholderSound.make_grunt()
 	hurt_sound_player.stream = hurt_sound

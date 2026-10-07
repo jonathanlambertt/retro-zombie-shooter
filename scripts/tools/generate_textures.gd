@@ -132,6 +132,12 @@ func _init() -> void:
 	_save(_make_water_cooler(), "water_cooler")
 	_save(_make_water_bottle(), "water_bottle")
 	_save(_make_poster_chart_printout(), "poster_chart_printout")
+	# One more monitor screen: somebody's program, on the two monitors of the
+	# console in start-level-demo's control room.
+	_save(_make_monitor_screen_code(), "monitor_screen_code")
+	# And another: a longer program, too small to read, on the monitors of
+	# the left and middle desks in the same room.
+	_save(_make_monitor_screen_listing(), "monitor_screen_listing")
 	quit()
 
 
@@ -2429,49 +2435,134 @@ func _make_desk_drawers() -> Image:
 # Both are white on a see-through background: the glass's materials tint
 # them and make them partly transparent.
 
-## Sets one pixel of a crack, if it is inside the image.
-func _crack_pixel(image: Image, point: Vector2) -> void:
-	var x := int(point.x)
-	var y := int(point.y)
+## How many numbers the first version of the crack below (a spider's web)
+## took from rng. See _make_glass_crack() for why that still matters.
+const GLASS_CRACK_OLD_DRAWS := 612
+
+
+## Marks one pixel of a crack, if it is inside the image. "strength" is how
+## solid it is, from 0 (not there) to 1; a pixel is never made fainter.
+func _crack_pixel(image: Image, point: Vector2, strength: float) -> void:
+	var x := floori(point.x)
+	var y := floori(point.y)
 	if x >= 0 and y >= 0 and x < image.get_width() and y < image.get_height():
-		var brightness := rng.randf_range(0.8, 1.0)
-		image.set_pixel(x, y, Color(brightness, brightness, brightness, 1.0))
+		if image.get_pixel(x, y).a < strength:
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, strength))
 
 
-## A bullet's crack in a pane of glass: lines wandering out from a chipped
-## middle, joined by rings like a spider's web.
+## Draws one straight piece of a crack from "from" to "to", fading from one
+## strength to the other along the way.
+func _crack_run(image: Image, from: Vector2, to: Vector2, strength_from: float, strength_to: float) -> void:
+	# Two samples per pixel of length, so no pixel on the way is skipped.
+	var steps := ceili(from.distance_to(to) * 2.0) + 1
+	for step in steps + 1:
+		var t := float(step) / steps
+		_crack_pixel(image, from.lerp(to, t), lerpf(strength_from, strength_to, t))
+
+
+## A bullet's mark in a pane of glass: a small hole punched through it, in a
+## patch of crushed white glass, with five splits running out from it. The
+## splits are straight with a sharp bend or two, of very different lengths
+## and unevenly spaced, and the long ones fork. Nothing joins one split to
+## the next: rings round the hole are what made the first version of this
+## picture look like a spider's web.
 func _make_glass_crack() -> Image:
+	# Every texture made after this one is drawn with whatever numbers rng
+	# gives next, so they all depend on how many this one takes. The first
+	# version took 612. Take the same 612 here and throw them away, and draw
+	# the crack with a generator of its own instead. That way the crack can be
+	# redrawn (as it has been once already) without the MP40, the monitors
+	# and everything else further down the list coming out different.
+	for i in GLASS_CRACK_OLD_DRAWS:
+		rng.randf()
+	var dice := RandomNumberGenerator.new()
+	dice.seed = 9  # another number here draws another crack
+
 	var image := Image.create_empty(SIZE, SIZE, false, Image.FORMAT_RGBA8)  # all see-through
-	var centre := Vector2(31.5, 31.5)
-	var count := 9
-	var angles: Array[float] = []
-	for i in count:
-		angles.append((i + rng.randf_range(-0.3, 0.3)) * TAU / count)
-	for start_angle in angles:
-		var heading := start_angle
-		var point := centre
-		for step in int(rng.randf_range(18.0, 31.0)):
-			heading += rng.randf_range(-0.15, 0.15)
-			point += Vector2(cos(heading), sin(heading))
-			_crack_pixel(image, point)
-	for ring_radius: float in [7.0, 15.0]:
-		for i in count:
-			if rng.randf() < 0.25:
-				continue  # leave a gap in the web here and there
-			var from := angles[i]
-			var to := angles[(i + 1) % count] + (TAU if i == count - 1 else 0.0)
-			var radius := ring_radius * rng.randf_range(0.85, 1.15)
-			var steps := int((to - from) * radius) + 1
-			for step in steps:
-				var t := float(step) / steps
-				# Each strand sags inwards between the two cracks it joins.
-				var sag := radius * (1.0 - 0.12 * sin(PI * t))
-				var angle := lerpf(from, to, t)
-				_crack_pixel(image, centre + Vector2(cos(angle), sin(angle)) * sag)
-	for y in range(28, 36):
-		for x in range(28, 36):
-			if Vector2(x, y).distance_to(centre) < 2.5:
-				image.set_pixel(x, y, Color.WHITE)  # the chipped spot it was hit
+	var centre := Vector2(32.0, 32.0)
+
+	# How long each split is, in pixels: two long, one middling, two short, in
+	# a shuffled order so the long ones are not always side by side.
+	var lengths: Array[float] = [28.0, 21.0, 14.0, 9.0, 6.0]
+	for i in range(lengths.size() - 1, 0, -1):
+		var j := dice.randi_range(0, i)
+		var kept := lengths[i]
+		lengths[i] = lengths[j]
+		lengths[j] = kept
+	# Which way each one runs: unevenly spaced round the circle. Each gap is
+	# between half and one and a half times the average, then all are scaled
+	# so that together they go once round.
+	var gaps: Array[float] = []
+	var total := 0.0
+	for i in lengths.size():
+		gaps.append(dice.randf_range(0.5, 1.5))
+		total += gaps[i]
+	var angles: Array[float] = [dice.randf() * TAU]
+	for i in lengths.size() - 1:
+		angles.append(angles[i] + gaps[i] / total * TAU)
+
+	# Flakes: the glass between two neighbouring splits has chipped away near
+	# the hole, leaving a faint wedge. Not between every pair.
+	for i in lengths.size():
+		if dice.randf() < 0.5:
+			continue
+		var from := angles[i]
+		var to := angles[(i + 1) % angles.size()] + (TAU if i == angles.size() - 1 else 0.0)
+		var reach := dice.randf_range(5.0, 8.0)
+		for y in SIZE:
+			for x in SIZE:
+				var offset := Vector2(x + 0.5, y + 0.5) - centre
+				# How far round from the first split this pixel is, 0 to TAU.
+				var turn := fposmod(offset.angle() - from, TAU)
+				if offset.length() < reach and turn < to - from:
+					_crack_pixel(image, Vector2(x, y), 0.4)
+
+	for i in lengths.size():
+		var angle := angles[i]
+		var length := lengths[i] * dice.randf_range(0.9, 1.1)
+		var point := centre + Vector2.from_angle(angle) * 2.0
+		var travelled := 0.0
+		var side := 1.0 if dice.randf() < 0.5 else -1.0
+		var forked := length < 18.0  # only the long ones fork
+		while travelled < length:
+			# A straight run, then a sharp bend back across the split's line.
+			# (A short split is one run, with no bend.)
+			var run := length - travelled
+			if length > 12.0:
+				run = minf(length * dice.randf_range(0.4, 0.6), run)
+			var heading := angle + side * dice.randf_range(0.08, 0.3)
+			side = -side
+			var end := point + Vector2.from_angle(heading) * run
+			# Solid at the hole, fading to a little over half at the tip.
+			var strength_from := lerpf(1.0, 0.6, travelled / length)
+			var strength_to := lerpf(1.0, 0.6, (travelled + run) / length)
+			_crack_run(image, point, end, strength_from, strength_to)
+			if travelled < length * 0.35 and length > 12.0:
+				# Wider where it leaves the hole: a second line alongside.
+				var across := Vector2.from_angle(heading + PI / 2.0)
+				_crack_run(image, point + across, end + across, strength_from, strength_to)
+			travelled += run
+			point = end
+			if not forked and travelled > length * 0.4:
+				# A shorter split leaves the bend, heading off to one side.
+				forked = true
+				var fork_heading := angle - side * dice.randf_range(0.45, 0.8)
+				var fork_end := point + Vector2.from_angle(fork_heading) * dice.randf_range(6.0, 10.0)
+				_crack_run(image, point, fork_end, strength_to, 0.5)
+
+	# The middle: crushed glass, solid white close in and thinning to loose
+	# flecks, round the hole the bullet made.
+	for y in SIZE:
+		for x in SIZE:
+			var distance := Vector2(x + 0.5, y + 0.5).distance_to(centre)
+			if distance < 3.0:
+				image.set_pixel(x, y, Color.WHITE)
+			elif distance < 6.5 and dice.randf() < 0.45 * (1.0 - (distance - 3.0) / 3.5):
+				_crack_pixel(image, Vector2(x, y), dice.randf_range(0.7, 1.0))
+	for y in range(30, 34):
+		for x in range(30, 34):
+			if Vector2(x + 0.5, y + 0.5).distance_to(centre) < 1.5:
+				image.set_pixel(x, y, Color(1.0, 1.0, 1.0, 0.0))  # the hole itself
 	return image
 
 
@@ -2700,6 +2791,9 @@ const SCREEN_DARK := Color(0.02, 0.06, 0.04)
 const SCREEN_GREEN := Color(0.30, 1.0, 0.45)
 const SCREEN_RED := Color(1.0, 0.22, 0.15)
 const SCREEN_WHITE := Color(0.92, 0.94, 0.90)
+const SCREEN_BLUE := Color(0.0, 0.0, 0.66)
+const SCREEN_YELLOW := Color(1.0, 1.0, 0.33)
+const SCREEN_BLACK := Color(0.0, 0.0, 0.0)
 const CUP_WHITE := Color(0.90, 0.89, 0.84)
 const CUP_COFFEE := Color(0.20, 0.11, 0.05)
 const COOLER_WHITE := Color(0.84, 0.86, 0.85)
@@ -2867,6 +2961,51 @@ func _make_monitor_screen_breach() -> Image:
 	screen.fill_rect(Rect2i(12, 4, 2, 5), dark)  # the exclamation mark
 	screen.fill_rect(Rect2i(12, 10, 2, 1), dark)
 	_draw_text_centred(screen, "BREACH", 15, yellow)
+	return screen
+
+
+## Somebody's program, in an editor of the time: yellow writing on blue. It
+## is three lines of Pascal, the middle one a letter in from the left as a
+## programmer would set it out:
+##   BEGIN
+##    X:=1;
+##   END.
+func _make_monitor_screen_code() -> Image:
+	var screen := _new_screen(SCREEN_BLUE)
+	var lines := ["BEGIN", " X:=1;", "END."]
+	for line in lines.size():
+		# A letter is 5 pixels tall, so 7 from one line to the next leaves 2
+		# clear between them. Starting 2 in from the top left corner, six
+		# letters (23 pixels) and three lines (19) just fit the 26 x 22 glass.
+		_draw_text(screen, lines[line], Vector2i(2, 2 + line * 7), SCREEN_YELLOW)
+	return screen
+
+
+## A screen full of somebody's program, too far down the page to read: green
+## lines on black. Each row of the picture below is one line of the program
+## and each run of # is one of its words, so a line is a row of dashes that
+## starts further in from the left the deeper it is inside the program (the
+## way programmers set their lines out). Every # is one green pixel.
+func _make_monitor_screen_listing() -> Image:
+	var screen := _new_screen(SCREEN_BLACK)
+	var lines := [
+		"### #####",
+		"  ## #### # ##",
+		"    ###### ###",
+		"  ### # ## #####",
+		"    #### ## ######",
+		"    ##### #######",
+		"  ###### ####",
+	]
+	for line in lines.size():
+		var words: String = lines[line]
+		for column in words.length():
+			if words[column] == "#":
+				# 3 from one line to the next leaves two black rows between
+				# them, so they stay apart when the monitor is seen from across
+				# the room. Starting 2 in from the top left corner, the seven
+				# lines end one row above the bottom of the 26 x 22 glass.
+				screen.set_pixel(2 + column, 2 + line * 3, SCREEN_GREEN)
 	return screen
 
 

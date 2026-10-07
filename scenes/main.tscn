@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://bgigffvwea3mq" path="res://levels/test-map.tscn" id="level_7"]
 [ext_resource type="PackedScene" path="res://levels/test-map-2.tscn" id="level_8"]
 [ext_resource type="PackedScene" path="res://levels/office.tscn" id="level_9"]
+[ext_resource type="PackedScene" path="res://levels/start-level-demo.tscn" id="level_10"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_quantize"]
 shader = ExtResource("3_quantize")
@@ -24,7 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
-levels = Array[PackedScene]([ExtResource("level_1"), ExtResource("level_7"), ExtResource("level_8"), ExtResource("level_3"), ExtResource("level_9"), ExtResource("level_6")])
+levels = Array[PackedScene]([ExtResource("level_10"), ExtResource("level_1"), ExtResource("level_7"), ExtResource("level_8"), ExtResource("level_3"), ExtResource("level_9"), ExtResource("level_6")])
 
 [node name="LetterboxBars" type="ColorRect" parent="." unique_id=1596387310]
 layout_mode = 1

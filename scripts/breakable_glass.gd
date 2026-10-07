@@ -4,7 +4,8 @@ extends StaticBody3D
 ##
 ## Every hit cracks it where the shot landed: weapons call bleed() just
 ## before take_damage() (the same pair of calls that makes enemies bleed),
-## and here bleed() leaves a spider's web crack instead of blood. When its
+## and here bleed() leaves a bullet hole with a few cracks running out of it
+## instead of blood (assets/textures/glass_crack.png). When its
 ## health runs out it bursts into falling shards, leaving only a jagged row
 ## of teeth round the frame, and stops blocking anything: players can climb
 ## through, shots fly through, and enemies on the far side can see through.
