@@ -13,15 +13,24 @@ extends CanvasLayer
 ## page. Online the game can't be frozen for everyone, so it carries on
 ## behind the page, and walking away from the notebook closes it.
 ##
-## Keys: E opens the page while the prompt is showing; E or Esc closes it.
+## Keys: E opens the notebook while the prompt is showing; E or Esc closes
+## it. A notebook with more than one page turns to the next with D, the
+## right arrow key or a turn of the mouse wheel towards you, and back with
+## A, the left arrow key or the wheel the other way.
 
 ## How many letters fit on one line of the page.
 const LINE_LENGTH := 48
+## How many lines of writing fit on the page: one on each ruled line.
+const LINES_PER_PAGE := 22
 ## The page's body text starts this far below the top of the paper, and
 ## each line of it is this tall, in game pixels (both must match the Body
 ## node in the scene: its position, and a 5-pixel letter plus its Line Gap).
 const BODY_TOP := 30
 const LINE_HEIGHT := 8
+## The inputs that always turn a page: the arrow keys, and the mouse wheel
+## (which changes weapon when no notebook is open).
+const NEXT_PAGE_ACTIONS: Array[StringName] = [&"ui_right", &"weapon_next"]
+const PREVIOUS_PAGE_ACTIONS: Array[StringName] = [&"ui_left", &"weapon_previous"]
 
 ## Colour of the paper.
 @export var paper_color := Color(0.87, 0.82, 0.66)
@@ -35,12 +44,17 @@ var nearby: Node
 ## True if opening the page was what froze the game, so closing it should
 ## unfreeze it.
 var froze_game := false
+## The writing on each page of the open notebook, already broken into
+## lines, and which of them is showing (0 is the first page).
+var page_texts: Array[String] = []
+var page_number := 0
 
 @onready var prompt: Control = $Prompt
 @onready var page: Control = $Page
 @onready var paper: Control = $Page/Paper
 @onready var title_text: Control = $Page/Paper/Title
 @onready var body_text: Control = $Page/Paper/Body
+@onready var page_hint: Control = $Page/Paper/PageHint
 
 
 func _ready() -> void:
@@ -62,7 +76,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if page.visible:
 			close()
 		elif _can_open():
-			open(nearby.title, nearby.text)
+			open(nearby.title, nearby.pages)
 		else:
 			return
 	elif page.visible and event.is_action_pressed("ui_cancel"):
@@ -70,6 +84,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		# comes after the pause menu in scenes/main.tscn, and input is handed
 		# to the last nodes first, so the menu never sees this key press.
 		close()
+	elif page.visible and _page_step(event) != 0:
+		# The input is used up even on the last page, where there is nothing
+		# further to turn to. Online the game carries on behind the page,
+		# and the player must not change weapon with the same turn of the
+		# wheel (the player gets input after this node, like the menu).
+		_show_page(page_number + _page_step(event))
 	else:
 		return
 	# Mark the input as used, so nothing else reacts to it as well.
@@ -91,14 +111,26 @@ func withdraw(notebook: Node) -> void:
 		close()
 
 
-## Shows the page with the given heading and paragraph on it.
-func open(title: String, text: String) -> void:
+## Opens a notebook at its first page. "title" is the heading and
+## "notebook_pages" the paragraph written on each page.
+func open(title: String, notebook_pages: Array[String]) -> void:
 	title_text.text = title
-	body_text.text = _wrap(text)
+	page_texts.clear()
+	for text in notebook_pages:
+		var lines := _wrap(text)
+		if lines.size() > LINES_PER_PAGE:
+			# Shown in the editor's Debugger while the game runs: this page
+			# has too much on it, and its last lines run off the paper.
+			push_warning("Notebook \"%s\": page %d is %d lines long, but only %d fit on the paper."
+					% [title, page_texts.size() + 1, lines.size(), LINES_PER_PAGE])
+		page_texts.append("\n".join(lines))
+	if page_texts.is_empty():
+		page_texts.append("")  # a notebook with nothing written in it
 	page.visible = true
 	if not Network.is_online() and not get_tree().paused:
 		get_tree().paused = true
 		froze_game = true
+	_show_page(0)
 
 
 func close() -> void:
@@ -112,6 +144,46 @@ func is_open() -> bool:
 	return page.visible
 
 
+## Turns to page "number" (0 is the first), stopping at the first and last
+## pages, and writes the line at the foot of the paper that says which page
+## this is and how to turn it.
+func _show_page(number: int) -> void:
+	page_number = clampi(number, 0, page_texts.size() - 1)
+	body_text.text = page_texts[page_number]
+	# A notebook with a single page has nothing to turn.
+	page_hint.visible = page_texts.size() > 1
+	# An arrow at each end, with its key beside it where that key works (see
+	# _page_step() below). An end with no further page to turn to is left
+	# blank, with spaces, so the words in the middle stay where they are.
+	var back := "< A" if froze_game else "<  "
+	var forward := "D >" if froze_game else "  >"
+	if page_number == 0:
+		back = "   "
+	if page_number == page_texts.size() - 1:
+		forward = "   "
+	page_hint.text = "%s   PAGE %d OF %d   %s" % [back, page_number + 1, page_texts.size(), forward]
+
+
+## Which way an input turns the page: 1 forwards, -1 back, or 0 if it is not
+## a page-turning input at all.
+func _page_step(event: InputEvent) -> int:
+	for action in NEXT_PAGE_ACTIONS:
+		if event.is_action_pressed(action):
+			return 1
+	for action in PREVIOUS_PAGE_ACTIONS:
+		if event.is_action_pressed(action):
+			return -1
+	# A and D turn pages too, but only while the page has frozen the game.
+	# Online the game carries on, so those keys still walk the player, and a
+	# step sideways would be a step away from the notebook.
+	if froze_game:
+		if event.is_action_pressed("move_right"):
+			return 1
+		if event.is_action_pressed("move_left"):
+			return -1
+	return 0
+
+
 ## A notebook can be opened while one is in reach and the player is in
 ## control: not while the pause menu is up. (The menu frees the mouse, and
 ## in single player it pauses the game too.)
@@ -121,8 +193,8 @@ func _can_open() -> bool:
 
 
 ## Breaks a paragraph into lines of at most LINE_LENGTH letters, without
-## splitting a word, and returns them joined with line breaks.
-func _wrap(text: String) -> String:
+## splitting a word.
+func _wrap(text: String) -> Array[String]:
 	var lines: Array[String] = []
 	var line := ""
 	# split(" ", false) cuts the text at every space and drops empty pieces,
@@ -137,18 +209,16 @@ func _wrap(text: String) -> String:
 			line = word
 	if not line.is_empty():
 		lines.append(line)
-	return "\n".join(lines)
+	return lines
 
 
 ## Paints the sheet of paper: the page itself, a faint line under every row
 ## of writing, a red line down the margin and three punched holes.
 func _draw_paper() -> void:
 	paper.draw_rect(Rect2(Vector2.ZERO, paper.size), paper_color)
-	# The first rule sits one pixel under the first row of letters.
-	var y := BODY_TOP + 6
-	while y < paper.size.y - 14:
-		paper.draw_rect(Rect2(0, y, paper.size.x, 1), rule_color)
-		y += LINE_HEIGHT
+	# Each rule sits one pixel under its row of letters.
+	for line in LINES_PER_PAGE:
+		paper.draw_rect(Rect2(0, BODY_TOP + 6 + line * LINE_HEIGHT, paper.size.x, 1), rule_color)
 	paper.draw_rect(Rect2(15, 0, 1, paper.size.y), margin_color)
 	for hole_y: float in [30.0, paper.size.y / 2.0, paper.size.y - 30.0]:
 		paper.draw_rect(Rect2(5, hole_y - 2, 4, 4), Color(0.1, 0.1, 0.1))

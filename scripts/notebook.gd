@@ -11,14 +11,16 @@ extends Node3D
 ##
 ## To add one to a level: drag scenes/notebook.tscn under the level's Props
 ## and put it on top of a desk (its origin is the underside of the book).
-## Give it its own words with Title and Text in the Inspector.
+## Give it its own words with Title and Pages in the Inspector.
 
-## The heading at the top of the page.
+## The heading at the top of every page.
 @export var title := "NOTEBOOK"
-## What is written on the page: one paragraph, up to about 150 words (more
-## would run off the bottom). The pixel font only has capital letters,
-## digits and . , : - ' ! ? so anything else is left blank.
-@export_multiline var text := "Day 41. The bunker was built to keep the world out, and now it keeps us in. Nine floors of concrete under the hill, sealed the night the sirens stopped. There were thirty of us then. The air tastes of rust and the lights hum all night, but the worst of it is the sound from the lower levels, where the labs are. Whatever they were growing down there got into the vents, and the ones who breathed it stopped being ours. The lift is dead and the blast door needs power we do not have. Mara says there is a service shaft behind the pump room that climbs all the way to the surface. Six of us are going to try it tonight. If you are reading this, we did not come back for it. Keep moving up."
+## What is written in it, one entry for each page (add an entry to add a
+## page). A page is one paragraph of at most 150 words: more may run off
+## the bottom of the paper, and the game warns you if it does. The pixel
+## font only has capital letters, digits and . , : - ' ! ? so anything else
+## is left blank.
+@export_multiline var pages: Array[String] = ["Day 41. The bunker was built to keep the world out, and now it keeps us in. Nine floors of concrete under the hill, sealed the night the sirens stopped. There were thirty of us then. The air tastes of rust and the lights hum all night, but the worst of it is the sound from the lower levels, where the labs are. Whatever they were growing down there got into the vents, and the ones who breathed it stopped being ours. The lift is dead and the blast door needs power we do not have. Mara says there is a service shaft behind the pump room that climbs all the way to the surface. Six of us are going to try it tonight. If you are reading this, we did not come back for it. Keep moving up."]
 ## How close the player's eyes must be to read it, in metres.
 @export var reach := 2.2
 ## How squarely the player must be looking at it: 1 = dead on, 0 = anywhere

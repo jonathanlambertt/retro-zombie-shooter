@@ -32,6 +32,7 @@ Godot_v4.7-stable_win64_console.exe --path .
 | 1 / 2 / 3 / 4 / 5 | Switch to pistol / machine gun / rocket launcher / shotgun / MP40 |
 | Mouse wheel | Next / previous weapon |
 | E | Read a notebook you are standing at and looking at (E or Esc closes it) |
+| A / D, left / right arrow, mouse wheel | While reading: turn back / on a page |
 | Esc | Pause menu: resume, graphics and audio settings, multiplayer, or quit. Esc again resumes |
 | F1 | Toggle the colour quantization post-process (also works while paused) |
 | F2 / F3 | Next / previous level (in multiplayer, only the host) |
@@ -681,8 +682,9 @@ The control room itself has bookshelves, server racks, filing cabinets, a
 plant, chairs, a water cooler and the whiteboard. Each desk has a monitor
 and a keyboard, and so does the console in the middle of the room; every
 screen shows something different (the cells' status, subject 7's heart, an
-abandoned game, a dead camera and the alarm), and one desk has a cup of
-coffee. The one poster left is the infection rate: its line ran out of
+abandoned game, a dead camera and the alarm), one desk has a cup of
+coffee, and the middle desk has the room's notebook (see "Notebooks"
+below). The one poster left is the infection rate: its line ran out of
 graph, so somebody carried it on in marker pen up a printout taped to the
 wall, all the way to the ceiling. The room's zombies
 moved into the lab when the start moved here; to start in the checkpoint
@@ -726,19 +728,34 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/t
 ### Notebooks
 
 Every level except the test room has a notebook lying open on a desk, near
-where you start (in the office it is on the table; in test map 2 it is still
-in the checkpoint, from before the start moved to the control room). Stand next to it, look at it, and
-**PRESS E TO READ** appears; E opens a sheet of lined paper with the page
-written on it, and E or Esc closes it again. Reading pauses the game in
-single player. Online the game carries on behind the page, and walking away
-closes it.
+where you start (in the office it is on the table). Stand next to it, look
+at it, and **PRESS E TO READ** appears; E opens a sheet of lined paper with
+the page written on it, and E or Esc closes it again. Reading pauses the
+game in single player. Online the game carries on behind the page, and
+walking away closes it.
 
-For now every notebook holds the same single page: a survivor's note about
-the bunker the story is set in. Each one can have its own words. Select a
-`Notebook` node in a level and change **Title** and **Text** in the
-Inspector. A page holds one paragraph of up to about 150 words, and the
-pixel font only has capital letters, digits and `. , : - ' ! ?`. **Reach**
-is how close you must be, and **Aim** how squarely you must look at it.
+A notebook can have several pages. The foot of the paper then says which
+one you are on (**PAGE 2 OF 3**), with an arrow at each side that has a page
+to turn to. **D**, the **right arrow key** or the **mouse wheel** rolled
+towards you turns to the next page; **A**, the **left arrow key** or the
+wheel rolled away goes back. It always opens at the first page. (Online, A
+and D still walk you about, so there only the arrow keys and the wheel turn
+pages, and the wheel leaves your weapon alone while a page is open.)
+
+Test map 2 has two. The one on the middle desk of the control room, where
+you start, is the **control room log**: three pages kept by the night shift
+operator who locked themselves in there when the lab below broke open. The
+other, still on the desk in the checkpoint from before the start moved, is
+the single page every other level has: a survivor's note about the bunker
+the story is set in.
+
+Each notebook can have its own words. Select a `Notebook` node in a level
+and change **Title** and **Pages** in the Inspector: Pages is a list with
+one entry for each page, so add an entry to add a page. A page is one
+paragraph of at most 150 words (it has 22 lines of 48 letters; the game
+prints a warning if a page runs off the bottom), and the pixel font only
+has capital letters, digits and `. , : - ' ! ?`. **Reach** is how close you
+must be, and **Aim** how squarely you must look at it.
 
 To add another, drag `scenes/notebook.tscn` under a level's `Props` and set
 it on top of a desk. The page itself (the paper's colours and layout) is

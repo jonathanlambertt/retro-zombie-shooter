@@ -95,3 +95,18 @@ text = "PRESS E TO CLOSE"
 color = Color(0.5, 0.45, 0.36, 1)
 pixel_size = 1
 shadow = false
+
+[node name="PageHint" type="Control" parent="Page/Paper"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 22.0
+offset_top = 211.0
+offset_right = 214.0
+offset_bottom = 217.0
+mouse_filter = 2
+script = ExtResource("2_text")
+text = "< A   PAGE 1 OF 3   D >"
+color = Color(0.45, 0.12, 0.1, 1)
+pixel_size = 1
+align_right = true
+shadow = false
