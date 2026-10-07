@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/rocket_launcher.tscn" id="4_rocket_launcher"]
 [ext_resource type="PackedScene" path="res://scenes/shotgun.tscn" id="5_shotgun"]
 [ext_resource type="PackedScene" path="res://scenes/player_model_soldier.tscn" id="6_model"]
+[ext_resource type="PackedScene" path="res://scenes/mp40.tscn" id="7_mp40"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.4
@@ -72,6 +73,10 @@ visible = false
 
 [node name="Shotgun" parent="Head/Camera3D" unique_id=1683390208 instance=ExtResource("5_shotgun")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.17, -0.16, -0.28)
+visible = false
+
+[node name="MP40" parent="Head/Camera3D" instance=ExtResource("7_mp40")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, -0.16, -0.3)
 visible = false
 
 [node name="ChaseArm" type="SpringArm3D" parent="Head"]

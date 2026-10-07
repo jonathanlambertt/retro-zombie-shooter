@@ -12,6 +12,10 @@ extends Node3D
 ## Online, the other players' games repeat each bullet and grenade with
 ## replay_shot(). Their copies fly the same way and leave the same marks,
 ## but do no damage: only the copy in the game that fired does.
+##
+## Two scenes run this script: scenes/machine_gun.tscn and scenes/mp40.tscn,
+## which is the same gun built from differently shaped and textured boxes.
+## Each scene keeps its own values for the settings below.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 ## preload() loads a scene once, ready to be copied for every shot.

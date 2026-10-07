@@ -107,6 +107,13 @@ func _init() -> void:
 	_save(_make_desk_drawers(), "desk_drawers")
 	_save(_make_glass_crack(), "glass_crack")
 	_save(_make_glass_edge(), "glass_edge")
+	# The MP40 (scenes/mp40.tscn), and the stock only the player model's has.
+	_save(_make_mp40_body(), "mp40_body")
+	_save(_make_mp40_barrel(), "mp40_barrel")
+	_save(_make_mp40_rest(), "mp40_rest")
+	_save(_make_mp40_magazine(), "mp40_magazine")
+	_save(_make_mp40_grip(), "mp40_grip")
+	_save(_make_mp40_stock(), "mp40_stock")
 	quit()
 
 
@@ -2445,3 +2452,182 @@ func _make_glass_edge() -> Image:
 				var brightness := 1.0 if inward < int(depth) - 1 else 0.7  # darker broken edge
 				image.set_pixel(pixel.x, pixel.y, Color(brightness, brightness, brightness, 1.0))
 	return image
+
+
+# --- The MP40 ------------------------------------------------------------------
+#
+# The MP40 (scenes/mp40.tscn) is the machine gun in a different skin: the
+# German submachine gun of the Second World War. It is a tube of dark blued
+# steel on a lower half of red-brown bakelite (an early plastic), with a
+# long straight magazine hanging from a ribbed housing in front of the
+# trigger, and a bar under the barrel for resting the gun on the edge of a
+# vehicle. Its boxes are painted the same way as the machine gun's.
+
+const MP40_BAKELITE := Color(0.30, 0.14, 0.07)
+
+
+## The body of the gun: 5 cm wide, 8 cm tall and 34 cm long. From the back:
+## the end cap of the tube (4 pixels), the receiver over its bakelite lower
+## half, the ribbed magazine housing, and the collar the barrel screws
+## into. The sides are 48 x 12 pixels.
+func _make_mp40_body() -> Image:
+	var atlas := _new_atlas(48, 48)
+	_paint_gun_strip(atlas, FACE_RIGHT, _make_mp40_body_side(true))
+	_paint_gun_strip(atlas, FACE_LEFT, _make_mp40_body_side(false))
+
+	# The top, which is most of what you see of the gun in your hands: 8
+	# pixels across, the back at the top. The receiver is a round tube, so
+	# light runs along its middle and its edges fall into shadow.
+	var top := _speckle(8, 48, GUN_BLUED, 0.07)
+	for y in 48:
+		for x: int in [3, 4]:
+			top.set_pixel(x, y, _shade(top.get_pixel(x, y), 1.5))
+		for x: int in [0, 7]:
+			top.set_pixel(x, y, _shade(top.get_pixel(x, y), 0.6))
+	top.fill_rect(Rect2i(0, 3, 8, 1), _shade(GUN_BLUED, 0.5))  # end cap seam
+	# The rear sight: two posts with a notch between them.
+	top.fill_rect(Rect2i(1, 8, 6, 2), GUN_WORN)
+	top.fill_rect(Rect2i(3, 8, 2, 2), GUN_BLACK)
+	top.fill_rect(Rect2i(0, 30, 8, 1), _shade(GUN_BLUED, 0.5))  # seam
+	for y in range(32, 40, 2):
+		top.fill_rect(Rect2i(1, y, 6, 1), _shade(GUN_BLUED, 0.55))  # housing rib
+	top.fill_rect(Rect2i(0, 41, 8, 1), _shade(GUN_BLUED, 0.5))  # seam
+	top.fill_rect(Rect2i(0, 44, 8, 1), _shade(GUN_WORN, 0.8))  # barrel collar
+	_paint_face(atlas, FACE_TOP, top)
+
+	# The underside: bakelite between the end cap and the magazine housing.
+	var bottom := _speckle(8, 48, _shade(GUN_BLUED, 0.7), 0.07)
+	bottom.blit_rect(_speckle(8, 27, _shade(MP40_BAKELITE, 0.8), 0.1), Rect2i(0, 0, 8, 27), Vector2i(0, 4))
+	_paint_face(atlas, FACE_BOTTOM, bottom)
+
+	# The back: the round cap on the end of the tube, over the bakelite.
+	var back := _speckle(8, 12, GUN_BLUED, 0.07)
+	back.fill_rect(Rect2i(2, 1, 4, 5), _shade(GUN_BLUED, 1.5))
+	back.fill_rect(Rect2i(3, 2, 2, 3), GUN_BLUED)
+	back.blit_rect(_speckle(8, 5, MP40_BAKELITE, 0.1), Rect2i(0, 0, 8, 5), Vector2i(0, 7))
+	_paint_face(atlas, FACE_BACK, back)
+	# The barrel covers most of the front.
+	_paint_face(atlas, FACE_FRONT, _speckle(8, 12, GUN_BLUED, 0.07))
+	return atlas
+
+
+## One side of the body. Spent cartridges are thrown out of the right side,
+## so that one has the opening for them (ejection_port); the left side has
+## the long slot the cocking handle slides in instead.
+func _make_mp40_body_side(ejection_port: bool) -> Image:
+	var side := _make_gun_strip(48, 12, GUN_BLUED)
+	for x in 48:
+		# A band of light along the upper curve of the tube.
+		side.set_pixel(x, 2, _shade(side.get_pixel(x, 2), 1.4))
+	side.fill_rect(Rect2i(3, 0, 1, 12), _shade(GUN_BLUED, 0.5))  # end cap seam
+	# The bakelite lower half, from the end cap to the magazine housing.
+	side.blit_rect(_speckle(27, 5, MP40_BAKELITE, 0.1), Rect2i(0, 0, 27, 5), Vector2i(4, 7))
+	side.fill_rect(Rect2i(4, 6, 27, 1), _shade(GUN_BLUED, 0.5))  # where it meets the tube
+	side.fill_rect(Rect2i(4, 11, 27, 1), _shade(MP40_BAKELITE, 0.6))  # underside in shadow
+	side.fill_rect(Rect2i(5, 8, 2, 2), GUN_WORN)  # the pivot the stock folds on
+	for screw: Vector2i in [Vector2i(13, 9), Vector2i(27, 9)]:
+		side.set_pixel(screw.x, screw.y, _shade(GUN_WORN, 0.8))
+	# The magazine housing: pressed steel with ribs down it.
+	side.fill_rect(Rect2i(31, 3, 1, 9), _shade(GUN_BLUED, 0.5))  # seam
+	for x in range(33, 40, 2):
+		side.fill_rect(Rect2i(x, 5, 1, 6), _shade(GUN_BLUED, 0.55))  # rib
+	side.fill_rect(Rect2i(41, 0, 1, 12), _shade(GUN_BLUED, 0.5))  # seam
+	side.fill_rect(Rect2i(44, 0, 1, 12), _shade(GUN_WORN, 0.8))  # barrel collar
+	if ejection_port:
+		side.fill_rect(Rect2i(23, 1, 7, 4), GUN_BLACK)
+		side.fill_rect(Rect2i(23, 5, 7, 1), GUN_WORN)  # its worn lower lip
+	else:
+		side.fill_rect(Rect2i(13, 3, 23, 1), GUN_BLACK)  # cocking slot
+		side.fill_rect(Rect2i(29, 2, 2, 3), GUN_WORN)  # the cocking handle in it
+	return side
+
+
+## The barrel: 2.5 cm square and 20 cm long. Thin and bare, with a nut at
+## each end and the block that carries the front sight just behind the
+## muzzle. Its sides are 28 x 4 pixels.
+func _make_mp40_barrel() -> Image:
+	var atlas := _new_atlas(28, 28)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT, FACE_TOP, FACE_BOTTOM]:
+		var side := _make_gun_strip(28, 4, _shade(GUN_BLUED, 0.9))
+		side.fill_rect(Rect2i(0, 0, 2, 4), _shade(GUN_WORN, 0.7))  # barrel nut
+		side.fill_rect(Rect2i(20, 0, 3, 4), GUN_POLYMER)  # front sight block
+		if cell == FACE_TOP:
+			side.fill_rect(Rect2i(21, 1, 1, 2), GUN_WORN)  # the sight's blade
+		side.fill_rect(Rect2i(26, 0, 2, 4), _shade(GUN_WORN, 0.8))  # muzzle nut
+		_paint_gun_strip(atlas, cell, side)
+
+	# The muzzle: a ring of steel around the black bore.
+	var muzzle := _speckle(4, 4, _shade(GUN_WORN, 0.8), 0.07)
+	muzzle.fill_rect(Rect2i(1, 1, 2, 2), GUN_BLACK)
+	_paint_face(atlas, FACE_FRONT, muzzle)
+	_paint_face(atlas, FACE_BACK, _speckle(4, 4, GUN_BLUED, 0.07))
+	return atlas
+
+
+## The resting bar under the barrel: 2 cm wide, 3 cm tall and 12 cm long.
+## Bakelite, with a steel hook at the front that catches on whatever the
+## gun is rested on. Its sides are 16 x 4 pixels.
+func _make_mp40_rest() -> Image:
+	var atlas := _new_atlas(16, 16)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT, FACE_TOP, FACE_BOTTOM]:
+		var side := _make_gun_strip(16, 4, MP40_BAKELITE)
+		side.fill_rect(Rect2i(13, 0, 3, 4), GUN_BLUED)  # hook
+		side.fill_rect(Rect2i(12, 0, 1, 4), _shade(MP40_BAKELITE, 0.5))  # seam
+		_paint_gun_strip(atlas, cell, side)
+	_paint_face(atlas, FACE_FRONT, _speckle(4, 4, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_BACK, _speckle(4, 4, MP40_BAKELITE, 0.1))
+	return atlas
+
+
+## The magazine: 3 cm wide, 20 cm tall and 4.5 cm deep. Long and perfectly
+## straight, with a groove pressed down each side to stiffen it and a dark
+## base plate. Each side is 6 x 28 pixels.
+func _make_mp40_magazine() -> Image:
+	var atlas := _new_atlas(6, 28)
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_RIGHT, FACE_LEFT]:
+		var side := _speckle(6, 28, GUN_BLUED, 0.07)
+		side.fill_rect(Rect2i(0, 0, 1, 28), _shade(GUN_BLUED, 1.4))  # worn edges
+		side.fill_rect(Rect2i(5, 0, 1, 28), _shade(GUN_BLUED, 0.7))
+		side.fill_rect(Rect2i(2, 3, 2, 20), _shade(GUN_BLUED, 0.55))  # groove
+		side.fill_rect(Rect2i(0, 25, 6, 3), GUN_POLYMER)  # base plate
+		side.fill_rect(Rect2i(0, 25, 6, 1), GUN_WORN)  # its top edge
+		_paint_face(atlas, cell, side)
+	# The top is inside the gun; the bottom is the underside of the base plate.
+	_paint_face(atlas, FACE_TOP, _speckle(6, 6, GUN_POLYMER, 0.1))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(6, 6, GUN_POLYMER, 0.1))
+	return atlas
+
+
+## The pistol grip: 4.5 cm wide, 10 cm tall and 5 cm deep. A steel frame
+## with a smooth bakelite panel screwed to each side. Each side is 6 x 14.
+func _make_mp40_grip() -> Image:
+	var atlas := _new_atlas(6, 14)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT]:
+		var side := _speckle(6, 14, MP40_BAKELITE, 0.12)
+		side.fill_rect(Rect2i(0, 0, 1, 14), GUN_BLUED)  # the frame, front and back
+		side.fill_rect(Rect2i(5, 0, 1, 14), GUN_BLUED)
+		side.set_pixel(3, 6, GUN_WORN)  # screw
+		side.fill_rect(Rect2i(0, 13, 6, 1), _shade(GUN_BLUED, 1.4))  # end cap
+		_paint_face(atlas, cell, side)
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK]:
+		_paint_face(atlas, cell, _speckle(6, 14, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_TOP, _speckle(6, 7, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(6, 7, GUN_BLUED, 0.07))
+	return atlas
+
+
+## The shoulder stock of the MP40 the player model carries: the same size as
+## the machine gun's, but two thin steel bars with nothing between them and
+## a steel plate for the shoulder.
+func _make_mp40_stock() -> Image:
+	var atlas := _new_atlas(24, 24)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT, FACE_TOP, FACE_BOTTOM]:
+		var upright := cell == FACE_RIGHT or cell == FACE_LEFT
+		var side := _make_gun_strip(24, 12 if upright else 8, GUN_BLUED)
+		if upright:
+			side.fill_rect(Rect2i(3, 3, 21, 6), GUN_BLACK)  # the gap between the bars
+		side.fill_rect(Rect2i(0, 0, 3, side.get_height()), _shade(GUN_BLUED, 0.7))  # plate
+		_paint_gun_strip(atlas, cell, side)
+	_paint_face(atlas, FACE_BACK, _speckle(8, 12, _shade(GUN_BLUED, 0.7), 0.07))
+	_paint_face(atlas, FACE_FRONT, _speckle(8, 12, GUN_BLUED, 0.07))
+	return atlas

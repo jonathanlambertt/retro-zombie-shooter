@@ -27,9 +27,9 @@ Godot_v4.7-stable_win64_console.exe --path .
 | Mouse | Look |
 | Space | Jump |
 | Ctrl or C | Crouch (hold). Crouch in mid-air to pull your legs up and reach higher ledges |
-| Left mouse button | Shoot (hold for the machine gun) |
-| Right mouse button | Machine gun: fire a grenade. Shotgun: double shot |
-| 1 / 2 / 3 / 4 | Switch to pistol / machine gun / rocket launcher / shotgun |
+| Left mouse button | Shoot (hold for the machine gun and the MP40) |
+| Right mouse button | Machine gun and MP40: fire a grenade. Shotgun: double shot |
+| 1 / 2 / 3 / 4 / 5 | Switch to pistol / machine gun / rocket launcher / shotgun / MP40 |
 | Mouse wheel | Next / previous weapon |
 | E | Read a notebook you are standing at and looking at (E or Esc closes it) |
 | Esc | Pause menu: resume, graphics and audio settings, multiplayer, or quit. Esc again resumes |
@@ -62,6 +62,7 @@ scenes/              Reusable scenes
   player_model.tscn    The earlier body, an armoured hazard suit (kept, not in use)
   pistol.tscn          Hitscan pistol viewmodel
   machine_gun.tscn     Automatic gun that fires bullet.tscn projectiles
+  mp40.tscn            The machine gun again, modelled and textured as an MP40
   bullet.tscn          One yellow machine gun bullet
   grenade.tscn         Grenade from the machine gun's launcher
   shotgun.tscn         Pump-action shotgun that fires a cluster of pellets
@@ -296,6 +297,12 @@ Select a node and use the Inspector; every value is an exported variable.
   `_barrel`, `_launcher`, `_magazine` and `_grip` in `assets/textures/`),
   laid out as six small pictures like the textured zombie's, so you can
   paint over them.
+- **MP40** (`scenes/mp40.tscn`, key 5): the machine gun again, looking like
+  the wartime German submachine gun. It runs the machine gun's script, so
+  it has the same settings (with its own values: change one gun and the
+  other stays as it was) and the same right-mouse grenades. Its boxes are
+  textured by `mp40_body`, `_barrel`, `_rest` (the bar under the barrel),
+  `_magazine` and `_grip`; `mp40_stock` is only on the player model's.
 - **Gun and projectile textures**: the other guns are textured the same
   way, one PNG per box: `pistol_slide` and `pistol_grip`; `shotgun_receiver`,
   `_barrel`, `_tube`, `_pump`, `_grip` and `_rib` (the sighting rib on top,

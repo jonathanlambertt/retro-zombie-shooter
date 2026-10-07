@@ -147,6 +147,7 @@ var stand_eye_height := 0.0
 	$Head/Camera3D/MachineGun,
 	$Head/Camera3D/RocketLauncher,
 	$Head/Camera3D/Shotgun,
+	$Head/Camera3D/MP40,
 ]
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var hurt_sound_player: AudioStreamPlayer = $HurtSound
