@@ -81,6 +81,7 @@ scenes/              Reusable scenes
   zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
   zombie_window.tscn   A window that zombies climb in through
   notebook.tscn        A notebook on a desk that you can read
+  notebook_closed.tscn A shut notebook, only for show
   notebook_reader.tscn The paper page a notebook opens, and its "press E" prompt
   poster.tscn          A poster, sign or whiteboard to hang on a wall
   bookshelf.tscn       Bookshelf full of books and binders
@@ -93,6 +94,7 @@ scenes/              Reusable scenes
   monitor.tscn         Beige computer monitor with a glowing screen
   keyboard.tscn        Computer keyboard
   cup.tscn             Cup of coffee
+  pencil_cup.tscn      Pot of pencils and pens
   water_cooler.tscn    Water cooler with its bottle
   breakable_glass.tscn A window pane that cracks when shot and shatters
   hud.tscn             Health / ammo / crosshair
@@ -650,7 +652,9 @@ front of you have three lines of one, yellow on blue
 ones on the left and middle desks by the window have a longer one, too
 small to read: green lines on black (`monitor_screen_listing.png`), instead
 of the cells' status and subject 7's heart. The right desk still has the
-abandoned game.
+abandoned game. The left desk also has a second notebook, shut, with a pot
+of pencils and pens behind it. That one is only there to be looked at:
+there is nothing to read in it, and no prompt appears.
 
 The rest of test map 2 is not there. Where the control room's corridor and
 the lower lab's three exits (to the atrium, the warehouse and the tunnels)
@@ -877,6 +881,14 @@ editor, so turn that arrow to face into the room.
   jump onto the desk. The keyboard's space bar and the cup's heart face +Z.
 - **Water cooler** (`scenes/water_cooler.tscn`): the cabinet is solid, the
   bottle on top is not. The taps face +Z, so stand its back against a wall.
+- **Closed notebook** (`scenes/notebook_closed.tscn`) and **pencil pot**
+  (`scenes/pencil_cup.tscn`): only for show too, like the keyboard and the
+  cup, so shots pass through them. The notebook is shut, with an elastic
+  band round it and the end of its ribbon poking out, and it has no script,
+  so it can't be read (the one you can read is `scenes/notebook.tscn`). Its
+  spine is on its -X side. The pot holds two pencils and two pens. Their
+  colours are plain tinted materials: `pencil.tres` and `pen_blue.tres` are
+  new, the rest are shared with other props.
 - **Breakable glass** (`scenes/breakable_glass.tscn`): set **Size** to fill
   the opening; its origin is the middle of its bottom edge. See "Tuning
   gameplay" for its health.

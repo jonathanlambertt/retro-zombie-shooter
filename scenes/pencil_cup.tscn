@@ -1,0 +1,89 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/desk_steel.tres" id="1_pot"]
+[ext_resource type="Material" path="res://assets/materials/soldier_black.tres" id="2_black"]
+[ext_resource type="Material" path="res://assets/materials/pencil.tres" id="3_pencil"]
+[ext_resource type="Material" path="res://assets/materials/pen_blue.tres" id="4_pen_blue"]
+[ext_resource type="Material" path="res://assets/materials/soldier_marker.tres" id="5_red"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pot"]
+material = ExtResource("1_pot")
+top_radius = 0.04
+bottom_radius = 0.035
+height = 0.1
+radial_segments = 8
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_inside"]
+material = ExtResource("2_black")
+top_radius = 0.034
+bottom_radius = 0.034
+height = 0.002
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_pencil_long"]
+material = ExtResource("3_pencil")
+size = Vector3(0.012, 0.19, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pencil_short"]
+material = ExtResource("3_pencil")
+size = Vector3(0.012, 0.165, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_eraser"]
+material = ExtResource("5_red")
+size = Vector3(0.012, 0.014, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pen_blue"]
+material = ExtResource("4_pen_blue")
+size = Vector3(0.012, 0.175, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pen_red"]
+material = ExtResource("5_red")
+size = Vector3(0.012, 0.16, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cap"]
+material = ExtResource("2_black")
+size = Vector3(0.015, 0.025, 0.015)
+
+[node name="PencilCup" type="Node3D"]
+
+[node name="Pot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("CylinderMesh_pot")
+
+[node name="Inside" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.101, 0)
+mesh = SubResource("CylinderMesh_inside")
+
+[node name="PencilA" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9848, -0.1736, 0, 0.1736, 0.9848, 0, 0, 0, 1, -0.0245, 0.0976, 0.005)
+mesh = SubResource("BoxMesh_pencil_long")
+
+[node name="Eraser" type="MeshInstance3D" parent="PencilA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.102, 0)
+mesh = SubResource("BoxMesh_eraser")
+
+[node name="PencilB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9925, -0.1219, 0, 0.1219, 0.9925, 0.004, 0.0859, 0.0181)
+mesh = SubResource("BoxMesh_pencil_short")
+
+[node name="Eraser" type="MeshInstance3D" parent="PencilB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0895, 0)
+mesh = SubResource("BoxMesh_eraser")
+
+[node name="PenBlue" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9877, 0.1564, 0, -0.1564, 0.9877, 0, 0, 0, 1, 0.0217, 0.0904, -0.003)
+mesh = SubResource("BoxMesh_pen_blue")
+
+[node name="Cap" type="MeshInstance3D" parent="PenBlue"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.077, 0)
+mesh = SubResource("BoxMesh_cap")
+
+[node name="PenRed" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9848, 0.1736, 0, -0.1736, 0.9848, -0.004, 0.0828, -0.0219)
+mesh = SubResource("BoxMesh_pen_red")
+
+[node name="Cap" type="MeshInstance3D" parent="PenRed"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0695, 0)
+mesh = SubResource("BoxMesh_cap")
