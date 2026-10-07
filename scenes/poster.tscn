@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/poster_biohazard.tres" id="1_poster"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_poster"]
+size = Vector2(0.6, 0.8)
+
+[node name="Poster" type="MeshInstance3D"]
+cast_shadow = 0
+mesh = SubResource("QuadMesh_poster")
+material_override = ExtResource("1_poster")

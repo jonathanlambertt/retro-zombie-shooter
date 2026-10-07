@@ -1,0 +1,226 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://scripts/specimen_tank.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="2_metal"]
+[ext_resource type="Material" path="res://assets/materials/zombie_head.tres" id="3_head"]
+[ext_resource type="Material" path="res://assets/materials/zombie_torso.tres" id="4_torso"]
+[ext_resource type="Material" path="res://assets/materials/zombie_arm.tres" id="5_arm"]
+[ext_resource type="Material" path="res://assets/materials/zombie_leg.tres" id="6_leg"]
+[ext_resource type="Texture2D" path="res://assets/textures/slime.png" id="7_slime"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_liquid"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.3, 0.95, 0.42, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glass"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.75, 0.95, 0.95, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_puddle"]
+shading_mode = 0
+albedo_texture = ExtResource("7_slime")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eyes"]
+shading_mode = 0
+albedo_color = Color(0.9, 0.15, 0.1, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+material = ExtResource("2_metal")
+top_radius = 0.8
+bottom_radius = 0.8
+height = 0.4
+radial_segments = 12
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_liquid"]
+material = SubResource("StandardMaterial3D_liquid")
+top_radius = 0.62
+bottom_radius = 0.62
+height = 2.4
+radial_segments = 12
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_rod"]
+material = ExtResource("2_metal")
+size = Vector3(0.07, 2.4, 0.07)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pipe"]
+material = ExtResource("2_metal")
+top_radius = 0.12
+bottom_radius = 0.12
+height = 1.0
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_shard"]
+material = SubResource("StandardMaterial3D_glass")
+size = Vector3(0.3, 1, 0.02)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_puddle"]
+material = SubResource("StandardMaterial3D_puddle")
+top_radius = 1.0
+bottom_radius = 1.0
+height = 0.02
+radial_segments = 10
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+material = ExtResource("6_leg")
+size = Vector3(0.14, 0.62, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_torso"]
+material = ExtResource("4_torso")
+size = Vector3(0.4, 0.68, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_head"]
+material = ExtResource("3_head")
+size = Vector3(0.28, 0.28, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_eye"]
+material = SubResource("StandardMaterial3D_eyes")
+size = Vector3(0.07, 0.05, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = ExtResource("5_arm")
+size = Vector3(0.1, 0.1, 0.55)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_base"]
+height = 0.4
+radius = 0.8
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_glass"]
+height = 2.4
+radius = 0.72
+
+[node name="SpecimenTank" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("CylinderMesh_base")
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+mesh = SubResource("CylinderMesh_base")
+
+[node name="Rod1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 0.35, 1.6, 0.6062)
+mesh = SubResource("BoxMesh_rod")
+
+[node name="Rod2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.866, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866, 0.35, 1.6, -0.6062)
+mesh = SubResource("BoxMesh_rod")
+
+[node name="Rod3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.7, 1.6, 0)
+mesh = SubResource("BoxMesh_rod")
+
+[node name="Pipe" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 4.8, 0, 0, 0, 1, 0, 5.6, 0)
+mesh = SubResource("CylinderMesh_pipe")
+
+[node name="Liquid" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("CylinderMesh_liquid")
+
+[node name="Specimen" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.78, 0)
+
+[node name="LegLeft" type="Node3D" parent="Specimen"]
+transform = Transform3D(0.9976, 0.0698, 0, -0.0694, 0.9921, -0.1045, -0.0073, 0.1043, 0.9945, -0.1, 0.62, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Specimen/LegLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegRight" type="Node3D" parent="Specimen"]
+transform = Transform3D(0.9962, -0.0872, 0, 0.0863, 0.9865, 0.1392, -0.0121, -0.1386, 0.9903, 0.1, 0.62, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Specimen/LegRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="Upper" type="Node3D" parent="Specimen"]
+transform = Transform3D(1, 0, 0, 0, 0.9903, 0.1392, 0, -0.1392, 0.9903, 0, 0.62, 0)
+
+[node name="Torso" type="MeshInstance3D" parent="Specimen/Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
+mesh = SubResource("BoxMesh_torso")
+
+[node name="Head" type="Node3D" parent="Specimen/Upper"]
+transform = Transform3D(0.9945, -0.1045, 0, 0.0923, 0.8781, 0.4695, -0.0491, -0.4669, 0.8829, 0, 0.68, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Specimen/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
+mesh = SubResource("BoxMesh_head")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="Specimen/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.17, -0.145)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Specimen/Upper/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.17, -0.145)
+mesh = SubResource("BoxMesh_eye")
+
+[node name="ArmLeft" type="Node3D" parent="Specimen/Upper"]
+transform = Transform3D(0.9945, 0.1045, 0, -0.0217, 0.2068, 0.9781, 0.1022, -0.9728, 0.2079, -0.26, 0.56, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Specimen/Upper/ArmLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="ArmRight" type="Node3D" parent="Specimen/Upper"]
+transform = Transform3D(0.9903, -0.1392, 0, 0.0521, 0.371, 0.9272, -0.129, -0.9182, 0.3746, 0.26, 0.56, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Specimen/Upper/ArmRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.225)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="Shards" type="Node3D" parent="."]
+
+[node name="Shard1" type="MeshInstance3D" parent="Shards"]
+transform = Transform3D(0.9842, -0.0399, 0.1699, 0.0853, 0.7795, -0.2079, -0.1551, 0.1753, 0.9633, 0.1042, 0.8, 0.5909)
+mesh = SubResource("BoxMesh_shard")
+
+[node name="Shard2" type="MeshInstance3D" parent="Shards"]
+transform = Transform3D(0.4226, -0.126, 0.8619, 0, 0.428, 0.309, -0.9063, -0.0588, 0.4019, 0.5438, 0.625, 0.2536)
+mesh = SubResource("BoxMesh_shard")
+
+[node name="Shard3" type="MeshInstance3D" parent="Shards"]
+transform = Transform3D(-0.5847, 0.0114, 0.8112, -0.172, 0.8777, -0.1392, -0.7928, -0.1988, -0.568, 0.4915, 0.85, -0.3441)
+mesh = SubResource("BoxMesh_shard")
+
+[node name="Shard4" type="MeshInstance3D" parent="Shards"]
+transform = Transform3D(-0.9379, 0.0716, -0.3214, 0.2432, 0.4992, -0.342, 0.2472, -0.2194, -0.883, -0.2052, 0.675, -0.5638)
+mesh = SubResource("BoxMesh_shard")
+
+[node name="Shard5" type="MeshInstance3D" parent="Shards"]
+transform = Transform3D(-0.342, 0.0571, -0.9254, 0, 0.3447, 0.1736, 0.9397, 0.0208, -0.3368, -0.5638, 0.575, -0.2052)
+mesh = SubResource("BoxMesh_shard")
+
+[node name="Shard6" type="MeshInstance3D" parent="Shards"]
+transform = Transform3D(0.6576, -0.099, -0.7399, -0.0842, 0.6736, -0.2588, 0.7486, 0.1627, 0.6209, -0.4596, 0.75, 0.3857)
+mesh = SubResource("BoxMesh_shard")
+
+[node name="Puddle" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.1, 0, 0, 0, 1, 0, 0, 0, 0.75, 0.15, 0.01, 0.95)
+mesh = SubResource("CylinderMesh_puddle")
+
+[node name="BaseShape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("CylinderShape3D_base")
+
+[node name="GlassShape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+shape = SubResource("CylinderShape3D_glass")
+
+[node name="CapShape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+shape = SubResource("CylinderShape3D_base")

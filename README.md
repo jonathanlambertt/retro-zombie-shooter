@@ -80,6 +80,13 @@ scenes/              Reusable scenes
   zombie_window.tscn   A window that zombies climb in through
   notebook.tscn        A notebook on a desk that you can read
   notebook_reader.tscn The paper page a notebook opens, and its "press E" prompt
+  poster.tscn          A poster, sign or whiteboard to hang on a wall
+  bookshelf.tscn       Bookshelf full of books and binders
+  server_rack.tscn     Rack of servers with status lights
+  filing_cabinet.tscn  Four-drawer filing cabinet
+  potted_plant.tscn    Small tree in a clay pot
+  office_chair.tscn    Swivel chair
+  specimen_tank.tscn   Glowing tank from the experimentation lab, intact or smashed
   hud.tscn             Health / ammo / crosshair
   pause_menu.tscn      Esc menu: pauses the game, graphics and audio settings, multiplayer, quit
 levels/
@@ -210,8 +217,10 @@ The placeholder textures are plain PNG files in `assets/textures/`
 and `hazard` for the levels, `rubble` for the heaps a collapse leaves,
 `wallpaper`, `brick` and `lava` which no level uses at the moment, `pylon`
 for the explosive pylon, and `armor` and `suit`
-for the armoured player model, and the `soldier_*` textures for the soldier
-player model). Overwrite them with your own pixel art
+for the armoured player model, the `soldier_*` textures for the soldier
+player model, and `bookshelf`, `server_rack`, `filing_cabinet`, `leaves`,
+`terracotta`, the `poster_*` pictures, `whiteboard` and the `sign_*` plates
+for the lab props). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -606,8 +615,8 @@ sight, so they arrive in groups as you move through the level.
 ### Test map 2
 
 `levels/test-map-2.tscn` (the third level, so two presses of F2) is larger
-than the test map and mixes open rooms with tight ones. You start in a small
-checkpoint that opens onto a tall 24 x 24 m atrium. From there:
+than the test map and mixes open rooms with tight ones. A small checkpoint
+opens onto a tall 24 x 24 m atrium. From there:
 
 - **Upstairs**: stairs along the atrium's east wall climb 4 m to an L-shaped
   balcony round the north and west sides. A narrow corridor leads off it to a
@@ -623,6 +632,27 @@ checkpoint that opens onto a tall 24 x 24 m atrium. From there:
 Forty zombies stand at fixed points, named after their room as in the test
 map. The stairs are steps with an invisible `StairRamp` slope over them,
 because the player can't step up a ledge.
+
+**The control room and the experimentation lab.** For now you start upstairs
+in the control room (the level's `Player` node), facing three desks and a
+long observation window. Its sill is low, so you can step into a gap between
+the desks and look straight down into the experimentation lab behind it:
+this is where the zombies came from. Five specimen tanks stand along the far
+wall under a CONTAINMENT LAB sign. Two still have something floating in
+them; the other three are smashed, with glass round their rims and their
+liquid across the floor. Three barred holding cells line the west wall, and
+cell 3, the one the whiteboard says to keep shut, has been torn open. There
+is an operating table with a broken strap, benches of equipment, chemical
+drums and a trail of blood leading to the south wall. There, the containment
+door has been ripped out into the lab below the control room, which is the
+way in (go back down to the atrium and into the lab). Six zombies wait in
+there, one of them still locked in cell 2. The glass is solid: nothing gets
+through it, and the zombies in the lab can't see you through it.
+
+The control room itself has bookshelves, server racks, filing cabinets,
+plants, chairs, a water cooler, posters and the whiteboard. Its zombies
+moved into the lab when the start moved here; to start in the checkpoint
+again, move `Player` back to (0, 0.1, 27).
 
 ### The facility test level
 
@@ -662,7 +692,8 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/t
 ### Notebooks
 
 Every level except the test room has a notebook lying open on a desk, near
-where you start (in the office it is on the table). Stand next to it, look at it, and
+where you start (in the office it is on the table; in test map 2 it is still
+in the checkpoint, from before the start moved to the control room). Stand next to it, look at it, and
 **PRESS E TO READ** appears; E opens a sheet of lined paper with the page
 written on it, and E or Esc closes it again. Reading pauses the game in
 single player. Online the game carries on behind the page, and walking away
@@ -702,6 +733,28 @@ from the wall a zombie stands before climbing, and lands after), **Climb
 Speed**, **Yard Size** (the space it watches: along the wall, up, and out
 from the wall) and **Alert Distance** (how close a player must come to wake
 the yard).
+
+### Lab props
+
+The control room and the experimentation lab are dressed with props you can
+drag into any level (put them under the level's `Props` node). Each one's
+origin is at its base, and its front faces **+Z**, the blue arrow in the
+editor, so turn that arrow to face into the room.
+
+- **Poster** (`scenes/poster.tscn`): a 60 x 80 cm sheet. To pick the
+  picture, set **Material Override** to one of the `poster_*.tres`,
+  `whiteboard.tres` or `sign_*.tres` materials in `assets/materials/`. Scale
+  it for other sizes (the landscape posters, the whiteboard and the signs
+  are scaled copies). Hang it a centimetre off the wall.
+- **Bookshelf**, **server rack**, **filing cabinet**, **potted plant** and
+  **office chair**: solid furniture with nothing to set. The books, drawers
+  and blinking lights are painted on (see `generate_textures.gd`).
+- **Specimen tank** (`scenes/specimen_tank.tscn`): **Broken** swaps the
+  glowing liquid for shards round the rim and a puddle in front, and lets
+  shots through where the glass was. **Occupied** puts a body in an intact
+  tank. **Pipe Length** is how far the feed pipe reaches up from the top of
+  the tank (4.8 m meets an 8 m ceiling; 0 for none). The editor shows the
+  changes straight away.
 
 ## Known limitations
 

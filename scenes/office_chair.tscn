@@ -1,0 +1,62 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/chair_fabric.tres" id="1_fabric"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="2_metal"]
+[ext_resource type="Material" path="res://assets/materials/gun.tres" id="3_dark"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+material = ExtResource("3_dark")
+size = Vector3(0.6, 0.05, 0.07)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_post"]
+material = ExtResource("2_metal")
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.4
+radial_segments = 6
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_seat"]
+material = ExtResource("1_fabric")
+size = Vector3(0.5, 0.09, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back"]
+material = ExtResource("1_fabric")
+size = Vector3(0.46, 0.55, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_spine"]
+material = ExtResource("3_dark")
+size = Vector3(0.05, 0.3, 0.04)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_chair"]
+size = Vector3(0.55, 0.95, 0.55)
+
+[node name="OfficeChair" type="StaticBody3D"]
+
+[node name="LegsA" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, 0.7071, 0, 0.05, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegsB" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7071, 0, -0.7071, 0, 1, 0, 0.7071, 0, 0.7071, 0, 0.05, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+mesh = SubResource("CylinderMesh_post")
+
+[node name="Seat" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_seat")
+
+[node name="Spine" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.66, -0.24)
+mesh = SubResource("BoxMesh_spine")
+
+[node name="Back" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9903, 0.1392, 0, -0.1392, 0.9903, 0, 0.92, -0.25)
+mesh = SubResource("BoxMesh_back")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.475, 0)
+shape = SubResource("BoxShape3D_chair")

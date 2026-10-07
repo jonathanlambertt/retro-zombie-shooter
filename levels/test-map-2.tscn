@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=83 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -14,6 +14,31 @@
 [ext_resource type="Texture2D" path="res://assets/textures/slime.png" id="slime"]
 [ext_resource type="Script" path="res://scripts/damage_zone.gd" id="damage_zone"]
 [ext_resource type="PackedScene" path="res://scenes/zombie_textured.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://scenes/poster.tscn" id="poster"]
+[ext_resource type="PackedScene" path="res://scenes/bookshelf.tscn" id="bookshelf"]
+[ext_resource type="PackedScene" path="res://scenes/server_rack.tscn" id="server_rack"]
+[ext_resource type="PackedScene" path="res://scenes/filing_cabinet.tscn" id="filing_cabinet"]
+[ext_resource type="PackedScene" path="res://scenes/potted_plant.tscn" id="potted_plant"]
+[ext_resource type="PackedScene" path="res://scenes/office_chair.tscn" id="office_chair"]
+[ext_resource type="PackedScene" path="res://scenes/specimen_tank.tscn" id="specimen_tank"]
+[ext_resource type="Material" path="res://assets/materials/poster_biohazard.tres" id="poster_biohazard"]
+[ext_resource type="Material" path="res://assets/materials/poster_dna.tres" id="poster_dna"]
+[ext_resource type="Material" path="res://assets/materials/poster_periodic.tres" id="poster_periodic"]
+[ext_resource type="Material" path="res://assets/materials/poster_safety.tres" id="poster_safety"]
+[ext_resource type="Material" path="res://assets/materials/poster_subject.tres" id="poster_subject"]
+[ext_resource type="Material" path="res://assets/materials/poster_chart.tres" id="poster_chart"]
+[ext_resource type="Material" path="res://assets/materials/whiteboard.tres" id="whiteboard"]
+[ext_resource type="Material" path="res://assets/materials/sign_containment.tres" id="sign_containment"]
+[ext_resource type="Material" path="res://assets/materials/sign_cell_1.tres" id="sign_cell_1"]
+[ext_resource type="Material" path="res://assets/materials/sign_cell_2.tres" id="sign_cell_2"]
+[ext_resource type="Material" path="res://assets/materials/sign_cell_3.tres" id="sign_cell_3"]
+[ext_resource type="Material" path="res://assets/materials/paper.tres" id="paper"]
+[ext_resource type="Material" path="res://assets/materials/gun.tres" id="gun"]
+[ext_resource type="Material" path="res://assets/materials/rubble.tres" id="rubble"]
+[ext_resource type="Material" path="res://assets/materials/drum.tres" id="drum"]
+[ext_resource type="Texture2D" path="res://assets/textures/blood_stain.png" id="blood_stain"]
+[ext_resource type="Shader" path="res://shaders/retro_surface.gdshader" id="retro_surface"]
+[ext_resource type="Texture2D" path="res://assets/textures/metal.png" id="metal_texture"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
 size = Vector3(3, 0.2, 10.4)
@@ -50,20 +75,205 @@ size = Vector3(3, 0.1, 3)
 [sub_resource type="BoxShape3D" id="BoxShape3D_SlimeZone"]
 size = Vector3(3, 0.55, 3)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_window"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.55, 0.75, 0.8, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_window"]
+material = SubResource("StandardMaterial3D_window")
+size = Vector3(12, 2.3, 0.04)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_window"]
+size = Vector3(12, 2.3, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blood"]
+transparency = 2
+alpha_scissor_threshold = 0.5
+shading_mode = 0
+albedo_color = Color(0.42, 0.04, 0.04, 1)
+albedo_texture = ExtResource("blood_stain")
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="QuadMesh_blood"]
+material = SubResource("StandardMaterial3D_blood")
+size = Vector2(1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_keyboard"]
+material = ExtResource("gun")
+size = Vector3(0.45, 0.025, 0.15)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mug"]
+material = ExtResource("paper")
+top_radius = 0.045
+bottom_radius = 0.04
+height = 0.1
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_papers"]
+material = ExtResource("paper")
+size = Vector3(0.21, 0.03, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sheet"]
+material = ExtResource("paper")
+size = Vector3(0.21, 0.006, 0.3)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_red_paint"]
+shader = ExtResource("retro_surface")
+shader_parameter/albedo_texture = ExtResource("metal_texture")
+shader_parameter/tint = Color(1.6, 0.35, 0.3, 1)
+shader_parameter/uv_from_world = false
+shader_parameter/texture_size_meters = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_extinguisher"]
+material = SubResource("ShaderMaterial_red_paint")
+top_radius = 0.08
+bottom_radius = 0.08
+height = 0.45
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_nozzle"]
+material = ExtResource("gun")
+size = Vector3(0.06, 0.08, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bottle"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.45, 0.7, 1, 0.55)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bottle"]
+material = SubResource("StandardMaterial3D_bottle")
+top_radius = 0.1
+bottom_radius = 0.15
+height = 0.42
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_red_light"]
+shading_mode = 0
+albedo_color = Color(1, 0.12, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_red_light"]
+material = SubResource("StandardMaterial3D_red_light")
+size = Vector3(0.3, 0.16, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_door_slab"]
+material = ExtResource("metal")
+size = Vector3(2.4, 0.1, 2.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rubble"]
+material = ExtResource("rubble")
+
+[sub_resource type="BoxMesh" id="BoxMesh_loose_bar"]
+material = ExtResource("metal")
+size = Vector3(0.08, 1.9, 0.08)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lamp_rod"]
+material = ExtResource("metal")
+top_radius = 0.03
+bottom_radius = 0.03
+height = 4.6
+radial_segments = 6
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lamp_head"]
+material = ExtResource("metal")
+top_radius = 0.2
+bottom_radius = 0.5
+height = 0.2
+radial_segments = 10
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lamp_glow"]
+material = SubResource("StandardMaterial3D_lamp")
+top_radius = 0.42
+bottom_radius = 0.42
+height = 0.02
+radial_segments = 10
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_beaker"]
+top_radius = 0.05
+bottom_radius = 0.06
+height = 0.16
+radial_segments = 6
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beaker_green"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.3, 1, 0.4, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beaker_blue"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.3, 0.6, 1, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beaker_red"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.25, 0.2, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beaker_amber"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.75, 0.2, 0.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_small_dark"]
+material = ExtResource("gun")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_centrifuge"]
+material = ExtResource("paper")
+top_radius = 0.2
+bottom_radius = 0.22
+height = 0.26
+radial_segments = 10
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_button_red"]
+shading_mode = 0
+albedo_color = Color(1, 0.15, 0.1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_button_green"]
+shading_mode = 0
+albedo_color = Color(0.2, 1, 0.3, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_button_amber"]
+shading_mode = 0
+albedo_color = Color(1, 0.7, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_button"]
+size = Vector3(0.06, 0.02, 0.06)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pipe_stub"]
+material = ExtResource("metal")
+top_radius = 0.12
+bottom_radius = 0.12
+height = 2.2
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_hazard_strip"]
+material = ExtResource("hazard")
+size = Vector3(15.6, 0.02, 0.5)
+
 [node name="TestMap2" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("env")
 
 [node name="Player" parent="." instance=ExtResource("player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 27)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.1, -15.5)
 
 [node name="World" type="CSGCombiner3D" parent="."]
 use_collision = true
 
 [node name="Solid" type="CSGBox3D" parent="World"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4, 3)
-size = Vector3(70, 12, 58)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4, -7)
+size = Vector3(70, 12, 78)
 material = ExtResource("concrete")
 
 [node name="CarveSpawn" type="CSGBox3D" parent="World"]
@@ -155,6 +365,60 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 1.375, 16)
 operation = 2
 size = Vector3(2.5, 3.25, 4)
 material = ExtResource("metal")
+
+[node name="CarveExperiment" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -33.75)
+operation = 2
+size = Vector3(20, 8.5, 18.5)
+material = ExtResource("metal")
+
+[node name="CarveObservationWindow" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.6, -24.25)
+operation = 2
+size = Vector3(12, 2.3, 0.7)
+material = ExtResource("metal")
+
+[node name="CarveBreach" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 1.125, -23.5)
+operation = 2
+size = Vector3(2.4, 2.75, 3.2)
+material = ExtResource("concrete")
+
+[node name="CarveBreachTear1" type="CSGBox3D" parent="World"]
+transform = Transform3D(0.8192, -0.5736, 0, 0.5736, 0.8192, 0, 0, 0, 1, 2, 2.45, -22.3)
+operation = 2
+size = Vector3(0.9, 0.7, 0.8)
+material = ExtResource("concrete")
+
+[node name="CarveBreachTear2" type="CSGBox3D" parent="World"]
+transform = Transform3D(0.9063, 0.4226, 0, -0.4226, 0.9063, 0, 0, 0, 1, 4.45, 1.6, -22.3)
+operation = 2
+size = Vector3(0.6, 1.1, 0.8)
+material = ExtResource("concrete")
+
+[node name="CarveBreachTear3" type="CSGBox3D" parent="World"]
+transform = Transform3D(0.9397, -0.342, 0, 0.342, 0.9397, 0, 0, 0, 1, 3.6, 2.55, -24.4)
+operation = 2
+size = Vector3(1, 0.5, 0.6)
+material = ExtResource("concrete")
+
+[node name="CarveCell1" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.75, 1.3, -34)
+operation = 2
+size = Vector3(1.7, 2.6, 2.4)
+material = ExtResource("concrete")
+
+[node name="CarveCell2" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.75, 1.3, -37)
+operation = 2
+size = Vector3(1.7, 2.6, 2.4)
+material = ExtResource("concrete")
+
+[node name="CarveCell3" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.75, 1.3, -40)
+operation = 2
+size = Vector3(1.7, 2.6, 2.4)
+material = ExtResource("concrete")
 
 [node name="FloorSpawn" type="CSGBox3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 26)
@@ -249,6 +513,21 @@ material = ExtResource("hazard")
 [node name="FloorWarehouseDoor" type="CSGBox3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, -0.125, 16)
 size = Vector3(2, 0.25, 4)
+material = ExtResource("hazard")
+
+[node name="FloorExperiment" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, -33.75)
+size = Vector3(20, 0.25, 18.5)
+material = ExtResource("tile")
+
+[node name="CeilingExperiment" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.125, -33.75)
+size = Vector3(20, 0.25, 18.5)
+material = ExtResource("metal")
+
+[node name="FloorBreach" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, -0.125, -23.2)
+size = Vector3(2.4, 0.25, 2.6)
 material = ExtResource("hazard")
 
 [node name="BalconyNorth" type="CSGBox3D" parent="World"]
@@ -395,6 +674,126 @@ material = ExtResource("concrete")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 3.5, -14)
 size = Vector3(0.8, 7.2, 0.8)
 material = ExtResource("concrete")
+
+[node name="WindowMullion1" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 5.6, -24.25)
+size = Vector3(0.16, 2.3, 0.6)
+material = ExtResource("metal")
+
+[node name="WindowMullion2" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.6, -24.25)
+size = Vector3(0.16, 2.3, 0.6)
+material = ExtResource("metal")
+
+[node name="WindowMullion3" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5.6, -24.25)
+size = Vector3(0.16, 2.3, 0.6)
+material = ExtResource("metal")
+
+[node name="Cell1Bar1" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -35)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell1Bar2" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -34.6)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell1Bar3" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -34.2)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell1Bar4" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -33.8)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell1Bar5" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -33.4)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell1Bar6" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -33)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell1RailTop" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 2.5, -34)
+size = Vector3(0.1, 0.1, 2.4)
+material = ExtResource("metal")
+
+[node name="Cell1RailMiddle" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.1, -34)
+size = Vector3(0.1, 0.1, 2.4)
+material = ExtResource("metal")
+
+[node name="Cell2Bar1" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -38)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell2Bar2" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -37.6)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell2Bar3" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -37.2)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell2Bar4" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -36.8)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell2Bar5" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -36.4)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell2Bar6" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -36)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell2RailTop" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 2.5, -37)
+size = Vector3(0.1, 0.1, 2.4)
+material = ExtResource("metal")
+
+[node name="Cell2RailMiddle" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.1, -37)
+size = Vector3(0.1, 0.1, 2.4)
+material = ExtResource("metal")
+
+[node name="Cell3Bar1" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -41)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell3Bar2" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 0.9703, 0.2419, 0, -0.2419, 0.9703, -10.05, 1.3, -40.6)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell3Bar5" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 0.9703, -0.2419, 0, 0.2419, 0.9703, -10.05, 1.3, -39.4)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell3Bar6" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 1.3, -39)
+size = Vector3(0.08, 2.6, 0.08)
+material = ExtResource("metal")
+
+[node name="Cell3RailTop" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.05, 2.5, -40)
+size = Vector3(0.1, 0.1, 2.4)
+material = ExtResource("metal")
 
 [node name="CarveSlimePit" type="CSGBox3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, -0.325, 0)
@@ -564,6 +963,261 @@ size = 2.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, -10)
 size = 2.0
 
+[node name="ObservationGlass" type="StaticBody3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.6, -24.25)
+
+[node name="Mesh" type="MeshInstance3D" parent="Props/ObservationGlass"]
+mesh = SubResource("BoxMesh_window")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Props/ObservationGlass"]
+shape = SubResource("BoxShape3D_window")
+
+[node name="ControlChair1" parent="Props" instance=ExtResource("office_chair")]
+transform = Transform3D(-0.9903, 0, 0.1392, 0, 1, 0, -0.1392, 0, -0.9903, -4, 4, -22.15)
+
+[node name="ControlChair2" parent="Props" instance=ExtResource("office_chair")]
+transform = Transform3D(-0.9945, 0, -0.1045, 0, 1, 0, 0.1045, 0, -0.9945, 0, 4, -22.25)
+
+[node name="ControlChair3" parent="Props" instance=ExtResource("office_chair")]
+transform = Transform3D(-0.9986, 0, 0.0523, 0, 1, 0, -0.0523, 0, -0.9986, 4, 4, -22.1)
+
+[node name="ControlBookshelf1" parent="Props" instance=ExtResource("bookshelf")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.79, 4, -20.6)
+
+[node name="ControlBookshelf2" parent="Props" instance=ExtResource("bookshelf")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.79, 4, -19.38)
+
+[node name="ControlServerRack1" parent="Props" instance=ExtResource("server_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.59, 4, -22)
+
+[node name="ControlServerRack2" parent="Props" instance=ExtResource("server_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.59, 4, -21.38)
+
+[node name="ControlCabinet1" parent="Props" instance=ExtResource("filing_cabinet")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.69, 4, -19.6)
+
+[node name="ControlCabinet2" parent="Props" instance=ExtResource("filing_cabinet")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.69, 4, -19.08)
+
+[node name="ControlPlant1" parent="Props" instance=ExtResource("potted_plant")]
+transform = Transform3D(0.9659, 0, 0.2588, 0, 1, 0, -0.2588, 0, 0.9659, -7.4, 4, -23.4)
+
+[node name="ControlPlant2" parent="Props" instance=ExtResource("potted_plant")]
+transform = Transform3D(0.766, 0, -0.6428, 0, 1, 0, 0.6428, 0, 0.766, 7.4, 4, -23.4)
+
+[node name="ControlPlant3" parent="Props" instance=ExtResource("potted_plant")]
+transform = Transform3D(0.342, 0, 0.9397, 0, 1, 0, -0.9397, 0, 0.342, -7.4, 4, -14.6)
+
+[node name="WaterCooler" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.45, 4.5, -14.55)
+use_collision = true
+size = Vector3(0.38, 1, 0.38)
+material = ExtResource("paper")
+
+[node name="TrashCan" type="CSGCylinder3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.6, 4.18, -23.35)
+use_collision = true
+radius = 0.16
+height = 0.36
+sides = 8
+material = ExtResource("metal")
+
+[node name="PosterDNA" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.99, 5.6, -16.3)
+material_override = ExtResource("poster_dna")
+
+[node name="PosterSafety" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.99, 5.7, -22.6)
+material_override = ExtResource("poster_safety")
+
+[node name="PosterPeriodic" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, -1, 0, 0.75, 0, 1.3333, 0, 0, 7.99, 5.9, -19.34)
+material_override = ExtResource("poster_periodic")
+
+[node name="PosterChart" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, -1, 0, 0.75, 0, 1.3333, 0, 0, 7.99, 5.6, -16.4)
+material_override = ExtResource("poster_chart")
+
+[node name="Whiteboard" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(-4, 0, 0, 0, 1.5, 0, 0, 0, -1, -4.2, 5.55, -14.01)
+material_override = ExtResource("whiteboard")
+
+[node name="PosterBiohazard" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.2, 5.6, -14.01)
+material_override = ExtResource("poster_biohazard")
+
+[node name="PosterSubject" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4.6, 5.6, -14.01)
+material_override = ExtResource("poster_subject")
+
+[node name="SpecimenTank1" parent="Props" instance=ExtResource("specimen_tank")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -41.4)
+
+[node name="SpecimenTank2" parent="Props" instance=ExtResource("specimen_tank")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -41.4)
+broken = true
+occupied = false
+
+[node name="SpecimenTank3" parent="Props" instance=ExtResource("specimen_tank")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -41.4)
+broken = true
+occupied = false
+pipe_length = 0.0
+
+[node name="SpecimenTank4" parent="Props" instance=ExtResource("specimen_tank")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -41.4)
+
+[node name="SpecimenTank5" parent="Props" instance=ExtResource("specimen_tank")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -41.4)
+broken = true
+occupied = false
+
+[node name="SignContainment" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(6.6667, 0, 0, 0, 0.625, 0, 0, 0, 1, 0, 4.6, -42.98)
+material_override = ExtResource("sign_containment")
+
+[node name="SignCell1" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, 1, 0, 0.3125, 0, -1.3333, 0, 0, -9.98, 2.85, -34)
+material_override = ExtResource("sign_cell_1")
+
+[node name="SignCell2" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, 1, 0, 0.3125, 0, -1.3333, 0, 0, -9.98, 2.85, -37)
+material_override = ExtResource("sign_cell_2")
+
+[node name="SignCell3" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, 1, 0, 0.3125, 0, -1.3333, 0, 0, -9.98, 2.85, -40)
+material_override = ExtResource("sign_cell_3")
+
+[node name="ExperimentPosterBiohazard1" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.99, 1.6, -34)
+material_override = ExtResource("poster_biohazard")
+
+[node name="ExperimentPosterSubject" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.99, 2.3, -36.5)
+material_override = ExtResource("poster_subject")
+
+[node name="ExperimentPosterBiohazard2" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -6, 1.6, -24.51)
+material_override = ExtResource("poster_biohazard")
+
+[node name="ExperimentPosterChart" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(-1.3333, 0, 0, 0, 0.75, 0, 0, 0, -1, -3.6, 1.7, -24.51)
+material_override = ExtResource("poster_chart")
+
+[node name="OperatingTable" type="CSGCombiner3D" parent="Props"]
+transform = Transform3D(0.9903, 0, 0.1392, 0, 1, 0, -0.1392, 0, 0.9903, 0, 0, -36)
+use_collision = true
+
+[node name="Top" type="CSGBox3D" parent="Props/OperatingTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+size = Vector3(2.1, 0.1, 0.8)
+material = ExtResource("metal")
+
+[node name="Pedestal" type="CSGBox3D" parent="Props/OperatingTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.425, 0)
+size = Vector3(0.3, 0.85, 0.3)
+material = ExtResource("metal")
+
+[node name="Foot" type="CSGBox3D" parent="Props/OperatingTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+size = Vector3(1, 0.08, 0.6)
+material = ExtResource("metal")
+
+[node name="StrapChest" type="CSGBox3D" parent="Props/OperatingTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.97, 0)
+size = Vector3(0.12, 0.04, 0.84)
+material = ExtResource("gun")
+
+[node name="StrapLegs" type="CSGBox3D" parent="Props/OperatingTable"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0.97, 0)
+size = Vector3(0.12, 0.04, 0.84)
+material = ExtResource("gun")
+
+[node name="StrapTorn" type="CSGBox3D" parent="Props/OperatingTable"]
+transform = Transform3D(0.9781, -0.2079, 0, 0.2079, 0.9781, 0, 0, 0, 1, 0.05, 0.72, 0.42)
+size = Vector3(0.12, 0.45, 0.03)
+material = ExtResource("gun")
+
+[node name="InstrumentTray" type="CSGCombiner3D" parent="Props"]
+transform = Transform3D(0.9781, 0, -0.2079, 0, 1, 0, 0.2079, 0, 0.9781, 1.7, 0, -35.1)
+use_collision = true
+
+[node name="Tray" type="CSGBox3D" parent="Props/InstrumentTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+size = Vector3(0.7, 0.04, 0.45)
+material = ExtResource("metal")
+
+[node name="Shelf" type="CSGBox3D" parent="Props/InstrumentTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+size = Vector3(0.7, 0.03, 0.45)
+material = ExtResource("metal")
+
+[node name="Leg1" type="CSGBox3D" parent="Props/InstrumentTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32, 0.475, -0.2)
+size = Vector3(0.04, 0.95, 0.04)
+material = ExtResource("metal")
+
+[node name="Leg2" type="CSGBox3D" parent="Props/InstrumentTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.475, -0.2)
+size = Vector3(0.04, 0.95, 0.04)
+material = ExtResource("metal")
+
+[node name="Leg3" type="CSGBox3D" parent="Props/InstrumentTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32, 0.475, 0.2)
+size = Vector3(0.04, 0.95, 0.04)
+material = ExtResource("metal")
+
+[node name="Leg4" type="CSGBox3D" parent="Props/InstrumentTray"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.475, 0.2)
+size = Vector3(0.04, 0.95, 0.04)
+material = ExtResource("metal")
+
+[node name="ExperimentChair" parent="Props" instance=ExtResource("office_chair")]
+transform = Transform3D(0, -0.866, 0.5, 1, 0, 0, 0, 0.5, 0.866, -2.4, 0.3, -32.8)
+
+[node name="ExperimentBench1" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.45, 0.45, -37.2)
+use_collision = true
+size = Vector3(1, 0.9, 3)
+material = ExtResource("metal")
+
+[node name="ExperimentBench2" type="CSGBox3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.45, 0.45, -30.8)
+use_collision = true
+size = Vector3(1, 0.9, 3)
+material = ExtResource("metal")
+
+[node name="Drums" type="CSGCombiner3D" parent="Props"]
+use_collision = true
+
+[node name="Drum1" type="CSGCylinder3D" parent="Props/Drums"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 0.45, -26.3)
+radius = 0.3
+height = 0.9
+sides = 10
+material = ExtResource("drum")
+
+[node name="Drum2" type="CSGCylinder3D" parent="Props/Drums"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.15, 0.45, -26)
+radius = 0.3
+height = 0.9
+sides = 10
+material = ExtResource("drum")
+
+[node name="Drum3" type="CSGCylinder3D" parent="Props/Drums"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.45, -27.05)
+radius = 0.3
+height = 0.9
+sides = 10
+material = ExtResource("drum")
+
+[node name="Drum4" type="CSGCylinder3D" parent="Props/Drums"]
+transform = Transform3D(0, -0.8192, 0.5736, 1, 0, 0, 0, 0.5736, 0.8192, 7.6, 0.3, -27.6)
+radius = 0.3
+height = 0.9
+sides = 10
+material = ExtResource("drum")
+
 [node name="Details" type="Node3D" parent="."]
 
 [node name="SpawnLamp" type="MeshInstance3D" parent="Details"]
@@ -674,6 +1328,296 @@ mesh = SubResource("BoxMesh_screen")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, -0.4, 0)
 mesh = SubResource("BoxMesh_slime")
 
+[node name="ControlKeyboard1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4.8125, -22.98)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="ControlKeyboard2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8125, -22.98)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="ControlKeyboard3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.8125, -22.98)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="ControlMug1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.25, 4.85, -22.95)
+mesh = SubResource("CylinderMesh_mug")
+
+[node name="ControlMug2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 4.85, -23.45)
+mesh = SubResource("CylinderMesh_mug")
+
+[node name="ControlMug3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.65, 4.85, -23.1)
+mesh = SubResource("CylinderMesh_mug")
+
+[node name="ControlPapers1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9781, 0, 0.2079, 0, 1, 0, -0.2079, 0, 0.9781, -4.75, 4.815, -23.3)
+mesh = SubResource("BoxMesh_papers")
+
+[node name="ControlPapers2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9903, 0, -0.1392, 0, 1, 0, 0.1392, 0, 0.9903, 3.2, 4.815, -23.35)
+mesh = SubResource("BoxMesh_papers")
+
+[node name="ControlPapers3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.1736, 0, 0.9848, 0, 1, 0, -0.9848, 0, 0.1736, 0, 4.915, -17.75)
+mesh = SubResource("BoxMesh_papers")
+
+[node name="ConsoleScreen1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 5.25, -18.2)
+mesh = SubResource("BoxMesh_screen")
+
+[node name="ConsoleScreen2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 5.25, -18.2)
+mesh = SubResource("BoxMesh_screen")
+
+[node name="ConsoleKeyboard" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 4.9125, -17.75)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="ConsoleButton1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 4.91, -17.7)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_red")
+
+[node name="ConsoleButton2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 4.91, -17.7)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_green")
+
+[node name="ConsoleButton3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 4.91, -17.7)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_amber")
+
+[node name="ConsoleButton4" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 4.91, -17.7)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_red")
+
+[node name="Extinguisher" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 4.62, -14.12)
+mesh = SubResource("CylinderMesh_extinguisher")
+
+[node name="ExtinguisherNozzle" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 4.88, -14.12)
+mesh = SubResource("BoxMesh_nozzle")
+
+[node name="WaterBottle" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.45, 5.21, -14.55)
+mesh = SubResource("CylinderMesh_bottle")
+
+[node name="ExperimentLamp1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 7.97, -34)
+mesh = SubResource("BoxMesh_lamp")
+
+[node name="ExperimentLamp2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 7.97, -34)
+mesh = SubResource("BoxMesh_lamp")
+
+[node name="SurgicalLampRod" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.7, -36)
+mesh = SubResource("CylinderMesh_lamp_rod")
+
+[node name="SurgicalLampHead" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, -36)
+mesh = SubResource("CylinderMesh_lamp_head")
+
+[node name="SurgicalLampGlow" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.19, -36)
+mesh = SubResource("CylinderMesh_lamp_glow")
+
+[node name="HazardStrip" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -40.1)
+mesh = SubResource("BoxMesh_hazard_strip")
+
+[node name="TornPipe" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9945, -0.1045, 0, 0.1035, 0.9848, -0.1392, 0.0145, 0.1384, 0.9903, 0.15, 6.95, -41.4)
+mesh = SubResource("CylinderMesh_pipe_stub")
+
+[node name="BenchScreen1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.7, 1.12, -37.8)
+mesh = SubResource("BoxMesh_screen")
+
+[node name="BenchScreen2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.7, 1.12, -31.4)
+mesh = SubResource("BoxMesh_screen")
+
+[node name="BenchKeyboard" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.25, 0.9125, -37.8)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="BenchCentrifuge" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 1.03, -29.9)
+mesh = SubResource("CylinderMesh_centrifuge")
+
+[node name="MicroscopeBase" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.2, 0, 0, 0, 0.05, 0, 0, 0, 0.25, 9.5, 0.925, -36.4)
+mesh = SubResource("BoxMesh_small_dark")
+
+[node name="MicroscopeArm" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.05, 0, 0, 0, 0.32, 0, 0, 0, 0.06, 9.6, 1.1, -36.4)
+mesh = SubResource("BoxMesh_small_dark")
+
+[node name="MicroscopeTube" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.0544, -0.0845, 0, 0.0254, 0.1813, 0, 0, 0, 0.06, 9.5, 1.22, -36.4)
+mesh = SubResource("BoxMesh_small_dark")
+
+[node name="BenchPapers" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9063, 0, 0.4226, 0, 1, 0, -0.4226, 0, 0.9063, 9.3, 0.903, -32.4)
+mesh = SubResource("BoxMesh_sheet")
+
+[node name="Beaker1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.4, 0.98, -38.6)
+mesh = SubResource("CylinderMesh_beaker")
+material_override = SubResource("StandardMaterial3D_beaker_green")
+
+[node name="Beaker2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, 0.98, -38.45)
+mesh = SubResource("CylinderMesh_beaker")
+material_override = SubResource("StandardMaterial3D_beaker_blue")
+
+[node name="Beaker3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.98, -36)
+mesh = SubResource("CylinderMesh_beaker")
+material_override = SubResource("StandardMaterial3D_beaker_red")
+
+[node name="Beaker4" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 0.98, -31)
+mesh = SubResource("CylinderMesh_beaker")
+material_override = SubResource("StandardMaterial3D_beaker_amber")
+
+[node name="Beaker5" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.45, 0.98, -30.7)
+mesh = SubResource("CylinderMesh_beaker")
+material_override = SubResource("StandardMaterial3D_beaker_green")
+
+[node name="Beaker6" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.98, -31.9)
+mesh = SubResource("CylinderMesh_beaker")
+material_override = SubResource("StandardMaterial3D_beaker_blue")
+
+[node name="BreachDoor" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9703, 0.0084, 0.2418, 0, 0.9994, -0.0349, -0.2419, 0.0339, 0.9697, 2.9, 0.07, -20.1)
+mesh = SubResource("BoxMesh_door_slab")
+
+[node name="BreachLightInside" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.8, -24.54)
+mesh = SubResource("BoxMesh_red_light")
+
+[node name="BreachLightOutside" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.7, -21.96)
+mesh = SubResource("BoxMesh_red_light")
+
+[node name="LooseBar" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.342, -0.9397, 0, 0, 0, -1, 0.9397, 0.342, 0, -8.8, 0.04, -39.4)
+mesh = SubResource("BoxMesh_loose_bar")
+
+[node name="BreachRubble1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.3052, -0.0044, 0.1467, 0.0476, 0.2422, -0.0624, -0.1645, 0.062, 0.2541, 1.5, 0.08, -21.4)
+mesh = SubResource("BoxMesh_rubble")
+
+[node name="BreachRubble2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.2718, -0.066, 0.2681, 0.1539, 0.2819, 0, -0.3239, 0.0786, 0.225, 4.6, 0.1, -20.9)
+mesh = SubResource("BoxMesh_rubble")
+
+[node name="BreachRubble3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.197, 0.0132, 0.0393, 0, 0.1631, -0.1057, -0.0347, 0.0749, 0.2231, 1.8, 0.05, -19.3)
+mesh = SubResource("BoxMesh_rubble")
+
+[node name="BreachRubble4" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.0625, -0.0134, 0.1932, 0.0647, 0.1932, 0, -0.2333, 0.05, 0.0518, 4.2, 0.06, -19)
+mesh = SubResource("BoxMesh_rubble")
+
+[node name="BreachRubble5" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.3374, -0.1046, 0.101, 0.197, 0.2132, -0.0521, -0.0858, 0.0781, 0.2776, 2.6, 0.08, -25.3)
+mesh = SubResource("BoxMesh_rubble")
+
+[node name="BreachRubble6" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.1477, -0.0174, 0.2165, 0.0521, 0.197, 0, -0.2559, 0.0301, 0.125, 4, 0.06, -25.9)
+mesh = SubResource("BoxMesh_rubble")
+
+[node name="BloodTankPool" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1.4095, -0.513, 0, 0, 0, 1, -0.513, -1.4095, 0, 0.2, 0.012, -39.7)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTable" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.3762, -1.0337, 0, 0, 0, 1, -1.0337, -0.3762, 0, 0.4, 0.012, -35.9)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTableTop" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.5909, -0.1042, 0, 0, 0, 1, -0.1042, -0.5909, 0, -0.3, 0.957, -36)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodCell3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.7071, -0.7071, 0, 0, 0, 1, -0.7071, -0.7071, 0, -10.8, 0.012, -40.1)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodCell3Wall" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0, 0, 1, 0.6, 1.0392, 0, -1.0392, 0.6, 0, -11.58, 1.2, -39.6)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTankWall" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1, -3, 1.6, -42.98)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.5796, -0.1553, 0, 0, 0, 1, -0.1553, -0.5796, 0, 1.2, 0.012, -38.2)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.1216, -0.6894, 0, 0, 0, 1, -0.6894, -0.1216, 0, 1.9, 0.012, -34)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(-0.4596, -0.3857, 0, 0, 0, 1, -0.3857, 0.4596, 0, 2.5, 0.012, -31)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail4" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.6928, -0.4, 0, 0, 0, 1, -0.4, -0.6928, 0, 2.9, 0.012, -28.2)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail5" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(-0.1216, -0.6894, 0, 0, 0, 1, -0.6894, 0.1216, 0, 3.2, 0.012, -24.3)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail6" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.45, -0.7794, 0, 0, 0, 1, -0.7794, -0.45, 0, 3, 0.012, -21.5)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail7" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.5909, -0.1042, 0, 0, 0, 1, -0.1042, -0.5909, 0, 2, 0.012, -19.6)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="BloodTrail8" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(-0.25, -0.433, 0, 0, 0, 1, -0.433, 0.25, 0, 1, 0.012, -18.1)
+mesh = SubResource("QuadMesh_blood")
+
+[node name="ExperimentPaper1" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, 0.9397, -1.5, 0.006, -33.4)
+mesh = SubResource("BoxMesh_sheet")
+
+[node name="ExperimentPaper2" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.342, 0, 0.9397, 0, 1, 0, -0.9397, 0, 0.342, -1.1, 0.006, -33.9)
+mesh = SubResource("BoxMesh_sheet")
+
+[node name="ExperimentPaper3" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(-0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, -0.766, 3.6, 0.006, -33)
+mesh = SubResource("BoxMesh_sheet")
+
+[node name="ExperimentPaper4" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, 0.7071, -4.5, 0.006, -37.8)
+mesh = SubResource("BoxMesh_sheet")
+
+[node name="ExperimentPaper5" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(-0.1736, 0, 0.9848, 0, 1, 0, -0.9848, 0, -0.1736, 5.4, 0.006, -39.2)
+mesh = SubResource("BoxMesh_sheet")
+
+[node name="ExperimentPaper6" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(0.9848, 0, 0.1736, 0, 1, 0, -0.1736, 0, 0.9848, 6.8, 0.006, -30.5)
+mesh = SubResource("BoxMesh_sheet")
+
 [node name="Hazards" type="Node3D" parent="."]
 
 [node name="SlimeZone" type="Area3D" parent="Hazards"]
@@ -729,6 +1673,13 @@ light_energy = 3.0
 omni_range = 12.0
 omni_attenuation = 0.5
 
+[node name="ExperimentLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, -35)
+light_color = Color(0.75, 1, 0.8, 1)
+light_energy = 3.0
+omni_range = 16.0
+omni_attenuation = 0.5
+
 [node name="Enemies" type="Node3D" parent="."]
 
 [node name="ZombieAtrium1" parent="Enemies" instance=ExtResource("zombie")]
@@ -764,23 +1715,23 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 4.1, 8)
 [node name="ZombieBalcony4" parent="Enemies" instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 4.1, 16)
 
-[node name="ZombieUpperCorridor" parent="Enemies" instance=ExtResource("zombie")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.1, -9)
+[node name="ZombieCell2" parent="Enemies" instance=ExtResource("zombie")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10.85, 0.1, -37)
 
-[node name="ZombieControl1" parent="Enemies" instance=ExtResource("zombie")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 4.1, -20)
+[node name="ZombieContainment1" parent="Enemies" instance=ExtResource("zombie")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3.6, 0.1, -39.4)
 
-[node name="ZombieControl2" parent="Enemies" instance=ExtResource("zombie")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.1, -18)
+[node name="ZombieContainment2" parent="Enemies" instance=ExtResource("zombie")]
+transform = Transform3D(-0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, -0.9397, 2.4, 0.1, -38.6)
 
-[node name="ZombieControl3" parent="Enemies" instance=ExtResource("zombie")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.1, -21)
+[node name="ZombieContainment3" parent="Enemies" instance=ExtResource("zombie")]
+transform = Transform3D(-0.5, 0, 0.866, 0, 1, 0, -0.866, 0, -0.5, 5.2, 0.1, -34.5)
 
-[node name="ZombieControl4" parent="Enemies" instance=ExtResource("zombie")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 4.1, -16)
+[node name="ZombieContainment4" parent="Enemies" instance=ExtResource("zombie")]
+transform = Transform3D(-0.9397, 0, -0.342, 0, 1, 0, 0.342, 0, -0.9397, -6, 0.1, -33)
 
-[node name="ZombieControl5" parent="Enemies" instance=ExtResource("zombie")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.1, -22)
+[node name="ZombieContainment5" parent="Enemies" instance=ExtResource("zombie")]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 0.8, 0.1, -29)
 
 [node name="ZombieLab1" parent="Enemies" instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.1, -16)

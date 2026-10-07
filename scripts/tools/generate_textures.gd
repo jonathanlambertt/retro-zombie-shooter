@@ -83,6 +83,23 @@ func _init() -> void:
 	_save(_make_bullet(), "bullet")
 	# Rubble left by collapsing structures (scripts/structure.gd).
 	_save(_make_rubble(), "rubble")
+	# Lab furniture and wall dressing: test-map-2's control room and the
+	# experimentation lab behind its window.
+	_save(_make_bookshelf(), "bookshelf")
+	_save(_make_server_rack(), "server_rack")
+	_save(_make_filing_cabinet(), "filing_cabinet")
+	_save(_make_leaves(), "leaves")
+	_save(_make_terracotta(), "terracotta")
+	_save(_make_poster_biohazard(), "poster_biohazard")
+	_save(_make_poster_dna(), "poster_dna")
+	_save(_make_poster_periodic(), "poster_periodic")
+	_save(_make_poster_safety(), "poster_safety")
+	_save(_make_poster_subject(), "poster_subject")
+	_save(_make_poster_chart(), "poster_chart")
+	_save(_make_whiteboard(), "whiteboard")
+	_save(_make_sign_containment(), "sign_containment")
+	for cell in range(1, 4):
+		_save(_make_sign_cell(cell), "sign_cell_%d" % cell)
 	quit()
 
 
@@ -1761,3 +1778,508 @@ func _make_rubble() -> Image:
 				brightness *= 1.1  # a lighter, chipped middle
 			image.set_pixel(x, y, _shade(base, brightness))
 	return image
+
+
+# --- Lab furniture -----------------------------------------------------------
+#
+# The bookshelf, server rack and filing cabinet are single boxes, so like the
+# zombie they use BoxMesh atlases: the shelves, drawers and blinking lights
+# are painted on the front, the way 1990s games drew bookcases.
+
+const WOOD_DARK := Color(0.30, 0.19, 0.11)
+const BOOK_COLORS := [
+	Color(0.50, 0.10, 0.09), Color(0.13, 0.20, 0.42), Color(0.16, 0.34, 0.18),
+	Color(0.42, 0.30, 0.15), Color(0.32, 0.32, 0.34), Color(0.62, 0.48, 0.14),
+	Color(0.08, 0.08, 0.10), Color(0.55, 0.52, 0.45),
+]
+const PixelText := preload("res://scripts/pixel_text.gd")
+
+
+## A board of wood "width" x "height" pixels, with grain running down it.
+func _make_wood(width: int, height: int, base: Color) -> Image:
+	var wood := _speckle(width, height, base, 0.05)
+	for x in width:
+		var streak := rng.randf_range(0.85, 1.12)
+		for y in height:
+			wood.set_pixel(x, y, _shade(wood.get_pixel(x, y), streak))
+	return wood
+
+
+## The bookshelf: 1.2 m wide, 2 m tall and 40 cm deep, 40 pixels to the
+## metre. The front shows five shelves of books and binders in a wooden
+## frame; the other sides are plain wood.
+func _make_bookshelf() -> Image:
+	var atlas := _new_atlas(48, 80)
+	var front := _make_wood(48, 80, Color(0.38, 0.24, 0.14))
+	var back_panel := Color(0.12, 0.08, 0.05)
+	for shelf in 5:
+		var top := 3 + shelf * 15
+		var bottom := top + 12  # the row the books stand on
+		front.fill_rect(Rect2i(3, top, 42, 13), back_panel)
+		front.fill_rect(Rect2i(3, bottom + 1, 42, 2), Color(0.42, 0.27, 0.16))  # the shelf
+		var x := 3
+		while x < 45:
+			var kind := rng.randf()
+			if kind < 0.08:
+				x += rng.randi_range(2, 5)  # a gap
+			elif kind < 0.16 and x < 37:
+				# A pile of books lying flat.
+				var pile_width := rng.randi_range(6, 8)
+				var layers := rng.randi_range(2, 4)
+				for layer in layers:
+					var color: Color = BOOK_COLORS[rng.randi() % BOOK_COLORS.size()]
+					front.fill_rect(Rect2i(x, bottom - layer * 2 - 1, pile_width, 2), _shade(color, rng.randf_range(0.85, 1.15)))
+				x += pile_width + 1
+			elif kind < 0.28:
+				# A ring binder: tall, pale, with a label and a finger hole.
+				var color := Color(0.80, 0.80, 0.76) if rng.randf() < 0.6 else Color(0.25, 0.32, 0.55)
+				front.fill_rect(Rect2i(x, bottom - 11, 4, 12), color)
+				front.fill_rect(Rect2i(x + 1, bottom - 9, 2, 3), Color(0.95, 0.95, 0.90))
+				front.set_pixel(x + 1, bottom - 3, _shade(color, 0.4))
+				front.set_pixel(x + 2, bottom - 3, _shade(color, 0.4))
+				x += 4
+			else:
+				var book_width := rng.randi_range(2, 3)
+				var book_height := rng.randi_range(8, 12)
+				var color: Color = BOOK_COLORS[rng.randi() % BOOK_COLORS.size()]
+				color = _shade(color, rng.randf_range(0.8, 1.2))
+				front.fill_rect(Rect2i(x, bottom - book_height + 1, book_width, book_height), color)
+				# A band across the spine near the top, where the title goes.
+				front.fill_rect(Rect2i(x, bottom - book_height + 3, book_width, 1), _shade(color, 1.6))
+				front.fill_rect(Rect2i(x + book_width - 1, bottom - book_height + 1, 1, book_height), _shade(color, 0.7))
+				x += book_width
+		# Whatever ran past the frame is painted over by the frame below.
+	# The frame: sides, top, and a plinth at the bottom.
+	var frame := _make_wood(48, 80, Color(0.44, 0.28, 0.16))
+	for rect in [Rect2i(0, 0, 3, 80), Rect2i(45, 0, 3, 80), Rect2i(0, 0, 48, 3), Rect2i(0, 76, 48, 4)]:
+		front.blit_rect(frame, rect, rect.position)
+	front.fill_rect(Rect2i(0, 79, 48, 1), _shade(WOOD_DARK, 0.6))
+	_paint_face(atlas, FACE_FRONT, front)
+	var side := _make_wood(16, 80, Color(0.42, 0.27, 0.16))
+	_paint_face(atlas, FACE_LEFT, side)
+	_paint_face(atlas, FACE_RIGHT, side)
+	_paint_face(atlas, FACE_BACK, _make_wood(48, 80, WOOD_DARK))
+	_paint_face(atlas, FACE_TOP, _make_wood(48, 16, Color(0.44, 0.28, 0.16)))
+	_paint_face(atlas, FACE_BOTTOM, _make_wood(48, 16, WOOD_DARK))
+	return atlas
+
+
+## A dark metal panel with rows of vent slits, for the sides and top of the
+## server rack.
+func _make_vented_panel(width: int, height: int) -> Image:
+	var panel := _speckle(width, height, Color(0.16, 0.17, 0.19), 0.06)
+	for y in range(3, height - 3, 3):
+		if y > height * 0.25 and y < height * 0.75:
+			continue  # vents only near the top and bottom
+		panel.fill_rect(Rect2i(3, y, width - 6, 1), Color(0.05, 0.05, 0.06))
+	return panel
+
+
+## The server rack: 60 cm wide, 2 m tall and 80 cm deep. The front is a
+## stack of servers of different heights, each with a few status lights.
+func _make_server_rack() -> Image:
+	var atlas := _new_atlas(32, 80)
+	var front := _speckle(24, 80, Color(0.07, 0.07, 0.08), 0.05)
+	var lights := [Color(0.25, 1.0, 0.35), Color(0.25, 1.0, 0.35), Color(1.0, 0.72, 0.15), Color(0.35, 0.65, 1.0)]
+	var y := 3
+	while y < 75:
+		var unit := [3, 3, 4, 6, 8][rng.randi() % 5] as int
+		unit = mini(unit, 76 - y)
+		var face := Color(0.30, 0.31, 0.34) if rng.randf() < 0.6 else Color(0.18, 0.19, 0.21)
+		front.fill_rect(Rect2i(2, y, 20, unit - 1), _shade(face, rng.randf_range(0.9, 1.1)))
+		front.fill_rect(Rect2i(2, y, 20, 1), _shade(face, 1.3))
+		if unit >= 6 and rng.randf() < 0.5:
+			# Drive bays.
+			for bay in range(4, 20, 4):
+				front.fill_rect(Rect2i(bay, y + 2, 3, unit - 4), _shade(face, 0.6))
+		elif rng.randf() < 0.3:
+			for vent in range(y + 1, y + unit - 1):
+				if vent % 2 == 0:
+					front.fill_rect(Rect2i(9, vent, 11, 1), _shade(face, 0.5))
+		# Status lights down the left.
+		for light in rng.randi_range(1, 3):
+			front.set_pixel(3 + light * 2, y + 1, lights[rng.randi() % lights.size()])
+		y += unit
+	front.fill_rect(Rect2i(0, 0, 24, 2), Color(0.12, 0.12, 0.14))
+	_paint_face(atlas, FACE_FRONT, front)
+	_paint_face(atlas, FACE_LEFT, _make_vented_panel(32, 80))
+	_paint_face(atlas, FACE_RIGHT, _make_vented_panel(32, 80))
+	_paint_face(atlas, FACE_BACK, _make_vented_panel(24, 80))
+	_paint_face(atlas, FACE_TOP, _make_vented_panel(24, 32))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(24, 32, Color(0.08, 0.08, 0.09), 0.05))
+	return atlas
+
+
+## The filing cabinet: 50 cm wide, 1.3 m tall and 60 cm deep. Four drawers,
+## each with a handle and a little card label.
+func _make_filing_cabinet() -> Image:
+	var atlas := _new_atlas(24, 52)
+	var steel := Color(0.56, 0.57, 0.52)
+	var front := _speckle(20, 52, _shade(steel, 0.75), 0.04)
+	for drawer in 4:
+		var top := 1 + drawer * 12
+		front.fill_rect(Rect2i(1, top, 18, 11), _shade(steel, rng.randf_range(0.98, 1.05)))
+		front.fill_rect(Rect2i(1, top, 18, 1), _shade(steel, 1.25))
+		front.fill_rect(Rect2i(7, top + 2, 6, 3), Color(0.88, 0.86, 0.78))  # label
+		front.fill_rect(Rect2i(8, top + 3, 3, 1), Color(0.35, 0.35, 0.40))  # writing
+		front.fill_rect(Rect2i(6, top + 6, 8, 1), Color(0.15, 0.15, 0.16))  # handle
+		front.fill_rect(Rect2i(6, top + 7, 8, 1), _shade(steel, 0.55))
+	front.fill_rect(Rect2i(0, 49, 20, 3), _shade(steel, 0.35))  # base
+	_paint_face(atlas, FACE_FRONT, front)
+	var side := _speckle(24, 52, steel, 0.04)
+	side.fill_rect(Rect2i(0, 49, 24, 3), _shade(steel, 0.35))
+	_paint_face(atlas, FACE_LEFT, side)
+	_paint_face(atlas, FACE_RIGHT, side)
+	_paint_face(atlas, FACE_BACK, _speckle(20, 52, steel, 0.04))
+	_paint_face(atlas, FACE_TOP, _speckle(20, 24, _shade(steel, 1.1), 0.04))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(20, 24, _shade(steel, 0.3), 0.04))
+	return atlas
+
+
+## Leaves for the potted plants: clumps of different greens with dark gaps,
+## made the same way as the rubble (each pixel joins the nearest of a set of
+## random points), with distances wrapping round so the texture tiles.
+func _make_leaves() -> Image:
+	var image := _new_image()
+	var centres: Array[Vector2] = []
+	var shades: Array[float] = []
+	for i in 60:
+		centres.append(Vector2(rng.randf() * SIZE, rng.randf() * SIZE))
+		shades.append(rng.randf_range(0.6, 1.35))
+	var green := Color(0.20, 0.40, 0.14)
+	for y in SIZE:
+		for x in SIZE:
+			var nearest := INF
+			var second := INF
+			var leaf := 0
+			for i in centres.size():
+				var offset := (Vector2(x, y) - centres[i]).abs()
+				offset = Vector2(minf(offset.x, SIZE - offset.x), minf(offset.y, SIZE - offset.y))
+				var distance := offset.length()
+				if distance < nearest:
+					second = nearest
+					nearest = distance
+					leaf = i
+				elif distance < second:
+					second = distance
+			var brightness := shades[leaf] - nearest * 0.05
+			if second - nearest < 1.0:
+				brightness *= 0.4  # the shadow between two leaves
+			image.set_pixel(x, y, _shade(green, brightness + rng.randf_range(-0.05, 0.05)))
+	return image
+
+
+## Unglazed clay for flower pots.
+func _make_terracotta() -> Image:
+	var image := _new_image()
+	var clay := Color(0.62, 0.34, 0.20)
+	var blotches := _make_blotch_grid(4)
+	for y in SIZE:
+		for x in SIZE:
+			var brightness := 0.88 + 0.2 * _blotch(blotches, 4, x, y) + rng.randf_range(-0.05, 0.05)
+			image.set_pixel(x, y, _shade(clay, brightness))
+	return image
+
+
+# --- Posters and signs -------------------------------------------------------
+#
+# Posters go on a QuadMesh (scenes/poster.tscn), whose UVs simply stretch the
+# whole picture over the quad, so these are ordinary pictures. Their text
+# uses the game's own 3x5 pixel font from scripts/pixel_text.gd.
+
+## Writes text in the pixel font with its top-left corner at "at". Each font
+## pixel is "scale" pixels across. Characters the font lacks become spaces.
+func _draw_text(image: Image, text: String, at: Vector2i, color: Color, scale := 1) -> void:
+	var x := at.x
+	for character in text:
+		if PixelText.GLYPHS.has(character):
+			var rows: Array = PixelText.GLYPHS[character]
+			for row in rows.size():
+				var line: String = rows[row]
+				for column in line.length():
+					if line[column] == "#":
+						image.fill_rect(Rect2i(x + column * scale, at.y + row * scale, scale, scale), color)
+		x += 4 * scale
+
+
+## The same, centred across the image.
+func _draw_text_centred(image: Image, text: String, y: int, color: Color, scale := 1) -> void:
+	var width := (text.length() * 4 - 1) * scale
+	@warning_ignore("integer_division")
+	_draw_text(image, text, Vector2i((image.get_width() - width) / 2, y), color, scale)
+
+
+## A blank sheet of paper of the given colour, with a darker edge.
+func _new_poster(width: int, height: int, paper: Color) -> Image:
+	var poster := _speckle(width, height, paper, 0.04)
+	for x in width:
+		poster.set_pixel(x, 0, _shade(paper, 0.7))
+		poster.set_pixel(x, height - 1, _shade(paper, 0.7))
+	for y in height:
+		poster.set_pixel(0, y, _shade(paper, 0.7))
+		poster.set_pixel(width - 1, y, _shade(paper, 0.7))
+	return poster
+
+
+## A yellow warning poster with the biohazard symbol: three open rings
+## around a small ring in the middle.
+func _make_poster_biohazard() -> Image:
+	var poster := _new_poster(48, 64, Color(0.86, 0.70, 0.12))
+	var black := Color(0.08, 0.08, 0.07)
+	poster.fill_rect(Rect2i(3, 3, 42, 9), Color(0.68, 0.10, 0.08))
+	_draw_text_centred(poster, "DANGER", 5, Color(0.96, 0.93, 0.85))
+	var centre := Vector2(23.5, 31.5)
+	for y in range(14, 50):
+		for x in range(3, 45):
+			var point := Vector2(x, y)
+			var offset := point - centre
+			var on := false
+			for lobe in 3:
+				var angle := -PI / 2.0 + lobe * TAU / 3.0
+				var direction := Vector2(cos(angle), sin(angle))
+				# A ring of radius 8, with a hole pushed outwards so the ring
+				# opens at its outer end.
+				if point.distance_to(centre + direction * 7.0) < 8.5 \
+						and point.distance_to(centre + direction * 10.0) > 5.5:
+					on = true
+			var radius := offset.length()
+			if radius > 4.5 and radius < 6.5:
+				on = true  # the small ring in the middle
+			if radius < 2.0:
+				on = false
+			for lobe in 3:
+				# Thin gaps where each ring meets the middle.
+				var angle := -PI / 2.0 + lobe * TAU / 3.0 + PI
+				var direction := Vector2(cos(angle), sin(angle))
+				if radius < 8.0 and offset.dot(direction) > 0.0 and absf(offset.cross(direction)) < 0.8:
+					on = false
+			if on:
+				poster.set_pixel(x, y, _shade(black, rng.randf_range(0.9, 1.3)))
+	_draw_text_centred(poster, "BIOHAZARD", 54, black)
+	return poster
+
+
+## Dark blue science poster: a turning DNA ladder.
+func _make_poster_dna() -> Image:
+	var poster := _new_poster(48, 64, Color(0.10, 0.14, 0.30))
+	var white := Color(0.92, 0.94, 0.96)
+	var blue := Color(0.45, 0.80, 1.0)
+	var rungs := [Color(0.85, 0.25, 0.20), Color(0.95, 0.80, 0.25), Color(0.35, 0.80, 0.35), Color(0.45, 0.80, 1.0)]
+	_draw_text_centred(poster, "GENETICS", 4, white)
+	for y in range(13, 52):
+		var phase := (y - 13) * 0.3
+		var a := 23.0 + 11.0 * sin(phase)
+		var b := 23.0 - 11.0 * sin(phase)
+		if (y - 13) % 3 == 1:
+			@warning_ignore("integer_division")
+			var color: Color = rungs[((y - 13) / 3) % rungs.size()]
+			for x in range(int(minf(a, b)) + 2, int(maxf(a, b))):
+				poster.set_pixel(x, y, _shade(color, 0.8))
+		# The strand in front is brighter than the one behind.
+		var a_in_front := cos(phase) > 0.0
+		for strand in [[a, white, a_in_front], [b, blue, not a_in_front]]:
+			var x := int(strand[0])
+			var color: Color = strand[1]
+			if not strand[2]:
+				color = _shade(color, 0.55)
+			poster.set_pixel(x, y, color)
+			poster.set_pixel(x + 1, y, color)
+	_draw_text_centred(poster, "DIVISION B", 56, _shade(white, 0.8))
+	return poster
+
+
+## The periodic table, in landscape: one coloured dot per element.
+func _make_poster_periodic() -> Image:
+	var poster := _new_poster(64, 48, Color(0.90, 0.89, 0.84))
+	_draw_text_centred(poster, "PERIODIC TABLE", 3, Color(0.15, 0.17, 0.25))
+	var alkali := Color(0.85, 0.30, 0.25)
+	var earth := Color(0.92, 0.60, 0.25)
+	var transition := Color(0.45, 0.58, 0.75)
+	var metal := Color(0.60, 0.62, 0.62)
+	var metalloid := Color(0.45, 0.70, 0.40)
+	var nonmetal := Color(0.90, 0.80, 0.30)
+	var halogen := Color(0.35, 0.78, 0.80)
+	var noble := Color(0.62, 0.45, 0.78)
+	for row in range(1, 8):
+		for column in range(1, 19):
+			var present := false
+			match row:
+				1:
+					present = column == 1 or column == 18
+				2, 3:
+					present = column <= 2 or column >= 13
+				_:
+					present = true
+			if not present:
+				continue
+			var color := transition
+			if column == 1:
+				color = nonmetal if row == 1 else alkali
+			elif column == 2:
+				color = earth
+			elif column == 17:
+				color = halogen
+			elif column == 18:
+				color = noble
+			elif column >= 13:
+				# Metals bottom left, non-metals top right, and the staircase
+				# of metalloids between them.
+				var stair := column - row
+				color = metal if stair < 9 else (metalloid if stair == 9 else nonmetal)
+			elif column == 3 and row >= 6:
+				color = Color(0.85, 0.55, 0.70)  # where the two rows below fit in
+			poster.fill_rect(Rect2i(5 + (column - 1) * 3, 10 + (row - 1) * 3, 2, 2), color)
+	for row in 2:
+		var color := Color(0.85, 0.55, 0.70) if row == 0 else Color(0.75, 0.40, 0.65)
+		for column in range(4, 18):
+			poster.fill_rect(Rect2i(5 + (column - 1) * 3, 33 + row * 3, 2, 2), color)
+	return poster
+
+
+## A green safety poster asking you to wear your goggles.
+func _make_poster_safety() -> Image:
+	var poster := _new_poster(48, 64, Color(0.93, 0.93, 0.90))
+	var green := Color(0.12, 0.48, 0.25)
+	poster.fill_rect(Rect2i(2, 2, 44, 18), green)
+	_draw_text_centred(poster, "SAFETY", 4, Color(0.96, 0.96, 0.92))
+	_draw_text_centred(poster, "FIRST", 12, Color(0.96, 0.96, 0.92))
+	# The goggles: two lenses joined by a bridge, and the strap.
+	var frame := Color(0.18, 0.18, 0.20)
+	var lens := Color(0.55, 0.80, 0.92)
+	poster.fill_rect(Rect2i(3, 31, 42, 2), frame)
+	for centre_x in [15.5, 32.5]:
+		for y in range(25, 40):
+			for x in range(5, 44):
+				var offset := Vector2((x - centre_x) / 7.5, (y - 32.0) / 6.0)
+				var distance := offset.length()
+				if distance < 0.8:
+					poster.set_pixel(x, y, _shade(lens, 1.0 + offset.y * 0.3))
+				elif distance < 1.05:
+					poster.set_pixel(x, y, frame)
+	_draw_text_centred(poster, "WEAR YOUR", 47, green)
+	_draw_text_centred(poster, "GOGGLES", 54, green)
+	return poster
+
+
+## A clinical chart of "subject 07": a body with the bite marked in red and
+## notes running off to the side.
+func _make_poster_subject() -> Image:
+	var poster := _new_poster(48, 64, Color(0.88, 0.85, 0.74))
+	var ink := Color(0.20, 0.20, 0.25)
+	var red := Color(0.72, 0.10, 0.08)
+	var body := Color(0.55, 0.62, 0.68)
+	_draw_text_centred(poster, "SUBJECT 07", 3, red)
+	poster.fill_rect(Rect2i(4, 10, 40, 1), ink)
+	# Head, neck, torso, arms and legs.
+	for y in range(13, 22):
+		for x in range(14, 24):
+			if Vector2(x - 18.5, y - 17.0).length() < 4.0:
+				poster.set_pixel(x, y, body)
+	poster.fill_rect(Rect2i(17, 21, 3, 2), body)
+	poster.fill_rect(Rect2i(13, 23, 11, 15), body)
+	poster.fill_rect(Rect2i(10, 23, 3, 14), body)
+	poster.fill_rect(Rect2i(24, 23, 3, 14), body)
+	poster.fill_rect(Rect2i(13, 38, 4, 17), body)
+	poster.fill_rect(Rect2i(20, 38, 4, 17), body)
+	poster.fill_rect(Rect2i(15, 25, 3, 5), Color(0.80, 0.55, 0.55))  # lungs
+	poster.fill_rect(Rect2i(19, 25, 3, 5), Color(0.80, 0.55, 0.55))
+	poster.fill_rect(Rect2i(18, 27, 2, 2), Color(0.70, 0.15, 0.15))  # heart
+	# Circles round the wounds, with lines out to the notes.
+	for mark in [Vector2i(20, 22), Vector2i(25, 33), Vector2i(15, 46)]:
+		for y in range(mark.y - 3, mark.y + 4):
+			for x in range(mark.x - 3, mark.x + 4):
+				var distance := Vector2(x - mark.x, y - mark.y).length()
+				if distance > 2.0 and distance < 3.2:
+					poster.set_pixel(x, y, red)
+		poster.fill_rect(Rect2i(mark.x + 3, mark.y, 31 - mark.x, 1), red)
+		poster.fill_rect(Rect2i(34, mark.y - 1, 9, 1), ink)
+		poster.fill_rect(Rect2i(34, mark.y + 1, 6, 1), ink)
+	_draw_text_centred(poster, "STAGE 3", 57, ink)
+	return poster
+
+
+## A line graph that shoots up: "infection rate" over the days.
+func _make_poster_chart() -> Image:
+	var poster := _new_poster(64, 48, Color(0.93, 0.93, 0.91))
+	var ink := Color(0.20, 0.22, 0.28)
+	var grid := Color(0.75, 0.82, 0.90)
+	var red := Color(0.78, 0.12, 0.10)
+	_draw_text_centred(poster, "INFECTION RATE", 3, ink)
+	for x in range(12, 61, 6):
+		poster.fill_rect(Rect2i(x, 11, 1, 30), grid)
+	for y in range(11, 41, 6):
+		poster.fill_rect(Rect2i(7, y, 54, 1), grid)
+	poster.fill_rect(Rect2i(6, 10, 1, 32), ink)
+	poster.fill_rect(Rect2i(6, 41, 55, 1), ink)
+	var previous := 40
+	for x in range(7, 60):
+		var t := (x - 7) / 52.0
+		var y := int(round(40.0 - 29.0 * (exp(4.0 * t) - 1.0) / (exp(4.0) - 1.0)))
+		# Fill any gap from the last column so the steep end stays joined.
+		for fill in range(mini(y, previous), maxi(y, previous) + 1):
+			poster.set_pixel(x, fill, red)
+			poster.set_pixel(x, fill + 1, _shade(red, 0.8))
+		previous = y
+	_draw_text(poster, "DAYS", Vector2i(46, 42), ink)
+	return poster
+
+
+## The control room's whiteboard, 2.4 m x 1.2 m: notes in marker pen,
+## a sketch of a tank and the ghosts of things wiped off.
+func _make_whiteboard() -> Image:
+	var board := _speckle(96, 48, Color(0.90, 0.91, 0.90), 0.02)
+	var smudges := _make_blotch_grid(6)
+	for y in 48:
+		for x in 96:
+			@warning_ignore("integer_division")
+			var smudge := _blotch(smudges, 6, x * 64 / 96, y * 64 / 48)
+			if smudge > 0.7:
+				board.set_pixel(x, y, _shade(board.get_pixel(x, y), 0.94))
+	var blue := Color(0.15, 0.25, 0.65)
+	var red := Color(0.75, 0.12, 0.10)
+	var black := Color(0.12, 0.12, 0.14)
+	_draw_text(board, "DAY 31", Vector2i(5, 5), blue)
+	_draw_text(board, "DOSE > 40%", Vector2i(5, 13), black)
+	_draw_text(board, "SUBJ 07 AWAKE!", Vector2i(5, 21), red)
+	_draw_text(board, "KEEP CELL 3 SHUT", Vector2i(5, 29), red)
+	board.fill_rect(Rect2i(5, 35, 63, 1), red)  # underlined
+	# A sketch of a specimen tank, with an arrow pointing at it.
+	board.fill_rect(Rect2i(74, 6, 12, 1), blue)
+	board.fill_rect(Rect2i(74, 28, 12, 1), blue)
+	board.fill_rect(Rect2i(75, 7, 1, 21), blue)
+	board.fill_rect(Rect2i(84, 7, 1, 21), blue)
+	for y in range(10, 25):
+		board.set_pixel(80 + int(round(sin(y * 0.6))), y, black)  # someone inside
+	board.fill_rect(Rect2i(62, 22, 10, 1), black)
+	board.set_pixel(70, 21, black)
+	board.set_pixel(70, 23, black)
+	_draw_text(board, "WHY?", Vector2i(73, 32), red)
+	# The aluminium frame and the pen tray.
+	for x in 96:
+		for y in [0, 1, 45]:
+			board.set_pixel(x, y, Color(0.62, 0.64, 0.67))
+	for y in 48:
+		for x in [0, 1, 94, 95]:
+			board.set_pixel(x, y, Color(0.62, 0.64, 0.67))
+	board.fill_rect(Rect2i(2, 46, 92, 2), Color(0.48, 0.50, 0.53))
+	board.fill_rect(Rect2i(30, 45, 6, 1), red)
+	board.fill_rect(Rect2i(38, 45, 6, 1), blue)
+	return board
+
+
+## The stencilled sign over the specimen tanks: yellow on black, 4 m x 0.5 m.
+func _make_sign_containment() -> Image:
+	var sign := _speckle(128, 16, Color(0.12, 0.12, 0.13), 0.05)
+	var yellow := Color(0.86, 0.70, 0.12)
+	sign.fill_rect(Rect2i(1, 1, 126, 1), yellow)
+	sign.fill_rect(Rect2i(1, 14, 126, 1), yellow)
+	_draw_text_centred(sign, "CONTAINMENT LAB", 3, yellow, 2)
+	return sign
+
+
+## The number plate over a holding cell: "CELL 1" in yellow on black,
+## 80 cm x 25 cm.
+func _make_sign_cell(number: int) -> Image:
+	var sign := _speckle(32, 10, Color(0.12, 0.12, 0.13), 0.05)
+	_draw_text_centred(sign, "CELL %d" % number, 3, Color(0.86, 0.70, 0.12))
+	return sign
