@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/notebook.gd" id="1_script"]
 [ext_resource type="Material" path="res://assets/materials/player_gear.tres" id="2_cover"]
-[ext_resource type="Material" path="res://assets/materials/paper.tres" id="3_paper"]
+[ext_resource type="Material" path="res://assets/materials/notebook_page.tres" id="3_paper"]
 [ext_resource type="Material" path="res://assets/materials/soldier_marker.tres" id="4_ribbon"]
 [ext_resource type="Material" path="res://assets/materials/soldier_black.tres" id="5_pen"]
 
@@ -37,7 +37,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0.025, 0)
 mesh = SubResource("BoxMesh_pages")
 
 [node name="PagesRight" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.025, 0)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.08, 0.025, 0)
 mesh = SubResource("BoxMesh_pages")
 
 [node name="Ribbon" type="MeshInstance3D" parent="Model"]

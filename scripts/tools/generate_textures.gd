@@ -138,6 +138,12 @@ func _init() -> void:
 	# And another: a longer program, too small to read, on the monitors of
 	# the left and middle desks in the same room.
 	_save(_make_monitor_screen_listing(), "monitor_screen_listing")
+	# Three more ways for a pane of glass to break (glass_edge is the first),
+	# so that panes side by side are not left with the same teeth.
+	for variant in range(2, GLASS_EDGE_VARIANTS + 1):
+		_save(_make_glass_edge_variant(variant), "glass_edge_%d" % variant)
+	# The open pages of the notebook on the desk (scenes/notebook.tscn).
+	_save(_make_notebook_page(), "notebook_page")
 	quit()
 
 
@@ -2566,36 +2572,109 @@ func _make_glass_crack() -> Image:
 	return image
 
 
-## What is left in the frame once a pane has shattered: a jagged row of
-## teeth along each edge, see-through in the middle.
+## How many numbers the first version of the picture below (one row of
+## saw teeth, the same for every pane) took from rng, and how many different
+## pictures there are now.
+const GLASS_EDGE_OLD_DRAWS := 88
+const GLASS_EDGE_VARIANTS := 4
+
+
+## What is left in the frame once a pane has shattered. This is the first of
+## several different breaks: see _make_glass_edge_variant(). Like the crack
+## above, it throws away the numbers its first version took from rng, so
+## that the textures made after it come out the same as they always have.
 func _make_glass_edge() -> Image:
-	var image := Image.create_empty(SIZE, SIZE, false, Image.FORMAT_RGBA8)
+	for i in GLASS_EDGE_OLD_DRAWS:
+		rng.randf()
+	return _make_glass_edge_variant(1)
+
+
+## Broken glass still held in a frame: a sliver all the way round, shards of
+## every size sticking in from it (the longest hang from the top), and here
+## and there a bigger piece wedged in a corner. The middle is see-through.
+## "variant" is which break to draw, from 1 up: each number gives a
+## different one, and scripts/breakable_glass.gd shares them out among the
+## panes of a level. Each has a generator of its own, like the crack.
+func _make_glass_edge_variant(variant: int) -> Image:
+	var dice := RandomNumberGenerator.new()
+	dice.seed = variant
+	var image := Image.create_empty(SIZE, SIZE, false, Image.FORMAT_RGBA8)  # all see-through
 	for side in 4:
-		# Alternate deep points and shallow dips at random spacing; the edge
-		# runs in straight lines between them.
-		var points: Array[Vector2] = [Vector2(0, rng.randf_range(1.0, 4.0))]
-		while points[-1].x < SIZE:
-			var deep := points.size() % 2 == 1
-			points.append(Vector2(points[-1].x + rng.randf_range(3.0, 9.0),
-					rng.randf_range(5.0, 14.0) if deep else rng.randf_range(0.0, 3.0)))
-		var segment := 0
-		for along in SIZE:
-			while points[segment + 1].x < along:
-				segment += 1
-			var a := points[segment]
-			var b := points[segment + 1]
-			var depth := lerpf(a.y, b.y, (along - a.x) / (b.x - a.x))
-			for inward in int(depth):
-				var pixel := Vector2i(along, inward)
+		# The four edges in turn: top, bottom, left and right. The longest
+		# shards hang from the top of the frame; the ones left standing along
+		# the bottom and down the sides are shorter.
+		var tallest: float = [18.0, 15.0, 11.0, 11.0][side]
+		# How far the glass still reaches in from each pixel along this edge.
+		# There is always a sliver left in the frame's groove.
+		var depth: Array[float] = []
+		depth.resize(SIZE)
+		depth.fill(1.0)
+		var along := dice.randf_range(-4.0, 0.0)
+		while along < SIZE:
+			# One shard: a triangle this wide at the frame, with its point
+			# nearer one end than the other. Most are stubs; two in five are
+			# long.
+			var width := dice.randf_range(4.0, 12.0)
+			var height := dice.randf_range(2.0, 6.0)
+			if dice.randf() < 0.4:
+				height = dice.randf_range(tallest * 0.5, tallest)
+			var tip := along + width * dice.randf_range(0.2, 0.8)
+			for x in range(maxi(floori(along), 0), mini(ceili(along + width), SIZE)):
+				# How far up the shard its edge is at this pixel: 0 at either
+				# end of its foot, 1 at the tip.
+				var middle := x + 0.5
+				var rise := (middle - along) / (tip - along)
+				if middle > tip:
+					rise = (along + width - middle) / (along + width - tip)
+				depth[x] = maxf(depth[x], height * clampf(rise, 0.0, 1.0))
+			# The next one starts where this one ends, give or take, and now
+			# and then after a gap where the glass broke off clean.
+			along += width * dice.randf_range(0.7, 1.1)
+			if dice.randf() < 0.2:
+				along += dice.randf_range(3.0, 8.0)
+		for x in SIZE:
+			for inward in roundi(depth[x]):
+				var pixel := Vector2i(x, inward)
 				match side:
 					1:
-						pixel = Vector2i(along, SIZE - 1 - inward)
+						pixel = Vector2i(x, SIZE - 1 - inward)
 					2:
-						pixel = Vector2i(inward, along)
+						pixel = Vector2i(inward, x)
 					3:
-						pixel = Vector2i(SIZE - 1 - inward, along)
-				var brightness := 1.0 if inward < int(depth) - 1 else 0.7  # darker broken edge
-				image.set_pixel(pixel.x, pixel.y, Color(brightness, brightness, brightness, 1.0))
+						pixel = Vector2i(SIZE - 1 - inward, x)
+				image.set_pixel(pixel.x, pixel.y, Color.WHITE)
+
+	# A bigger piece is often left wedged in a corner: a triangle with one
+	# side along each edge of the frame.
+	for corner in 4:
+		if dice.randf() < 0.5:
+			continue
+		var across := dice.randf_range(8.0, 20.0)
+		var down := dice.randf_range(8.0, 20.0)
+		for y in ceili(down):
+			for x in ceili(across):
+				if (x + 0.5) / across + (y + 0.5) / down < 1.0:
+					# Corners in the order top left, top right, bottom left,
+					# bottom right.
+					var pixel := Vector2i(x if corner % 2 == 0 else SIZE - 1 - x, y if corner < 2 else SIZE - 1 - y)
+					image.set_pixelv(pixel, Color.WHITE)
+
+	# A broken edge catches the light. The pixels along it stay solid white;
+	# the glass behind them is made dimmer and a little more see-through.
+	var solid: Image = image.duplicate()
+	for y in SIZE:
+		for x in SIZE:
+			if solid.get_pixel(x, y).a == 0.0:
+				continue
+			var on_edge := false
+			for step: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+				var beside := Vector2i(x, y) + step
+				# (Past the edge of the picture is the frame, not a broken edge.)
+				if beside.x >= 0 and beside.y >= 0 and beside.x < SIZE and beside.y < SIZE:
+					if solid.get_pixelv(beside).a == 0.0:
+						on_edge = true
+			if not on_edge:
+				image.set_pixel(x, y, Color(0.8, 0.8, 0.8, 0.8))
 	return image
 
 
@@ -3007,6 +3086,61 @@ func _make_monitor_screen_listing() -> Image:
 				# lines end one row above the bottom of the 26 x 22 glass.
 				screen.set_pixel(2 + column, 2 + line * 3, SCREEN_GREEN)
 	return screen
+
+
+# --- The notebook --------------------------------------------------------------
+
+const NOTEBOOK_PAPER := Color(0.87, 0.82, 0.66)
+const NOTEBOOK_INK := Color(0.16, 0.17, 0.36)
+
+
+## One of the two blocks of pages in the open notebook on the desk
+## (scenes/notebook.tscn): 15.5 cm wide, 2 cm thick and 21 cm deep, drawn
+## like everything else on the desks at 80 pixels to the metre, which makes
+## its top 12 x 16. The top is a page of handwriting too small to read. Each
+## row of the picture below is a line of it and each run of # is a word, in
+## ink; the last line stops short, as the last line of a paragraph does.
+##
+## A box shows its top picture with the picture's top row along its +Z
+## edge, which is the edge nearest whoever sits at the desk, so to them the
+## left-hand block's page is this picture upside down. That suits it: the
+## short line comes first and over on the right, like the date at the top
+## of a diary entry. The right-hand block is the same block turned half way
+## round, so its page is the right way up and ends with the short line.
+## That way the two pages don't look alike, with one picture between them.
+func _make_notebook_page() -> Image:
+	var atlas := _new_atlas(12, 16)
+	var page := Image.create_empty(12, 16, false, Image.FORMAT_RGB8)
+	page.fill(NOTEBOOK_PAPER)
+	var lines := [
+		"### ## ###",
+		"## #### ##",
+		"#### # ###",
+		"# ### ####",
+		"### ### ##",
+		"## # #####",
+		"####",
+	]
+	for line in lines.size():
+		var words: String = lines[line]
+		for column in words.length():
+			if words[column] == "#":
+				# One pixel in from the left, and every other row from the
+				# third down, which leaves a clear row between the lines.
+				page.set_pixel(1 + column, 2 + line * 2, NOTEBOOK_INK)
+	_paint_face(atlas, FACE_TOP, page)
+
+	# The four sides are the edges of the pages underneath: paper, in the
+	# shadow of the page on top, darker towards the cover they lie on.
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_LEFT, FACE_RIGHT]:
+		var edge := Image.create_empty(12, 2, false, Image.FORMAT_RGB8)
+		edge.fill_rect(Rect2i(0, 0, 12, 1), _shade(NOTEBOOK_PAPER, 0.9))
+		edge.fill_rect(Rect2i(0, 1, 12, 1), _shade(NOTEBOOK_PAPER, 0.7))
+		_paint_face(atlas, cell, edge)
+	var underside := Image.create_empty(12, 16, false, Image.FORMAT_RGB8)
+	underside.fill(_shade(NOTEBOOK_PAPER, 0.7))
+	_paint_face(atlas, FACE_BOTTOM, underside)
+	return atlas
 
 
 ## The keyboard: 47.5 cm wide, 3 cm tall and 17.5 cm deep. Its top is 38 x 14

@@ -6,8 +6,9 @@ extends StaticBody3D
 ## before take_damage() (the same pair of calls that makes enemies bleed),
 ## and here bleed() leaves a bullet hole with a few cracks running out of it
 ## instead of blood (assets/textures/glass_crack.png). When its
-## health runs out it bursts into falling shards, leaving only a jagged row
-## of teeth round the frame, and stops blocking anything: players can climb
+## health runs out it bursts into falling shards, leaving only broken glass
+## round the frame (one of several pictures, so panes side by side don't
+## all break the same way), and stops blocking anything: players can climb
 ## through, shots fly through, and enemies on the far side can see through.
 ##
 ## Like a crate (scripts/crate.gd), it is in the "breakable" group, so
@@ -20,6 +21,14 @@ extends StaticBody3D
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 ## Cracks beyond this many are not drawn (a shotgun blast is a dozen hits).
 const MAX_CRACKS := 8
+## The pictures of the broken glass a shattered pane leaves in its frame.
+## Each pane uses one of them: see _choose_edges().
+const EDGE_TEXTURES: Array[Texture2D] = [
+	preload("res://assets/textures/glass_edge.png"),
+	preload("res://assets/textures/glass_edge_2.png"),
+	preload("res://assets/textures/glass_edge_3.png"),
+	preload("res://assets/textures/glass_edge_4.png"),
+]
 
 ## Width and height of the pane, in metres.
 @export var size := Vector2(2.0, 2.3):
@@ -55,6 +64,21 @@ func _ready() -> void:
 	if break_sound == null:
 		break_sound = PlaceholderSound.make_noise_burst(0.4)
 	sound_player.stream = break_sound
+	_choose_edges()
+
+
+## Gives this pane one of the broken edge pictures. Which one is decided by
+## the pane's place among the nodes beside it in the level (0 for its
+## parent's first child, 1 for the next, and so on), so panes placed one
+## after another each get a different one. A random pick would not do: in a
+## multiplayer game every computer builds its own copy of the level, and a
+## pane has to break the same way on all of them.
+func _choose_edges() -> void:
+	# The Edges node's material is part of the scene, so every pane shares
+	# it. Give this pane a copy of its own to put its picture in.
+	var material: StandardMaterial3D = edges.mesh.surface_get_material(0).duplicate()
+	material.albedo_texture = EDGE_TEXTURES[get_index() % EDGE_TEXTURES.size()]
+	edges.material_override = material
 
 
 ## The scene is built as a 1 x 1 m pane. Stretch the glass and its broken

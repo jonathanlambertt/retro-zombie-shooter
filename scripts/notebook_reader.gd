@@ -7,6 +7,10 @@ extends CanvasLayer
 ## chunky as the rest of the game. The writing is drawn by
 ## scripts/pixel_text.gd.
 ##
+## The page is a page of a diary: the notebook's name small in one corner,
+## the day the entry was written in the other, and the entry below in the
+## same ink, on ruled paper bound into a book.
+##
 ## Reading freezes the game in single player, the same way the pause menu
 ## does (see the notes at the top of scripts/pause_menu.gd): this node's
 ## Process Mode is "Always", so it can still hear the key that closes the
@@ -36,8 +40,9 @@ const PREVIOUS_PAGE_ACTIONS: Array[StringName] = [&"ui_left", &"weapon_previous"
 @export var paper_color := Color(0.87, 0.82, 0.66)
 ## Colour of the faint lines ruled across it.
 @export var rule_color := Color(0.62, 0.70, 0.76)
-## Colour of the line down the left margin.
-@export var margin_color := Color(0.78, 0.36, 0.32)
+## Colour of the edges of the pages underneath, which show along the right
+## and the bottom of the page.
+@export var edge_color := Color(0.68, 0.62, 0.48)
 
 ## The notebook that is in reach right now (or null).
 var nearby: Node
@@ -48,11 +53,15 @@ var froze_game := false
 ## lines, and which of them is showing (0 is the first page).
 var page_texts: Array[String] = []
 var page_number := 0
+## The date at the top of each of those pages ("Day 31"), or "" for a page
+## that doesn't start with one.
+var page_dates: Array[String] = []
 
 @onready var prompt: Control = $Prompt
 @onready var page: Control = $Page
 @onready var paper: Control = $Page/Paper
 @onready var title_text: Control = $Page/Paper/Title
+@onready var date_text: Control = $Page/Paper/Date
 @onready var body_text: Control = $Page/Paper/Body
 @onready var page_hint: Control = $Page/Paper/PageHint
 
@@ -111,13 +120,24 @@ func withdraw(notebook: Node) -> void:
 		close()
 
 
-## Opens a notebook at its first page. "title" is the heading and
+## Opens a notebook at its first page. "title" is the notebook's name and
 ## "notebook_pages" the paragraph written on each page.
 func open(title: String, notebook_pages: Array[String]) -> void:
 	title_text.text = title
 	page_texts.clear()
+	page_dates.clear()
 	for text in notebook_pages:
-		var lines := _wrap(text)
+		# A diary entry starts with its date. If this page does ("Day 31.
+		# Night shift..."), the date is lifted off its front and written at
+		# the top of the page instead, as it is in a diary.
+		var date := ""
+		var writing := text
+		var stop := text.find(". ")
+		if text.begins_with("Day ") and stop != -1 and stop <= 10:
+			date = text.left(stop)
+			writing = text.substr(stop + 2)
+		page_dates.append(date)
+		var lines := _wrap(writing)
 		if lines.size() > LINES_PER_PAGE:
 			# Shown in the editor's Debugger while the game runs: this page
 			# has too much on it, and its last lines run off the paper.
@@ -126,6 +146,7 @@ func open(title: String, notebook_pages: Array[String]) -> void:
 		page_texts.append("\n".join(lines))
 	if page_texts.is_empty():
 		page_texts.append("")  # a notebook with nothing written in it
+		page_dates.append("")
 	page.visible = true
 	if not Network.is_online() and not get_tree().paused:
 		get_tree().paused = true
@@ -150,6 +171,10 @@ func is_open() -> bool:
 func _show_page(number: int) -> void:
 	page_number = clampi(number, 0, page_texts.size() - 1)
 	body_text.text = page_texts[page_number]
+	date_text.text = page_dates[page_number]
+	# The line under the date is part of the paper's drawing, and is as long
+	# as the date: have the paper painted again.
+	paper.queue_redraw()
 	# A notebook with a single page has nothing to turn.
 	page_hint.visible = page_texts.size() > 1
 	# An arrow at each end, with its key beside it where that key works (see
@@ -212,13 +237,24 @@ func _wrap(text: String) -> Array[String]:
 	return lines
 
 
-## Paints the sheet of paper: the page itself, a faint line under every row
-## of writing, a red line down the margin and three punched holes.
+## Paints the page of the diary: the paper itself, a faint line under every
+## row of writing, the shadow where the page curves down into the book's
+## spine on the left, the edges of the pages underneath, and the line drawn
+## under the date.
 func _draw_paper() -> void:
 	paper.draw_rect(Rect2(Vector2.ZERO, paper.size), paper_color)
 	# Each rule sits one pixel under its row of letters.
 	for line in LINES_PER_PAGE:
 		paper.draw_rect(Rect2(0, BODY_TOP + 6 + line * LINE_HEIGHT, paper.size.x, 1), rule_color)
-	paper.draw_rect(Rect2(15, 0, 1, paper.size.y), margin_color)
-	for hole_y: float in [30.0, paper.size.y / 2.0, paper.size.y - 30.0]:
-		paper.draw_rect(Rect2(5, hole_y - 2, 4, 4), Color(0.1, 0.1, 0.1))
+	# The spine: three strips of shadow, each fainter than the one before.
+	for strip in 3:
+		paper.draw_rect(Rect2(strip * 3, 0, 3, paper.size.y), Color(0.0, 0.0, 0.0, 0.3 - strip * 0.1))
+	paper.draw_rect(Rect2(paper.size.x - 2, 0, 2, paper.size.y), edge_color)
+	paper.draw_rect(Rect2(0, paper.size.y - 2, paper.size.x, 2), edge_color)
+	# The date is underlined in its own ink. Each of its letters is 4 font
+	# pixels wide with its gap, and the date ends at the Date node's right
+	# edge, so that is where the line is measured back from.
+	var date_width: float = date_text.text.length() * 4.0 * date_text.pixel_size
+	if date_width > 0.0:
+		var right: float = date_text.position.x + date_text.size.x
+		paper.draw_rect(Rect2(right - date_width - 2.0, date_text.position.y + 12.0, date_width + 2.0, 1.0), date_text.color)

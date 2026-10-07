@@ -234,7 +234,8 @@ for the lab props, `desk_top`, `desk_steel` and `desk_drawers` for the desks,
 the computers, `cup` and `cup_handle` for the coffee cup, `water_cooler` and
 `water_bottle` for the water cooler, `poster_chart_printout` for the paper
 taped above the infection rate poster,
-and `glass_crack` and `glass_edge` for breakable glass). Overwrite them with your own pixel art
+`notebook_page` for the notebook's open pages,
+and `glass_crack`, `glass_edge` and `glass_edge_2` to `glass_edge_4` for breakable glass). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -338,7 +339,12 @@ Select a node and use the Inspector; every value is an exported variable.
   height, in metres), health (20 = two pistol shots) and **Break Sound**.
   Each hit leaves a bullet hole where it lands, with a few cracks running
   out of it (`glass_crack.png`, turned a different way each time); its
-  `Shards` node is the burst of glass when it breaks.
+  `Shards` node is the burst of glass when it breaks. What a broken pane
+  leaves in its frame is one of four pictures (`glass_edge.png` and
+  `glass_edge_2.png` to `glass_edge_4.png`): a sliver all round, shards of
+  every size and sometimes a bigger piece in a corner. Panes placed one
+  after another in a level each get a different one, so a row of windows
+  doesn't break into the same teeth four times.
 - **Crate** (`scenes/crate.tscn`): health (20 = two pistol shots) and size.
   Its `Debris` node is the splinters. To add one to a level, drag
   `scenes/crate.tscn` into the level; set **Size** on it for a bigger one.
@@ -772,8 +778,11 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/t
 
 Every level except the test room has a notebook lying open on a desk, near
 where you start (in the office it is on the table). Stand next to it, look
-at it, and **PRESS E TO READ** appears; E opens a sheet of lined paper with
-the page written on it, and E or Esc closes it again. Reading pauses the
+at it, and **PRESS E TO READ** appears; E opens it at a page of a diary,
+and E or Esc closes it again. The page is ruled paper bound into a book,
+with the notebook's name small in one top corner, the day the entry was
+written large and underlined in the other, and the entry below in the
+same blue ink. Reading pauses the
 game in single player. Online the game carries on behind the page, and
 walking away closes it.
 
@@ -797,12 +806,17 @@ and change **Title** and **Pages** in the Inspector: Pages is a list with
 one entry for each page, so add an entry to add a page. A page is one
 paragraph of at most 150 words (it has 22 lines of 48 letters; the game
 prints a warning if a page runs off the bottom), and the pixel font only
-has capital letters, digits and `. , : ; = - ' ! ?`. **Reach** is how close you
+has capital letters, digits and `. , : ; = - ' ! ?`. Start a page with its day
+and a full stop (`Day 31. Night shift...`) and that is taken off the front
+and written at the top of the page as the entry's date; a page that starts
+any other way has no date. **Reach** is how close you
 must be, and **Aim** how squarely you must look at it.
 
 To add another, drag `scenes/notebook.tscn` under a level's `Props` and set
 it on top of a desk. The page itself (the paper's colours and layout) is
-`scenes/notebook_reader.tscn`.
+`scenes/notebook_reader.tscn`. The open pages of the notebook on the desk
+are covered in lines of handwriting too small to read
+(`notebook_page.png`, a different page on each side).
 
 ### Windows that zombies climb through
 
