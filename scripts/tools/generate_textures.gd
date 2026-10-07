@@ -100,6 +100,13 @@ func _init() -> void:
 	_save(_make_sign_containment(), "sign_containment")
 	for cell in range(1, 4):
 		_save(_make_sign_cell(cell), "sign_cell_%d" % cell)
+	# Desks (scenes/desk.tscn) and the breakable window glass
+	# (scenes/breakable_glass.tscn).
+	_save(_make_desk_top(), "desk_top")
+	_save(_make_desk_steel(), "desk_steel")
+	_save(_make_desk_drawers(), "desk_drawers")
+	_save(_make_glass_crack(), "glass_crack")
+	_save(_make_glass_edge(), "glass_edge")
 	quit()
 
 
@@ -2283,3 +2290,158 @@ func _make_sign_cell(number: int) -> Image:
 	var sign := _speckle(32, 10, Color(0.12, 0.12, 0.13), 0.05)
 	_draw_text_centred(sign, "CELL %d" % number, 3, Color(0.86, 0.70, 0.12))
 	return sign
+
+
+# --- Desks -------------------------------------------------------------------
+
+const DESK_STEEL := Color(0.47, 0.50, 0.46)
+
+
+## Wood-effect laminate for desk tops: pale streaks running the length of
+## the desk, with darker lines of grain waving gently across them.
+func _make_desk_top() -> Image:
+	var image := _new_image()
+	var wood := Color(0.56, 0.40, 0.24)
+	var blotches := _make_blotch_grid(4)
+	var streaks := PackedFloat32Array()
+	for y in SIZE:
+		streaks.append(rng.randf_range(0.9, 1.08))
+	for y in SIZE:
+		for x in SIZE:
+			var brightness := streaks[y] * (0.92 + 0.12 * _blotch(blotches, 4, x, y))
+			brightness += rng.randf_range(-0.03, 0.03)
+			# The wave repeats twice across the texture so its edges still
+			# meet when it tiles.
+			var wave := int(round(sin(x * TAU / 32.0 + y * 0.7) * 1.5))
+			if posmod(y + wave, 8) == 0:
+				brightness *= 0.72
+			image.set_pixel(x, y, _shade(wood, brightness))
+	return image
+
+
+## Painted sheet steel for desk frames, consoles and benches: the grey-green
+## of old office furniture, with a few pale scuffs.
+func _make_desk_steel() -> Image:
+	var image := _new_image()
+	var blotches := _make_blotch_grid(4)
+	for y in SIZE:
+		for x in SIZE:
+			var brightness := 0.95 + 0.08 * _blotch(blotches, 4, x, y) + rng.randf_range(-0.025, 0.025)
+			image.set_pixel(x, y, _shade(DESK_STEEL, brightness))
+	for scuff in 6:
+		var start := Vector2i(rng.randi() % SIZE, rng.randi() % SIZE)
+		for step in rng.randi_range(3, 7):
+			image.set_pixel((start.x + step) % SIZE, start.y, _shade(DESK_STEEL, 1.25))
+	return image
+
+
+## The drawer pedestal under one end of a desk: 45 cm wide, 75 cm tall and
+## 92 cm deep, 40 pixels to the metre. The front has a shallow drawer above
+## two deep file drawers, each with a handle.
+func _make_desk_drawers() -> Image:
+	var atlas := _new_atlas(36, 30)
+	var front := _speckle(18, 30, _shade(DESK_STEEL, 0.7), 0.03)
+	for drawer: Vector2i in [Vector2i(1, 6), Vector2i(8, 10), Vector2i(19, 10)]:
+		var top := drawer.x
+		var height := drawer.y
+		front.fill_rect(Rect2i(1, top, 16, height), _shade(DESK_STEEL, rng.randf_range(0.98, 1.04)))
+		front.fill_rect(Rect2i(1, top, 16, 1), _shade(DESK_STEEL, 1.2))  # light on the top edge
+		var handle := top + (2 if height < 8 else 3)
+		front.fill_rect(Rect2i(5, handle, 8, 1), Color(0.12, 0.12, 0.13))
+		front.fill_rect(Rect2i(5, handle + 1, 8, 1), _shade(DESK_STEEL, 1.35))
+		if height >= 8:
+			front.fill_rect(Rect2i(7, top + 6, 4, 2), Color(0.86, 0.84, 0.76))  # card label
+	front.fill_rect(Rect2i(0, 29, 18, 1), _shade(DESK_STEEL, 0.4))  # kick plate
+	_paint_face(atlas, FACE_FRONT, front)
+	var side := _speckle(36, 30, DESK_STEEL, 0.03)
+	side.fill_rect(Rect2i(0, 29, 36, 1), _shade(DESK_STEEL, 0.4))
+	_paint_face(atlas, FACE_LEFT, side)
+	_paint_face(atlas, FACE_RIGHT, side)
+	_paint_face(atlas, FACE_BACK, _speckle(18, 30, DESK_STEEL, 0.03))
+	_paint_face(atlas, FACE_TOP, _speckle(18, 36, DESK_STEEL, 0.03))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(18, 36, _shade(DESK_STEEL, 0.4), 0.03))
+	return atlas
+
+
+# --- Breakable glass ---------------------------------------------------------
+#
+# Both are white on a see-through background: the glass's materials tint
+# them and make them partly transparent.
+
+## Sets one pixel of a crack, if it is inside the image.
+func _crack_pixel(image: Image, point: Vector2) -> void:
+	var x := int(point.x)
+	var y := int(point.y)
+	if x >= 0 and y >= 0 and x < image.get_width() and y < image.get_height():
+		var brightness := rng.randf_range(0.8, 1.0)
+		image.set_pixel(x, y, Color(brightness, brightness, brightness, 1.0))
+
+
+## A bullet's crack in a pane of glass: lines wandering out from a chipped
+## middle, joined by rings like a spider's web.
+func _make_glass_crack() -> Image:
+	var image := Image.create_empty(SIZE, SIZE, false, Image.FORMAT_RGBA8)  # all see-through
+	var centre := Vector2(31.5, 31.5)
+	var count := 9
+	var angles: Array[float] = []
+	for i in count:
+		angles.append((i + rng.randf_range(-0.3, 0.3)) * TAU / count)
+	for start_angle in angles:
+		var heading := start_angle
+		var point := centre
+		for step in int(rng.randf_range(18.0, 31.0)):
+			heading += rng.randf_range(-0.15, 0.15)
+			point += Vector2(cos(heading), sin(heading))
+			_crack_pixel(image, point)
+	for ring_radius: float in [7.0, 15.0]:
+		for i in count:
+			if rng.randf() < 0.25:
+				continue  # leave a gap in the web here and there
+			var from := angles[i]
+			var to := angles[(i + 1) % count] + (TAU if i == count - 1 else 0.0)
+			var radius := ring_radius * rng.randf_range(0.85, 1.15)
+			var steps := int((to - from) * radius) + 1
+			for step in steps:
+				var t := float(step) / steps
+				# Each strand sags inwards between the two cracks it joins.
+				var sag := radius * (1.0 - 0.12 * sin(PI * t))
+				var angle := lerpf(from, to, t)
+				_crack_pixel(image, centre + Vector2(cos(angle), sin(angle)) * sag)
+	for y in range(28, 36):
+		for x in range(28, 36):
+			if Vector2(x, y).distance_to(centre) < 2.5:
+				image.set_pixel(x, y, Color.WHITE)  # the chipped spot it was hit
+	return image
+
+
+## What is left in the frame once a pane has shattered: a jagged row of
+## teeth along each edge, see-through in the middle.
+func _make_glass_edge() -> Image:
+	var image := Image.create_empty(SIZE, SIZE, false, Image.FORMAT_RGBA8)
+	for side in 4:
+		# Alternate deep points and shallow dips at random spacing; the edge
+		# runs in straight lines between them.
+		var points: Array[Vector2] = [Vector2(0, rng.randf_range(1.0, 4.0))]
+		while points[-1].x < SIZE:
+			var deep := points.size() % 2 == 1
+			points.append(Vector2(points[-1].x + rng.randf_range(3.0, 9.0),
+					rng.randf_range(5.0, 14.0) if deep else rng.randf_range(0.0, 3.0)))
+		var segment := 0
+		for along in SIZE:
+			while points[segment + 1].x < along:
+				segment += 1
+			var a := points[segment]
+			var b := points[segment + 1]
+			var depth := lerpf(a.y, b.y, (along - a.x) / (b.x - a.x))
+			for inward in int(depth):
+				var pixel := Vector2i(along, inward)
+				match side:
+					1:
+						pixel = Vector2i(along, SIZE - 1 - inward)
+					2:
+						pixel = Vector2i(inward, along)
+					3:
+						pixel = Vector2i(SIZE - 1 - inward, along)
+				var brightness := 1.0 if inward < int(depth) - 1 else 0.7  # darker broken edge
+				image.set_pixel(pixel.x, pixel.y, Color(brightness, brightness, brightness, 1.0))
+	return image

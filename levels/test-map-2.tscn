@@ -39,6 +39,9 @@
 [ext_resource type="Texture2D" path="res://assets/textures/blood_stain.png" id="blood_stain"]
 [ext_resource type="Shader" path="res://shaders/retro_surface.gdshader" id="retro_surface"]
 [ext_resource type="Texture2D" path="res://assets/textures/metal.png" id="metal_texture"]
+[ext_resource type="PackedScene" path="res://scenes/breakable_glass.tscn" id="breakable_glass"]
+[ext_resource type="PackedScene" path="res://scenes/desk.tscn" id="desk"]
+[ext_resource type="Material" path="res://assets/materials/desk_steel.tres" id="desk_steel"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
 size = Vector3(3, 0.2, 10.4)
@@ -74,19 +77,6 @@ size = Vector3(3, 0.1, 3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_SlimeZone"]
 size = Vector3(3, 0.55, 3)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_window"]
-transparency = 1
-cull_mode = 2
-shading_mode = 0
-albedo_color = Color(0.55, 0.75, 0.8, 0.07)
-
-[sub_resource type="BoxMesh" id="BoxMesh_window"]
-material = SubResource("StandardMaterial3D_window")
-size = Vector3(12, 2.3, 0.04)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_window"]
-size = Vector3(12, 2.3, 0.1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blood"]
 transparency = 2
@@ -810,13 +800,10 @@ shape = SubResource("BoxShape3D_ramp")
 [node name="Props" type="Node3D" parent="."]
 
 [node name="Notebook" parent="Props" instance=ExtResource("notebook")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 23)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.8, 23)
 
-[node name="SpawnDesk" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0.5, 23)
-use_collision = true
-size = Vector3(2.2, 1, 0.8)
-material = ExtResource("metal")
+[node name="SpawnDesk" parent="Props" instance=ExtResource("desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0, 23)
 
 [node name="SpawnChair" type="CSGCombiner3D" parent="Props"]
 transform = Transform3D(0.94, 0, 0.342, 0, 1, 0, -0.342, 0, 0.94, -3.3, 0, 24)
@@ -852,17 +839,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, 0.21, 0.21)
 size = Vector3(0.08, 0.42, 0.08)
 material = ExtResource("metal")
 
-[node name="LabDesk1" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.4, 0.4, -20.5)
-use_collision = true
-size = Vector3(2.2, 0.8, 1)
-material = ExtResource("metal")
+[node name="LabDesk1" parent="Props" instance=ExtResource("desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.4, 0, -20.5)
 
-[node name="LabDesk2" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.9, 0.4, -10)
-use_collision = true
-size = Vector3(1, 0.8, 2.2)
-material = ExtResource("metal")
+[node name="LabDesk2" parent="Props" instance=ExtResource("desk")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.9, 0, -10)
 
 [node name="LabCabinet" type="CSGBox3D" parent="Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6, 0.9, -20)
@@ -874,31 +855,22 @@ material = ExtResource("metal")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -14)
 use_collision = true
 size = Vector3(3, 0.9, 1.2)
-material = ExtResource("metal")
+material = ExtResource("desk_steel")
 
-[node name="ControlDesk1" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4.4, -23.3)
-use_collision = true
-size = Vector3(2.2, 0.8, 1)
-material = ExtResource("metal")
+[node name="ControlDesk1" parent="Props" instance=ExtResource("desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4, -23.3)
 
-[node name="ControlDesk2" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.4, -23.3)
-use_collision = true
-size = Vector3(2.2, 0.8, 1)
-material = ExtResource("metal")
+[node name="ControlDesk2" parent="Props" instance=ExtResource("desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -23.3)
 
-[node name="ControlDesk3" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.4, -23.3)
-use_collision = true
-size = Vector3(2.2, 0.8, 1)
-material = ExtResource("metal")
+[node name="ControlDesk3" parent="Props" instance=ExtResource("desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4, -23.3)
 
 [node name="ControlConsole" type="CSGBox3D" parent="Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.45, -18)
 use_collision = true
 size = Vector3(4, 0.9, 1)
-material = ExtResource("metal")
+material = ExtResource("desk_steel")
 
 [node name="SpawnCrate1" parent="Props" instance=ExtResource("crate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2, 0, 29.2)
@@ -963,14 +935,21 @@ size = 2.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, -10)
 size = 2.0
 
-[node name="ObservationGlass" type="StaticBody3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.6, -24.25)
+[node name="ObservationGlass1" parent="Props" instance=ExtResource("breakable_glass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.04, 4.45, -24.25)
+size = Vector2(1.98, 2.3)
 
-[node name="Mesh" type="MeshInstance3D" parent="Props/ObservationGlass"]
-mesh = SubResource("BoxMesh_window")
+[node name="ObservationGlass2" parent="Props" instance=ExtResource("breakable_glass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 4.45, -24.25)
+size = Vector2(3.9, 2.3)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Props/ObservationGlass"]
-shape = SubResource("BoxShape3D_window")
+[node name="ObservationGlass3" parent="Props" instance=ExtResource("breakable_glass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4.45, -24.25)
+size = Vector2(3.9, 2.3)
+
+[node name="ObservationGlass4" parent="Props" instance=ExtResource("breakable_glass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.04, 4.45, -24.25)
+size = Vector2(1.98, 2.3)
 
 [node name="ControlChair1" parent="Props" instance=ExtResource("office_chair")]
 transform = Transform3D(-0.9903, 0, 0.1392, 0, 1, 0, -0.1392, 0, -0.9903, -4, 4, -22.15)
@@ -1179,13 +1158,13 @@ transform = Transform3D(0, -0.866, 0.5, 1, 0, 0, 0, 0.5, 0.866, -2.4, 0.3, -32.8
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.45, 0.45, -37.2)
 use_collision = true
 size = Vector3(1, 0.9, 3)
-material = ExtResource("metal")
+material = ExtResource("desk_steel")
 
 [node name="ExperimentBench2" type="CSGBox3D" parent="Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.45, 0.45, -30.8)
 use_collision = true
 size = Vector3(1, 0.9, 3)
-material = ExtResource("metal")
+material = ExtResource("desk_steel")
 
 [node name="Drums" type="CSGCombiner3D" parent="Props"]
 use_collision = true
@@ -1305,7 +1284,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 2.37, 4.8)
 mesh = SubResource("BoxMesh_lamp")
 
 [node name="SpawnScreen" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 1.25, 22.9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 1.05, 22.9)
 mesh = SubResource("BoxMesh_screen")
 
 [node name="LabScreen" type="MeshInstance3D" parent="Details"]

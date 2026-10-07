@@ -87,6 +87,8 @@ scenes/              Reusable scenes
   potted_plant.tscn    Small tree in a clay pot
   office_chair.tscn    Swivel chair
   specimen_tank.tscn   Glowing tank from the experimentation lab, intact or smashed
+  desk.tscn            Office desk: wood-effect top, steel frame, a pedestal of drawers
+  breakable_glass.tscn A window pane that cracks when shot and shatters
   hud.tscn             Health / ammo / crosshair
   pause_menu.tscn      Esc menu: pauses the game, graphics and audio settings, multiplayer, quit
 levels/
@@ -220,7 +222,8 @@ for the explosive pylon, and `armor` and `suit`
 for the armoured player model, the `soldier_*` textures for the soldier
 player model, and `bookshelf`, `server_rack`, `filing_cabinet`, `leaves`,
 `terracotta`, the `poster_*` pictures, `whiteboard` and the `sign_*` plates
-for the lab props). Overwrite them with your own pixel art
+for the lab props, `desk_top`, `desk_steel` and `desk_drawers` for the desks,
+and `glass_crack` and `glass_edge` for breakable glass). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
 
@@ -304,6 +307,10 @@ Select a node and use the Inspector; every value is an exported variable.
 - **Shotgun** (`scenes/shotgun.tscn`): pellets per shell, damage per pellet,
   spread, range, time between shots, time after a double shot, and
   **Shoot Sound**. It never runs out of shells.
+- **Breakable glass** (`scenes/breakable_glass.tscn`): **Size** (width and
+  height, in metres), health (20 = two pistol shots) and **Break Sound**.
+  Each hit cracks it where it lands; its `Shards` node is the burst of glass
+  when it breaks.
 - **Crate** (`scenes/crate.tscn`): health (20 = two pistol shots) and size.
   Its `Debris` node is the splinters. To add one to a level, drag
   `scenes/crate.tscn` into the level; set **Size** on it for a bigger one.
@@ -644,10 +651,14 @@ liquid across the floor. Three barred holding cells line the west wall, and
 cell 3, the one the whiteboard says to keep shut, has been torn open. There
 is an operating table with a broken strap, benches of equipment, chemical
 drums and a trail of blood leading to the south wall. There, the containment
-door has been ripped out into the lab below the control room, which is the
-way in (go back down to the atrium and into the lab). Six zombies wait in
-there, one of them still locked in cell 2. The glass is solid: nothing gets
-through it, and the zombies in the lab can't see you through it.
+door has been ripped out into the lab below the control room, which is one
+way in (back down to the atrium and through the lab). Six zombies wait in
+there, one of them still locked in cell 2. The quicker way in is through the
+window: it is four panes of breakable glass, and two pistol shots (or one
+from the shotgun, or a grenade) shatter one. Then jump onto the sill and
+drop the 4.5 m into the lab. While the glass is whole the zombies down
+there can't see you through it, but once a pane is gone they can, and any
+that do come and gather under the window.
 
 The control room itself has bookshelves, server racks, filing cabinets,
 plants, chairs, a water cooler, posters and the whiteboard. Its zombies
@@ -749,6 +760,11 @@ editor, so turn that arrow to face into the room.
 - **Bookshelf**, **server rack**, **filing cabinet**, **potted plant** and
   **office chair**: solid furniture with nothing to set. The books, drawers
   and blinking lights are painted on (see `generate_textures.gd`).
+- **Desk** (`scenes/desk.tscn`): 2.2 m wide, 0.8 m tall and 1 m deep,
+  with the drawers and the knee space on its +Z side, where the chair goes.
+- **Breakable glass** (`scenes/breakable_glass.tscn`): set **Size** to fill
+  the opening; its origin is the middle of its bottom edge. See "Tuning
+  gameplay" for its health.
 - **Specimen tank** (`scenes/specimen_tank.tscn`): **Broken** swaps the
   glowing liquid for shards round the rim and a puddle in front, and lets
   shots through where the glass was. **Occupied** puts a body in an intact
@@ -767,9 +783,10 @@ editor, so turn that arrow to face into the room.
 - Multiplayer has no smoothing for bad connections: other players move as
   often as their updates arrive, so over the internet they can look jerky.
   It also has no player names, chat or scoreboard.
-- Online, bullet holes, blood and gibs are drawn by each computer for itself,
-  so they can land in slightly different places, and someone who joins late
-  doesn't see the ones made before they arrived.
+- Online, bullet holes, blood, gibs and cracks in glass are drawn by each
+  computer for itself, so they can land in slightly different places, and
+  someone who joins late doesn't see the ones made before they arrived (nor
+  the jagged edges of a pane broken before they joined).
 - A level only works online if it is in Main's **Levels** list (a level
   started with F6 that isn't on the list can't be shared).
 - Enemies head straight for the player and can get stuck on walls. They

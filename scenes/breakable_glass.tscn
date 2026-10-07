@@ -1,0 +1,99 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/breakable_glass.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/glass_crack.png" id="2_crack"]
+[ext_resource type="Texture2D" path="res://assets/textures/glass_edge.png" id="3_edge"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glass"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.55, 0.75, 0.8, 0.07)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pane"]
+material = SubResource("StandardMaterial3D_glass")
+size = Vector3(1, 1, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crack"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.85, 0.95, 1, 0.8)
+albedo_texture = ExtResource("2_crack")
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="QuadMesh_crack"]
+material = SubResource("StandardMaterial3D_crack")
+size = Vector2(0.9, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edge"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.7, 0.9, 0.95, 0.4)
+albedo_texture = ExtResource("3_edge")
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="QuadMesh_edge"]
+material = SubResource("StandardMaterial3D_edge")
+size = Vector2(1, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pane"]
+size = Vector3(2, 2.3, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shard"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.8, 0.95, 1, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_shard"]
+material = SubResource("StandardMaterial3D_shard")
+size = Vector3(0.12, 0.09, 0.01)
+
+[node name="BreakableGlass" type="StaticBody3D" groups=["breakable"]]
+script = ExtResource("1_script")
+
+[node name="Pane" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2.3, 0, 0, 0, 1, 0, 1.15, 0)
+mesh = SubResource("BoxMesh_pane")
+
+[node name="Crack" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("QuadMesh_crack")
+
+[node name="Edges" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2.3, 0, 0, 0, 1, 0, 1.15, 0)
+visible = false
+mesh = SubResource("QuadMesh_edge")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+shape = SubResource("BoxShape3D_pane")
+
+[node name="Shards" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+emitting = false
+amount = 55
+lifetime = 1.0
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.3
+mesh = SubResource("BoxMesh_shard")
+emission_shape = 3
+emission_box_extents = Vector3(1, 1.15, 0.02)
+particle_flag_rotate_y = true
+direction = Vector3(0, 0, 1)
+spread = 180.0
+gravity = Vector3(0, -14, 0)
+initial_velocity_min = 0.5
+initial_velocity_max = 3.0
+angular_velocity_min = -400.0
+angular_velocity_max = 400.0
+angle_max = 360.0
+scale_amount_min = 0.5
+scale_amount_max = 1.6
+
+[node name="BreakSound" type="AudioStreamPlayer" parent="."]
+volume_db = -20.0
+pitch_scale = 2.2

@@ -1,0 +1,46 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/desk_top.tres" id="1_top"]
+[ext_resource type="Material" path="res://assets/materials/desk_steel.tres" id="2_steel"]
+[ext_resource type="Material" path="res://assets/materials/desk_drawers.tres" id="3_drawers"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_top"]
+material = ExtResource("1_top")
+size = Vector3(2.2, 0.05, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pedestal"]
+material = ExtResource("3_drawers")
+size = Vector3(0.45, 0.75, 0.92)
+
+[sub_resource type="BoxMesh" id="BoxMesh_end"]
+material = ExtResource("2_steel")
+size = Vector3(0.04, 0.75, 0.92)
+
+[sub_resource type="BoxMesh" id="BoxMesh_modesty"]
+material = ExtResource("2_steel")
+size = Vector3(1.62, 0.45, 0.03)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_desk"]
+size = Vector3(2.2, 0.8, 1)
+
+[node name="Desk" type="StaticBody3D"]
+
+[node name="Top" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.775, 0)
+mesh = SubResource("BoxMesh_top")
+
+[node name="Pedestal" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.8, 0.375, 0)
+mesh = SubResource("BoxMesh_pedestal")
+
+[node name="EndPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.08, 0.375, 0)
+mesh = SubResource("BoxMesh_end")
+
+[node name="ModestyPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 0.5, -0.44)
+mesh = SubResource("BoxMesh_modesty")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("BoxShape3D_desk")
