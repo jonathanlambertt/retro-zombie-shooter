@@ -89,6 +89,10 @@ scenes/              Reusable scenes
   office_chair.tscn    Swivel chair
   specimen_tank.tscn   Glowing tank from the experimentation lab, intact or smashed
   desk.tscn            Office desk: wood-effect top, steel frame, a pedestal of drawers
+  monitor.tscn         Beige computer monitor with a glowing screen
+  keyboard.tscn        Computer keyboard
+  cup.tscn             Cup of coffee
+  water_cooler.tscn    Water cooler with its bottle
   breakable_glass.tscn A window pane that cracks when shot and shatters
   hud.tscn             Health / ammo / crosshair
   pause_menu.tscn      Esc menu: pauses the game, graphics and audio settings, multiplayer, quit
@@ -224,6 +228,10 @@ for the armoured player model, the `soldier_*` textures for the soldier
 player model, and `bookshelf`, `server_rack`, `filing_cabinet`, `leaves`,
 `terracotta`, the `poster_*` pictures, `whiteboard` and the `sign_*` plates
 for the lab props, `desk_top`, `desk_steel` and `desk_drawers` for the desks,
+`monitor`, `monitor_base`, the `monitor_screen_*` pictures and `keyboard` for
+the computers, `cup` and `cup_handle` for the coffee cup, `water_cooler` and
+`water_bottle` for the water cooler, `poster_chart_printout` for the paper
+taped above the infection rate poster,
 and `glass_crack` and `glass_edge` for breakable glass). Overwrite them with your own pixel art
 using the same file names and every surface updates. Any power-of-two size
 works (64x64 or 128x128 suit the look).
@@ -335,11 +343,13 @@ Select a node and use the Inspector; every value is an exported variable.
   seconds between bites.
 - **Rocket launcher** (`scenes/rocket_launcher.tscn`): time between rockets,
   rocket speed and **Shoot Sound**. **Rocket** (`scenes/rocket.tscn`): blast
-<<<<<<< HEAD
   damage, blast radius, **Structure Damage** and **Structure Radius** (how
   hard and how far it smashes walls; see "Destruction" below) and fuse
   time; its `Trail` node is the smoke.
-- **Grenade** (`scenes/grenade.tscn`): gravity and fuse time.
+- **Grenade** (`scenes/grenade.tscn`): gravity and fuse time. **Fireball**
+  and **Flash** are both off, so a grenade goes off with only smoke and the
+  bang: tick them to give it back the orange ball of fire or the orange
+  light it throws on the room (rockets and pylons always have both).
   **Explosion** (`scenes/explosion.tscn`): damage, blast radius,
   **Structure Damage** and **Structure Radius** (a grenade's: 180 and
   1.75 m) and **Explosion Sound**. A blast hurts you too if you stand too
@@ -667,8 +677,14 @@ drop the 4.5 m into the lab. While the glass is whole the zombies down
 there can't see you through it, but once a pane is gone they can, and any
 that do come and gather under the window.
 
-The control room itself has bookshelves, server racks, filing cabinets,
-plants, chairs, a water cooler, posters and the whiteboard. Its zombies
+The control room itself has bookshelves, server racks, filing cabinets, a
+plant, chairs, a water cooler and the whiteboard. Each desk has a monitor
+and a keyboard, and so does the console in the middle of the room; every
+screen shows something different (the cells' status, subject 7's heart, an
+abandoned game, a dead camera and the alarm), and one desk has a cup of
+coffee. The one poster left is the infection rate: its line ran out of
+graph, so somebody carried it on in marker pen up a printout taped to the
+wall, all the way to the ceiling. The room's zombies
 moved into the lab when the start moved here; to start in the checkpoint
 again, move `Player` back to (0, 0.1, 27).
 
@@ -764,11 +780,27 @@ editor, so turn that arrow to face into the room.
   `whiteboard.tres` or `sign_*.tres` materials in `assets/materials/`. Scale
   it for other sizes (the landscape posters, the whiteboard and the signs
   are scaled copies). Hang it a centimetre off the wall.
+  `poster_chart_printout.tres` is the strip of printer paper that carries on
+  the infection rate poster's line: scale it to 37.5 cm x 1.05 m (0.625 and
+  1.3125) and stand it on the poster's top edge with its left edge 50 cm in
+  from the poster's left, as `PosterChartPrintout` is in test map 2.
 - **Bookshelf**, **server rack**, **filing cabinet**, **potted plant** and
   **office chair**: solid furniture with nothing to set. The books, drawers
   and blinking lights are painted on (see `generate_textures.gd`).
 - **Desk** (`scenes/desk.tscn`): 2.2 m wide, 0.8 m tall and 1 m deep,
   with the drawers and the knee space on its +Z side, where the chair goes.
+  Its top is 0.8 m above its origin: that is the height to put the next
+  three at.
+- **Monitor** (`scenes/monitor.tscn`): a 40 cm beige box on a foot, solid
+  like the furniture. **Screen** is the picture on the glass: drag one of
+  the `monitor_screen_*.png` textures onto it (`cells`, `vitals`, `pong`,
+  `signal`, `breach`), or a 26 x 22 pixel picture of your own. The screen
+  glows: the room's lights don't change it.
+- **Keyboard** (`scenes/keyboard.tscn`) and **cup** (`scenes/cup.tscn`): only
+  for show, so shots pass through them and you can walk over them if you
+  jump onto the desk. The keyboard's space bar and the cup's heart face +Z.
+- **Water cooler** (`scenes/water_cooler.tscn`): the cabinet is solid, the
+  bottle on top is not. The taps face +Z, so stand its back against a wall.
 - **Breakable glass** (`scenes/breakable_glass.tscn`): set **Size** to fill
   the opening; its origin is the middle of its bottom edge. See "Tuning
   gameplay" for its health.

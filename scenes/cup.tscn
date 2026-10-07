@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/cup.tres" id="1_cup"]
+[ext_resource type="Material" path="res://assets/materials/cup_handle.tres" id="2_handle"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cup"]
+material = ExtResource("1_cup")
+top_radius = 0.045
+bottom_radius = 0.04
+height = 0.1
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_handle"]
+material = ExtResource("2_handle")
+size = Vector3(0.03, 0.055, 0.014)
+
+[node name="Cup" type="Node3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.05, 0)
+mesh = SubResource("CylinderMesh_cup")
+
+[node name="Handle" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, 0.052, 0)
+mesh = SubResource("BoxMesh_handle")

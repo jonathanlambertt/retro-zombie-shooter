@@ -1,0 +1,45 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/monitor.gd" id="1_script"]
+[ext_resource type="Material" path="res://assets/materials/monitor.tres" id="2_case"]
+[ext_resource type="Material" path="res://assets/materials/monitor_base.tres" id="3_base"]
+[ext_resource type="Texture2D" path="res://assets/textures/monitor_screen_cells.png" id="4_screen"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_base"]
+material = ExtResource("3_base")
+size = Vector3(0.25, 0.05, 0.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_case"]
+material = ExtResource("2_case")
+size = Vector3(0.4, 0.35, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_screen"]
+shading_mode = 0
+albedo_texture = ExtResource("4_screen")
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="QuadMesh_screen"]
+material = SubResource("StandardMaterial3D_screen")
+size = Vector2(0.325, 0.240625)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_case"]
+size = Vector3(0.4, 0.35, 0.4)
+
+[node name="Monitor" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.025, 0)
+mesh = SubResource("BoxMesh_base")
+
+[node name="Case" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.225, 0)
+mesh = SubResource("BoxMesh_case")
+
+[node name="Screen" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.246875, 0.204)
+mesh = SubResource("QuadMesh_screen")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+shape = SubResource("BoxShape3D_case")

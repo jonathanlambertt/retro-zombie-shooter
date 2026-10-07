@@ -1,0 +1,59 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/water_cooler.tres" id="1_cabinet"]
+[ext_resource type="Texture2D" path="res://assets/textures/water_bottle.png" id="2_bottle"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_cabinet"]
+material = ExtResource("1_cabinet")
+size = Vector3(0.4, 1, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_neck"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.35, 0.62, 0.95, 0.55)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_neck"]
+material = SubResource("StandardMaterial3D_neck")
+top_radius = 0.135
+bottom_radius = 0.05
+height = 0.07
+radial_segments = 10
+rings = 0
+cap_top = false
+cap_bottom = false
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bottle"]
+transparency = 1
+shading_mode = 0
+albedo_texture = ExtResource("2_bottle")
+texture_filter = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bottle"]
+material = SubResource("StandardMaterial3D_bottle")
+top_radius = 0.135
+bottom_radius = 0.135
+height = 0.3
+radial_segments = 10
+rings = 0
+cap_bottom = false
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cabinet"]
+size = Vector3(0.4, 1, 0.4)
+
+[node name="WaterCooler" type="StaticBody3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_cabinet")
+
+[node name="Neck" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.035, 0)
+mesh = SubResource("CylinderMesh_neck")
+
+[node name="Bottle" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.22, 0)
+mesh = SubResource("CylinderMesh_bottle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_cabinet")

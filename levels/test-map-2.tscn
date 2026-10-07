@@ -1,4 +1,4 @@
-[gd_scene load_steps=83 format=3]
+[gd_scene load_steps=86 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -22,11 +22,9 @@
 [ext_resource type="PackedScene" path="res://scenes/office_chair.tscn" id="office_chair"]
 [ext_resource type="PackedScene" path="res://scenes/specimen_tank.tscn" id="specimen_tank"]
 [ext_resource type="Material" path="res://assets/materials/poster_biohazard.tres" id="poster_biohazard"]
-[ext_resource type="Material" path="res://assets/materials/poster_dna.tres" id="poster_dna"]
-[ext_resource type="Material" path="res://assets/materials/poster_periodic.tres" id="poster_periodic"]
-[ext_resource type="Material" path="res://assets/materials/poster_safety.tres" id="poster_safety"]
 [ext_resource type="Material" path="res://assets/materials/poster_subject.tres" id="poster_subject"]
 [ext_resource type="Material" path="res://assets/materials/poster_chart.tres" id="poster_chart"]
+[ext_resource type="Material" path="res://assets/materials/poster_chart_printout.tres" id="poster_chart_printout"]
 [ext_resource type="Material" path="res://assets/materials/whiteboard.tres" id="whiteboard"]
 [ext_resource type="Material" path="res://assets/materials/sign_containment.tres" id="sign_containment"]
 [ext_resource type="Material" path="res://assets/materials/sign_cell_1.tres" id="sign_cell_1"]
@@ -42,6 +40,14 @@
 [ext_resource type="PackedScene" path="res://scenes/breakable_glass.tscn" id="breakable_glass"]
 [ext_resource type="PackedScene" path="res://scenes/desk.tscn" id="desk"]
 [ext_resource type="Material" path="res://assets/materials/desk_steel.tres" id="desk_steel"]
+[ext_resource type="PackedScene" path="res://scenes/monitor.tscn" id="monitor"]
+[ext_resource type="PackedScene" path="res://scenes/keyboard.tscn" id="keyboard"]
+[ext_resource type="PackedScene" path="res://scenes/cup.tscn" id="cup"]
+[ext_resource type="PackedScene" path="res://scenes/water_cooler.tscn" id="water_cooler"]
+[ext_resource type="Texture2D" path="res://assets/textures/monitor_screen_vitals.png" id="monitor_screen_vitals"]
+[ext_resource type="Texture2D" path="res://assets/textures/monitor_screen_pong.png" id="monitor_screen_pong"]
+[ext_resource type="Texture2D" path="res://assets/textures/monitor_screen_signal.png" id="monitor_screen_signal"]
+[ext_resource type="Texture2D" path="res://assets/textures/monitor_screen_breach.png" id="monitor_screen_breach"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
 size = Vector3(3, 0.2, 10.4)
@@ -94,14 +100,6 @@ size = Vector2(1, 1)
 material = ExtResource("gun")
 size = Vector3(0.45, 0.025, 0.15)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_mug"]
-material = ExtResource("paper")
-top_radius = 0.045
-bottom_radius = 0.04
-height = 0.1
-radial_segments = 8
-rings = 0
-
 [sub_resource type="BoxMesh" id="BoxMesh_papers"]
 material = ExtResource("paper")
 size = Vector3(0.21, 0.03, 0.3)
@@ -128,19 +126,6 @@ rings = 0
 [sub_resource type="BoxMesh" id="BoxMesh_nozzle"]
 material = ExtResource("gun")
 size = Vector3(0.06, 0.08, 0.06)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bottle"]
-transparency = 1
-shading_mode = 0
-albedo_color = Color(0.45, 0.7, 1, 0.55)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_bottle"]
-material = SubResource("StandardMaterial3D_bottle")
-top_radius = 0.1
-bottom_radius = 0.15
-height = 0.42
-radial_segments = 8
-rings = 0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_red_light"]
 shading_mode = 0
@@ -960,6 +945,40 @@ transform = Transform3D(-0.9945, 0, -0.1045, 0, 1, 0, 0.1045, 0, -0.9945, 0, 4, 
 [node name="ControlChair3" parent="Props" instance=ExtResource("office_chair")]
 transform = Transform3D(-0.9986, 0, 0.0523, 0, 1, 0, -0.0523, 0, -0.9986, 4, 4, -22.1)
 
+[node name="ControlMonitor1" parent="Props" instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4.8, -23.5)
+
+[node name="ControlMonitor2" parent="Props" instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, -23.5)
+screen = ExtResource("monitor_screen_vitals")
+
+[node name="ControlMonitor3" parent="Props" instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.8, -23.5)
+screen = ExtResource("monitor_screen_pong")
+
+[node name="ControlKeyboard1" parent="Props" instance=ExtResource("keyboard")]
+transform = Transform3D(0.9962, 0, 0.0872, 0, 1, 0, -0.0872, 0, 0.9962, -4, 4.8, -22.98)
+
+[node name="ControlKeyboard2" parent="Props" instance=ExtResource("keyboard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, -22.98)
+
+[node name="ControlKeyboard3" parent="Props" instance=ExtResource("keyboard")]
+transform = Transform3D(0.9976, 0, -0.0698, 0, 1, 0, 0.0698, 0, 0.9976, 4, 4.8, -22.98)
+
+[node name="ControlCup" parent="Props" instance=ExtResource("cup")]
+transform = Transform3D(0.8192, 0, -0.5736, 0, 1, 0, 0.5736, 0, 0.8192, 4.52, 4.8, -23.05)
+
+[node name="ConsoleMonitor1" parent="Props" instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 4.9, -18.2)
+screen = ExtResource("monitor_screen_breach")
+
+[node name="ConsoleMonitor2" parent="Props" instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 4.9, -18.2)
+screen = ExtResource("monitor_screen_signal")
+
+[node name="ConsoleKeyboard" parent="Props" instance=ExtResource("keyboard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 4.9, -17.75)
+
 [node name="ControlBookshelf1" parent="Props" instance=ExtResource("bookshelf")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.79, 4, -20.6)
 
@@ -978,56 +997,23 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.69, 4, -19.6)
 [node name="ControlCabinet2" parent="Props" instance=ExtResource("filing_cabinet")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.69, 4, -19.08)
 
-[node name="ControlPlant1" parent="Props" instance=ExtResource("potted_plant")]
+[node name="ControlPlant" parent="Props" instance=ExtResource("potted_plant")]
 transform = Transform3D(0.9659, 0, 0.2588, 0, 1, 0, -0.2588, 0, 0.9659, -7.4, 4, -23.4)
 
-[node name="ControlPlant2" parent="Props" instance=ExtResource("potted_plant")]
-transform = Transform3D(0.766, 0, -0.6428, 0, 1, 0, 0.6428, 0, 0.766, 7.4, 4, -23.4)
-
-[node name="ControlPlant3" parent="Props" instance=ExtResource("potted_plant")]
-transform = Transform3D(0.342, 0, 0.9397, 0, 1, 0, -0.9397, 0, 0.342, -7.4, 4, -14.6)
-
-[node name="WaterCooler" type="CSGBox3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.45, 4.5, -14.55)
-use_collision = true
-size = Vector3(0.38, 1, 0.38)
-material = ExtResource("paper")
-
-[node name="TrashCan" type="CSGCylinder3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.6, 4.18, -23.35)
-use_collision = true
-radius = 0.16
-height = 0.36
-sides = 8
-material = ExtResource("metal")
-
-[node name="PosterDNA" parent="Props" instance=ExtResource("poster")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.99, 5.6, -16.3)
-material_override = ExtResource("poster_dna")
-
-[node name="PosterSafety" parent="Props" instance=ExtResource("poster")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.99, 5.7, -22.6)
-material_override = ExtResource("poster_safety")
-
-[node name="PosterPeriodic" parent="Props" instance=ExtResource("poster")]
-transform = Transform3D(0, 0, -1, 0, 0.75, 0, 1.3333, 0, 0, 7.99, 5.9, -19.34)
-material_override = ExtResource("poster_periodic")
+[node name="WaterCooler" parent="Props" instance=ExtResource("water_cooler")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.78, 4, -14.55)
 
 [node name="PosterChart" parent="Props" instance=ExtResource("poster")]
 transform = Transform3D(0, 0, -1, 0, 0.75, 0, 1.3333, 0, 0, 7.99, 5.6, -16.4)
 material_override = ExtResource("poster_chart")
 
+[node name="PosterChartPrintout" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, -1, 0, 1.3125, 0, 0.625, 0, 0, 7.99, 6.425, -16.1125)
+material_override = ExtResource("poster_chart_printout")
+
 [node name="Whiteboard" parent="Props" instance=ExtResource("poster")]
 transform = Transform3D(-4, 0, 0, 0, 1.5, 0, 0, 0, -1, -4.2, 5.55, -14.01)
 material_override = ExtResource("whiteboard")
-
-[node name="PosterBiohazard" parent="Props" instance=ExtResource("poster")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.2, 5.6, -14.01)
-material_override = ExtResource("poster_biohazard")
-
-[node name="PosterSubject" parent="Props" instance=ExtResource("poster")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4.6, 5.6, -14.01)
-material_override = ExtResource("poster_subject")
 
 [node name="SpecimenTank1" parent="Props" instance=ExtResource("specimen_tank")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -41.4)
@@ -1291,45 +1277,9 @@ mesh = SubResource("BoxMesh_screen")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.4, 1.05, -20.8)
 mesh = SubResource("BoxMesh_screen")
 
-[node name="ControlScreen1" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 5.05, -23.6)
-mesh = SubResource("BoxMesh_screen")
-
-[node name="ControlScreen2" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.05, -23.6)
-mesh = SubResource("BoxMesh_screen")
-
-[node name="ControlScreen3" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5.05, -23.6)
-mesh = SubResource("BoxMesh_screen")
-
 [node name="PumpSlime" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, -0.4, 0)
 mesh = SubResource("BoxMesh_slime")
-
-[node name="ControlKeyboard1" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 4.8125, -22.98)
-mesh = SubResource("BoxMesh_keyboard")
-
-[node name="ControlKeyboard2" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8125, -22.98)
-mesh = SubResource("BoxMesh_keyboard")
-
-[node name="ControlKeyboard3" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 4.8125, -22.98)
-mesh = SubResource("BoxMesh_keyboard")
-
-[node name="ControlMug1" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.25, 4.85, -22.95)
-mesh = SubResource("CylinderMesh_mug")
-
-[node name="ControlMug2" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 4.85, -23.45)
-mesh = SubResource("CylinderMesh_mug")
-
-[node name="ControlMug3" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.65, 4.85, -23.1)
-mesh = SubResource("CylinderMesh_mug")
 
 [node name="ControlPapers1" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(0.9781, 0, 0.2079, 0, 1, 0, -0.2079, 0, 0.9781, -4.75, 4.815, -23.3)
@@ -1342,18 +1292,6 @@ mesh = SubResource("BoxMesh_papers")
 [node name="ControlPapers3" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(0.1736, 0, 0.9848, 0, 1, 0, -0.9848, 0, 0.1736, 0, 4.915, -17.75)
 mesh = SubResource("BoxMesh_papers")
-
-[node name="ConsoleScreen1" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 5.25, -18.2)
-mesh = SubResource("BoxMesh_screen")
-
-[node name="ConsoleScreen2" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 5.25, -18.2)
-mesh = SubResource("BoxMesh_screen")
-
-[node name="ConsoleKeyboard" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 4.9125, -17.75)
-mesh = SubResource("BoxMesh_keyboard")
 
 [node name="ConsoleButton1" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 4.91, -17.7)
@@ -1382,10 +1320,6 @@ mesh = SubResource("CylinderMesh_extinguisher")
 [node name="ExtinguisherNozzle" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 4.88, -14.12)
 mesh = SubResource("BoxMesh_nozzle")
-
-[node name="WaterBottle" type="MeshInstance3D" parent="Details"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.45, 5.21, -14.55)
-mesh = SubResource("CylinderMesh_bottle")
 
 [node name="ExperimentLamp1" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 7.97, -34)

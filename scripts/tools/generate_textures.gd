@@ -114,6 +114,24 @@ func _init() -> void:
 	_save(_make_mp40_magazine(), "mp40_magazine")
 	_save(_make_mp40_grip(), "mp40_grip")
 	_save(_make_mp40_stock(), "mp40_stock")
+	# What stands on and around the control room's desks: the monitors
+	# (scenes/monitor.tscn) and what their screens show, the keyboards
+	# (scenes/keyboard.tscn), the coffee cup (scenes/cup.tscn) and the water
+	# cooler (scenes/water_cooler.tscn). Last, the printout taped up above
+	# the infection rate poster.
+	_save(_make_monitor(), "monitor")
+	_save(_make_monitor_base(), "monitor_base")
+	_save(_make_monitor_screen_cells(), "monitor_screen_cells")
+	_save(_make_monitor_screen_vitals(), "monitor_screen_vitals")
+	_save(_make_monitor_screen_pong(), "monitor_screen_pong")
+	_save(_make_monitor_screen_signal(), "monitor_screen_signal")
+	_save(_make_monitor_screen_breach(), "monitor_screen_breach")
+	_save(_make_keyboard(), "keyboard")
+	_save(_make_cup(), "cup")
+	_save(_make_cup_handle(), "cup_handle")
+	_save(_make_water_cooler(), "water_cooler")
+	_save(_make_water_bottle(), "water_bottle")
+	_save(_make_poster_chart_printout(), "poster_chart_printout")
 	quit()
 
 
@@ -2212,7 +2230,25 @@ func _make_poster_subject() -> Image:
 	return poster
 
 
-## A line graph that shoots up: "infection rate" over the days.
+## The red of the marker pen on the infection rate poster and its printout.
+const POSTER_CHART_MARKER := Color(0.85, 0.08, 0.10)
+## The column of the poster where that marker line (the left of its two
+## pixels) runs off the top edge. The printout carries on from here.
+const POSTER_CHART_MARKER_TOP := 62
+
+
+## A line graph that shoots up: the infection rate over the days. It is a
+## cheerful poster from personnel, printed when the line was still expected
+## to stay on the paper. Since then:
+## - a sticky note has been stuck on, pointing at the day it all took off;
+## - the printed line reached the top of the grid, so somebody has carried
+##   it on in red marker pen, past the title and off the top of the sheet.
+##   In the control room it keeps going, up a length of printer paper taped
+##   to the wall above (see _make_poster_chart_printout() at the end).
+##
+## Nothing here may use rng except the paper itself: this poster is made in
+## the middle of the list, and drawing a different number of random numbers
+## would change every texture made after it.
 func _make_poster_chart() -> Image:
 	var poster := _new_poster(64, 48, Color(0.93, 0.93, 0.91))
 	var ink := Color(0.20, 0.22, 0.28)
@@ -2220,21 +2256,39 @@ func _make_poster_chart() -> Image:
 	var red := Color(0.78, 0.12, 0.10)
 	_draw_text_centred(poster, "INFECTION RATE", 3, ink)
 	for x in range(12, 61, 6):
-		poster.fill_rect(Rect2i(x, 11, 1, 30), grid)
-	for y in range(11, 41, 6):
+		poster.fill_rect(Rect2i(x, 10, 1, 30), grid)
+	for y in range(10, 40, 6):
 		poster.fill_rect(Rect2i(7, y, 54, 1), grid)
-	poster.fill_rect(Rect2i(6, 10, 1, 32), ink)
-	poster.fill_rect(Rect2i(6, 41, 55, 1), ink)
-	var previous := 40
+	poster.fill_rect(Rect2i(6, 9, 1, 32), ink)
+	poster.fill_rect(Rect2i(6, 40, 55, 1), ink)
+	var previous := 39
 	for x in range(7, 60):
 		var t := (x - 7) / 52.0
-		var y := int(round(40.0 - 29.0 * (exp(4.0 * t) - 1.0) / (exp(4.0) - 1.0)))
+		var y := int(round(39.0 - 29.0 * (exp(4.0 * t) - 1.0) / (exp(4.0) - 1.0)))
 		# Fill any gap from the last column so the steep end stays joined.
 		for fill in range(mini(y, previous), maxi(y, previous) + 1):
 			poster.set_pixel(x, fill, red)
 			poster.set_pixel(x, fill + 1, _shade(red, 0.8))
 		previous = y
-	_draw_text(poster, "DAYS", Vector2i(46, 42), ink)
+
+	# The marker pen: two pixels wide, starting where the printed line ends
+	# (column 59, row 10) and leaning a little further right as it climbs,
+	# so it leaves the top of the sheet at POSTER_CHART_MARKER_TOP.
+	for y in range(9, -1, -1):
+		@warning_ignore("integer_division")
+		var lean := (9 - y) / 4
+		poster.fill_rect(Rect2i(POSTER_CHART_MARKER_TOP - 2 + lean, y, 2, 1), POSTER_CHART_MARKER)
+
+	# The sticky note, and a line from it down to the day the graph bends.
+	var note := Color(0.98, 0.88, 0.30)
+	poster.fill_rect(Rect2i(12, 16, 29, 7), note)
+	poster.fill_rect(Rect2i(12, 22, 29, 1), _shade(note, 0.8))  # its bottom edge curling up
+	_draw_text(poster, "HUG DAY", Vector2i(13, 17), ink)
+	poster.fill_rect(Rect2i(30, 23, 1, 11), ink)
+	for barb: Vector2i in [Vector2i(28, 31), Vector2i(32, 31), Vector2i(29, 32), Vector2i(31, 32)]:
+		poster.set_pixel(barb.x, barb.y, ink)  # the arrowhead
+
+	_draw_text_centred(poster, "GREAT JOB TEAM!", 42, Color(0.12, 0.48, 0.25))
 	return poster
 
 
@@ -2631,3 +2685,435 @@ func _make_mp40_stock() -> Image:
 	_paint_face(atlas, FACE_BACK, _speckle(8, 12, _shade(GUN_BLUED, 0.7), 0.07))
 	_paint_face(atlas, FACE_FRONT, _speckle(8, 12, GUN_BLUED, 0.07))
 	return atlas
+
+
+# --- Office equipment --------------------------------------------------------
+#
+# What stands on the control room's desks. Each box is painted on a BoxMesh
+# atlas like the furniture above, but these are small things seen from close
+# to, so they are drawn finer: 80 pixels to the metre, the same as the
+# posters. A letter of the pixel font is then the same size on a monitor's
+# screen as on a poster, and can be read from the chair in front of it.
+
+const PLASTIC_BEIGE := Color(0.74, 0.71, 0.61)
+const SCREEN_DARK := Color(0.02, 0.06, 0.04)
+const SCREEN_GREEN := Color(0.30, 1.0, 0.45)
+const SCREEN_RED := Color(1.0, 0.22, 0.15)
+const SCREEN_WHITE := Color(0.92, 0.94, 0.90)
+const CUP_WHITE := Color(0.90, 0.89, 0.84)
+const CUP_COFFEE := Color(0.20, 0.11, 0.05)
+const COOLER_WHITE := Color(0.84, 0.86, 0.85)
+const COOLER_WATER := Color(0.35, 0.62, 0.95)
+
+
+## The monitor's case: a box 40 cm wide, 35 cm tall and 40 cm deep. Every
+## side is drawn 32 x 32, so no picture has to be stretched to fit its cell
+## (the pixels on the front and sides are just a little shorter than they
+## are wide). The front is a thick frame round the glass, with a chin for
+## the maker's badge, two buttons and the power light.
+##
+## The glass is painted dark here. What the screen shows is one of the
+## monitor_screen_ pictures below, on a flat square of its own that the
+## scene lays over columns 3-28 of rows 3-24.
+func _make_monitor() -> Image:
+	var atlas := _new_atlas(32, 32)
+	var slit := _shade(PLASTIC_BEIGE, 0.35)
+
+	var front := _speckle(32, 32, PLASTIC_BEIGE, 0.03)
+	front.fill_rect(Rect2i(0, 0, 32, 1), _shade(PLASTIC_BEIGE, 1.15))  # light on the top edge
+	front.fill_rect(Rect2i(0, 31, 32, 1), _shade(PLASTIC_BEIGE, 0.7))
+	front.fill_rect(Rect2i(2, 2, 28, 24), _shade(PLASTIC_BEIGE, 0.6))  # the step down to the glass
+	front.fill_rect(Rect2i(3, 3, 26, 22), Color(0.04, 0.05, 0.05))  # the glass
+	front.fill_rect(Rect2i(3, 28, 6, 2), Color(0.25, 0.27, 0.32))  # badge
+	front.fill_rect(Rect2i(19, 28, 2, 2), _shade(PLASTIC_BEIGE, 0.55))  # buttons
+	front.fill_rect(Rect2i(22, 28, 2, 2), _shade(PLASTIC_BEIGE, 0.55))
+	front.set_pixel(27, 28, Color(0.30, 1.0, 0.40))  # power light
+	_paint_face(atlas, FACE_FRONT, front)
+
+	_paint_face(atlas, FACE_RIGHT, _make_monitor_side(true))
+	_paint_face(atlas, FACE_LEFT, _make_monitor_side(false))
+
+	# The back: a raised panel over the end of the tube, with cooling slits,
+	# the maker's label and the sockets for the two leads.
+	var back := _speckle(32, 32, _shade(PLASTIC_BEIGE, 0.9), 0.03)
+	back.fill_rect(Rect2i(5, 3, 22, 20), _shade(PLASTIC_BEIGE, 0.78))
+	for y in range(5, 12, 2):
+		back.fill_rect(Rect2i(8, y, 16, 1), slit)
+	back.fill_rect(Rect2i(12, 14, 8, 5), Color(0.86, 0.86, 0.80))  # label
+	back.fill_rect(Rect2i(13, 15, 5, 1), Color(0.30, 0.30, 0.35))  # writing
+	back.fill_rect(Rect2i(13, 17, 3, 1), Color(0.30, 0.30, 0.35))
+	back.fill_rect(Rect2i(6, 26, 4, 3), Color(0.07, 0.07, 0.08))  # power lead
+	back.fill_rect(Rect2i(21, 26, 5, 3), Color(0.15, 0.22, 0.55))  # the video lead's blue plug
+	_paint_face(atlas, FACE_BACK, back)
+
+	# The top, with the monitor's back at the top of the picture: more
+	# slits, over the hot end of the tube.
+	var top := _speckle(32, 32, _shade(PLASTIC_BEIGE, 1.05), 0.03)
+	for y in range(4, 13, 2):
+		top.fill_rect(Rect2i(6, y, 20, 1), slit)
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(32, 32, _shade(PLASTIC_BEIGE, 0.5), 0.03))
+	return atlas
+
+
+## One side of the monitor's case: plain, with a block of slits near the
+## back and the seam where the front frame is clipped on. As on the zombie's
+## head, the front is at the right edge of the picture on the right side and
+## at the left edge on the left side, which is what front_on_right says.
+func _make_monitor_side(front_on_right: bool) -> Image:
+	var side := _speckle(32, 32, _shade(PLASTIC_BEIGE, 0.95), 0.03)
+	side.fill_rect(Rect2i(0, 31, 32, 1), _shade(PLASTIC_BEIGE, 0.7))
+	for y in range(6, 15, 2):
+		side.fill_rect(Rect2i(4 if front_on_right else 16, y, 12, 1), _shade(PLASTIC_BEIGE, 0.35))
+	side.fill_rect(Rect2i(26 if front_on_right else 5, 0, 1, 32), _shade(PLASTIC_BEIGE, 0.7))
+	return side
+
+
+## The foot the monitor's case stands on: 25 cm square and 5 cm tall, a
+## darker beige. Its sides are thin strips 20 x 4, in the shadow of the case
+## overhanging them.
+func _make_monitor_base() -> Image:
+	var atlas := _new_atlas(20, 20)
+	var plastic := _shade(PLASTIC_BEIGE, 0.8)
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_LEFT, FACE_RIGHT]:
+		var side := _speckle(20, 4, plastic, 0.03)
+		side.fill_rect(Rect2i(0, 0, 20, 1), _shade(plastic, 0.55))
+		_paint_face(atlas, cell, side)
+	_paint_face(atlas, FACE_TOP, _speckle(20, 20, plastic, 0.03))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(20, 20, _shade(plastic, 0.5), 0.03))
+	return atlas
+
+
+## A blank monitor screen, 26 x 22 pixels: the size of the glass in the
+## monitor's frame, so a pixel on the screen is the same size as one on the
+## case around it. That leaves room for three lines of six letters.
+func _new_screen(background: Color) -> Image:
+	var screen := Image.create_empty(26, 22, false, Image.FORMAT_RGB8)
+	screen.fill(background)
+	return screen
+
+
+## The holding cells' status screen: cells 1 and 2 are green, and cell 3
+## (the one the whiteboard says to keep shut) is red.
+func _make_monitor_screen_cells() -> Image:
+	var screen := _new_screen(SCREEN_DARK)
+	_draw_text_centred(screen, "CELLS", 1, SCREEN_GREEN)
+	for cell in 3:
+		var color := SCREEN_RED if cell == 2 else SCREEN_GREEN
+		screen.fill_rect(Rect2i(3 + cell * 8, 8, 5, 7), color)
+		# The cell's number, cut out of its block in the screen's own dark.
+		_draw_text(screen, str(cell + 1), Vector2i(4 + cell * 8, 9), SCREEN_DARK)
+	_draw_text_centred(screen, "3 OPEN", 16, SCREEN_RED)
+	return screen
+
+
+## Subject 7's heart monitor: two beats, then a flat line. (The whiteboard
+## says subject 7 is awake.)
+func _make_monitor_screen_vitals() -> Image:
+	var screen := _new_screen(SCREEN_DARK)
+	_draw_text_centred(screen, "SUBJ 7", 1, SCREEN_GREEN)
+	# The row the trace is on in each of a beat's four columns: a small
+	# rise, the spike, the dip after it, and level again. Level is row 12.
+	var beat := [11, 8, 14, 12]
+	var previous := 12
+	for x in range(1, 25):
+		var y := 12
+		if x >= 3 and x < 7:
+			y = beat[x - 3]
+		elif x >= 9 and x < 13:
+			y = beat[x - 9]
+		# Draw each column from just past the last column's row to its own,
+		# so the spike is one joined line.
+		var from := y if y == previous else previous + signi(y - previous)
+		for fill in range(mini(y, from), maxi(y, from) + 1):
+			screen.set_pixel(x, fill, SCREEN_GREEN)
+		previous = y
+	_draw_text_centred(screen, "0 BPM", 16, SCREEN_RED)
+	return screen
+
+
+## Somebody's game of bat and ball, left running. They were losing 0 - 9,
+## and the ball is about to get past them again.
+func _make_monitor_screen_pong() -> Image:
+	var screen := _new_screen(Color(0.02, 0.02, 0.03))
+	for y in range(0, 22, 2):
+		screen.set_pixel(13, y, _shade(SCREEN_WHITE, 0.5))  # the net
+	_draw_text(screen, "0", Vector2i(7, 1), SCREEN_WHITE)
+	_draw_text(screen, "9", Vector2i(17, 1), SCREEN_WHITE)
+	screen.fill_rect(Rect2i(1, 12, 1, 5), SCREEN_WHITE)  # the two bats
+	screen.fill_rect(Rect2i(24, 6, 1, 5), SCREEN_WHITE)
+	screen.set_pixel(5, 17, SCREEN_WHITE)  # the ball
+	return screen
+
+
+## A camera whose picture has gone: white letters on blue.
+func _make_monitor_screen_signal() -> Image:
+	var screen := _new_screen(Color(0.06, 0.10, 0.55))
+	_draw_text_centred(screen, "NO", 5, SCREEN_WHITE)
+	_draw_text_centred(screen, "SIGNAL", 12, SCREEN_WHITE)
+	return screen
+
+
+## The alarm: a yellow warning triangle over the word BREACH, on red.
+func _make_monitor_screen_breach() -> Image:
+	var screen := _new_screen(Color(0.30, 0.02, 0.02))
+	var yellow := Color(1.0, 0.85, 0.10)
+	var dark := Color(0.12, 0.02, 0.02)
+	for row in 11:
+		# Half the triangle's width on this row: 1 at the tip, 7 at the foot.
+		@warning_ignore("integer_division")
+		var half := row * 3 / 5 + 1
+		screen.fill_rect(Rect2i(13 - half, 1 + row, half * 2, 1), yellow)
+	screen.fill_rect(Rect2i(12, 4, 2, 5), dark)  # the exclamation mark
+	screen.fill_rect(Rect2i(12, 10, 2, 1), dark)
+	_draw_text_centred(screen, "BREACH", 15, yellow)
+	return screen
+
+
+## The keyboard: 47.5 cm wide, 3 cm tall and 17.5 cm deep. Its top is 38 x 14
+## pixels, drawn as the typist sees it. The keys are two pixels square and
+## stand in two dark wells: nine columns on the left, with the long space
+## bar in the bottom row, and three columns of number keys on the right,
+## under the status lights. The keys round the edge are grey.
+func _make_keyboard() -> Image:
+	var atlas := _new_atlas(38, 14)
+	var pale := Color(0.90, 0.88, 0.80)
+	var grey := Color(0.62, 0.61, 0.56)
+
+	var top := _speckle(38, 14, PLASTIC_BEIGE, 0.03)
+	top.fill_rect(Rect2i(0, 0, 38, 1), _shade(PLASTIC_BEIGE, 1.15))  # light on the far edge
+	top.fill_rect(Rect2i(1, 2, 26, 11), _shade(PLASTIC_BEIGE, 0.5))  # the two wells
+	top.fill_rect(Rect2i(29, 2, 8, 11), _shade(PLASTIC_BEIGE, 0.5))
+	top.set_pixel(30, 1, Color(0.30, 1.0, 0.40))  # one status light on, two off
+	top.set_pixel(33, 1, Color(0.15, 0.30, 0.15))
+	top.set_pixel(36, 1, Color(0.15, 0.30, 0.15))
+	for row in 4:
+		for column in 12:
+			if row == 3 and column > 2 and column < 7:
+				continue  # under the space bar, which starts at column 2
+			# Keys are three pixels apart. The number keys (columns 9-11)
+			# start one pixel further over, after the gap between the wells.
+			var x := 1 + column * 3 + (1 if column >= 9 else 0)
+			var y := 2 + row * 3
+			var color := pale
+			if column == 0 or column == 8 or column == 11 or (row == 3 and (column == 1 or column == 7)):
+				color = grey
+			color = _shade(color, rng.randf_range(0.95, 1.05))
+			var width := 14 if row == 3 and column == 2 else 2
+			top.fill_rect(Rect2i(x, y, width, 1), color)
+			top.fill_rect(Rect2i(x, y + 1, width, 1), _shade(color, 0.85))  # the key's front slope
+	_paint_face(atlas, FACE_TOP, top)
+
+	# All four edges are the same thin strip: the case above, the base in
+	# shadow below.
+	var edge := _speckle(38, 14, _shade(PLASTIC_BEIGE, 0.9), 0.03)
+	edge.fill_rect(Rect2i(0, 9, 38, 5), _shade(PLASTIC_BEIGE, 0.6))
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_LEFT, FACE_RIGHT]:
+		_paint_face(atlas, cell, edge)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(38, 14, _shade(PLASTIC_BEIGE, 0.4), 0.03))
+	return atlas
+
+
+# The coffee cup and the cooler's bottle are cylinders, and a CylinderMesh
+# lays its texture out differently from a box. The top half of the picture
+# wraps once round the side. Its two ends meet in a seam, which the scenes
+# turn to the back, so the middle of the picture is the front. The bottom
+# half holds two discs side by side: the top of the cylinder on the left
+# and its underside on the right.
+
+## The coffee cup: 9 cm across and 10 cm tall. Its side is 32 x 12 pixels of
+## white china with a blue line under the rim and another round the foot, a
+## red heart on the front, and a dribble of coffee down from the rim on the
+## left. The top disc is the coffee, inside the rim.
+func _make_cup() -> Image:
+	var cup := _speckle(32, 24, CUP_WHITE, 0.02)
+	var blue := Color(0.15, 0.22, 0.50)
+	var red := Color(0.80, 0.12, 0.12)
+	var stain := Color(0.36, 0.22, 0.10)
+	cup.fill_rect(Rect2i(0, 0, 32, 1), _shade(CUP_WHITE, 1.08))  # light on the rim
+	cup.fill_rect(Rect2i(0, 1, 32, 1), blue)
+	cup.fill_rect(Rect2i(0, 10, 32, 1), blue)
+	cup.fill_rect(Rect2i(0, 11, 32, 1), _shade(CUP_WHITE, 0.8))  # the foot, in shadow
+	var heart := [".##.##.", "#######", "#######", ".#####.", "..###..", "...#..."]
+	for row in heart.size():
+		var line: String = heart[row]
+		for column in line.length():
+			if line[column] == "#":
+				cup.set_pixel(13 + column, 3 + row, red)
+	cup.fill_rect(Rect2i(7, 0, 1, 7), stain)  # the dribble, and the drop it ends in
+	cup.fill_rect(Rect2i(8, 5, 1, 2), stain)
+
+	for y in 12:
+		for x in 16:
+			# How far this pixel is from the middle of its disc: 1 at the rim.
+			var distance := Vector2((x + 0.5 - 8.0) / 8.0, (y + 0.5 - 6.0) / 6.0).length()
+			if distance < 0.75:
+				# A curve of the ceiling light on the coffee.
+				var shine := distance > 0.45 and x < 7 and y < 5
+				cup.set_pixel(x, 12 + y, _shade(CUP_COFFEE, 1.8 if shine else 1.0))
+			# The underside: an unglazed ring round a shallow hollow.
+			cup.set_pixel(16 + x, 12 + y, _shade(CUP_WHITE, 0.7 if distance < 0.6 else 0.85))
+	return cup
+
+
+## The cup's handle, a slab of the same china 3 cm long, 5.5 cm tall and
+## 1.4 cm thick. It is too small for more than light on top and shadow
+## underneath.
+func _make_cup_handle() -> Image:
+	var atlas := _new_atlas(4, 6)
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_LEFT, FACE_RIGHT]:
+		_paint_face(atlas, cell, _speckle(4, 6, CUP_WHITE, 0.02))
+	_paint_face(atlas, FACE_TOP, _speckle(4, 6, _shade(CUP_WHITE, 1.08), 0.02))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(4, 6, _shade(CUP_WHITE, 0.7), 0.02))
+	return atlas
+
+
+## The water cooler's cabinet: 40 cm square and 1 m tall, at the furniture's
+## 40 pixels to the metre, so the front is 16 x 40. Near the top is the dark
+## alcove where a cup goes, with the cold tap (blue) and the hot tap (red)
+## hanging in it over a drip tray. Below is a door with the maker's blue
+## plate and slits for the cooling fan, and a dark kick plate along the
+## floor.
+func _make_water_cooler() -> Image:
+	var atlas := _new_atlas(16, 40)
+	var recess := Color(0.17, 0.19, 0.21)
+	var steel := Color(0.62, 0.64, 0.65)
+	var slit := _shade(COOLER_WHITE, 0.4)
+	var kick := _shade(COOLER_WHITE, 0.3)
+
+	var front := _speckle(16, 40, COOLER_WHITE, 0.03)
+	front.fill_rect(Rect2i(0, 0, 16, 1), _shade(COOLER_WHITE, 1.12))  # light on the top edge
+	front.fill_rect(Rect2i(3, 3, 10, 11), recess)
+	front.fill_rect(Rect2i(3, 3, 10, 1), _shade(recess, 0.6))  # darkest under the overhang
+	for tap in 2:
+		var x := 5 + tap * 4
+		var handle := Color(0.20, 0.42, 0.92) if tap == 0 else Color(0.88, 0.16, 0.12)
+		front.fill_rect(Rect2i(x, 4, 2, 2), handle)
+		front.fill_rect(Rect2i(x, 6, 2, 1), steel)  # the spout
+	front.fill_rect(Rect2i(3, 12, 10, 1), steel)  # the drip tray, and the bars of its grille
+	for x in range(3, 13, 2):
+		front.set_pixel(x, 13, steel)
+	front.fill_rect(Rect2i(1, 15, 14, 22), _shade(COOLER_WHITE, 0.93))  # the door
+	front.fill_rect(Rect2i(1, 15, 14, 1), _shade(COOLER_WHITE, 0.7))  # the gap above it
+	front.fill_rect(Rect2i(5, 18, 6, 3), Color(0.20, 0.45, 0.80))  # maker's plate
+	front.fill_rect(Rect2i(7, 19, 2, 1), Color(0.90, 0.95, 1.0))
+	for y in range(28, 35, 2):
+		front.fill_rect(Rect2i(4, y, 8, 1), slit)
+	front.fill_rect(Rect2i(0, 37, 16, 3), kick)
+	_paint_face(atlas, FACE_FRONT, front)
+
+	# Both sides are the same, so one picture does for the two of them.
+	var side := _speckle(16, 40, _shade(COOLER_WHITE, 0.95), 0.03)
+	side.fill_rect(Rect2i(0, 0, 16, 1), _shade(COOLER_WHITE, 1.12))
+	for y in range(26, 35, 2):
+		side.fill_rect(Rect2i(3, y, 10, 1), slit)
+	side.fill_rect(Rect2i(0, 37, 16, 3), kick)
+	_paint_face(atlas, FACE_LEFT, side)
+	_paint_face(atlas, FACE_RIGHT, side)
+
+	# The back: the black grid of pipes that gets rid of the heat.
+	var back := _speckle(16, 40, _shade(COOLER_WHITE, 0.8), 0.03)
+	back.fill_rect(Rect2i(2, 8, 12, 24), Color(0.10, 0.10, 0.11))
+	for y in range(9, 31, 2):
+		back.fill_rect(Rect2i(3, y, 10, 1), Color(0.26, 0.26, 0.28))
+	back.fill_rect(Rect2i(0, 37, 16, 3), kick)
+	_paint_face(atlas, FACE_BACK, back)
+
+	# The top is square but its cell is 16 x 40, so it is drawn 16 x 20 and
+	# stretched to exactly twice as tall. The blue ring is the collar the
+	# bottle's neck goes into: 15 cm across, so wider than tall in pixels
+	# that are 2.5 cm by 2 cm.
+	var top := _speckle(16, 20, COOLER_WHITE, 0.03)
+	for y in 20:
+		for x in 16:
+			if Vector2((x + 0.5 - 8.0) / 3.0, (y + 0.5 - 10.0) / 3.75).length() < 1.0:
+				top.set_pixel(x, y, Color(0.25, 0.35, 0.60))
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(16, 40, kick, 0.03))
+	return atlas
+
+
+## The bottle standing on its neck on top of the cooler: 27 cm across and
+## 30 cm tall. This picture is partly see-through (the fourth number of each
+## colour is how solid it is), so the wall shows through the water. The side
+## is 32 x 12: air at the top, the bright line of the water's surface, two
+## grip rings moulded into the plastic, streaks of light running down it and
+## a few bubbles. The disc is the bottle's flat end.
+func _make_water_bottle() -> Image:
+	var bottle := Image.create_empty(32, 24, false, Image.FORMAT_RGBA8)
+	var water := Color(COOLER_WATER, 0.55)
+	var air := Color(0.75, 0.88, 1.0, 0.3)
+	var shine := Color(1.0, 1.0, 1.0, 0.8)
+	bottle.fill(water)
+	for y in 12:
+		for x in 32:
+			var color := water
+			if y < 2:
+				color = air
+			elif y == 2:
+				color = Color(0.88, 0.96, 1.0, 0.8)  # the surface
+			elif y == 5 or y == 8:
+				color = Color(0.24, 0.48, 0.85, 0.65)  # a grip ring
+			# lerp() mixes two colours: 0.5 is half of each.
+			if x == 12 or x == 13:
+				color = color.lerp(shine, 0.5)
+			elif x == 21:
+				color = color.lerp(shine, 0.25)
+			bottle.set_pixel(x, y, color)
+	for bubble in 6:
+		bottle.set_pixel(rng.randi_range(6, 25), rng.randi_range(3, 10), water.lerp(shine, 0.4))
+	for y in 12:
+		for x in 16:
+			var distance := Vector2((x + 0.5 - 8.0) / 8.0, (y + 0.5 - 6.0) / 6.0).length()
+			# The flat end has air under it, and a thicker ring to stand on.
+			bottle.set_pixel(x, 12 + y, air.lerp(shine, 0.3) if distance > 0.6 and distance < 0.85 else air)
+	return bottle
+
+
+## How many pixels in from the poster's left edge the printout's left edge
+## is. Its bottom edge lies along the poster's top edge.
+const POSTER_CHART_PRINTOUT_LEFT := 40
+
+
+## The length of printer paper taped to the wall above the infection rate
+## poster, so that the marker line could keep going up: 30 x 84 pixels,
+## which at the poster's 80 pixels to the metre is 37.5 cm wide and 1.05 m
+## tall. It is the fanfold paper of old printers: pale green bars, a row of
+## holes down each edge for the printer's sprockets, and a fold every 21
+## rows where one sheet tears off from the next.
+func _make_poster_chart_printout() -> Image:
+	var sheet := _speckle(30, 84, Color(0.94, 0.94, 0.90), 0.03)
+	var bar := Color(0.78, 0.90, 0.78)
+	var hole := Color(0.42, 0.43, 0.40)
+	var ink := Color(0.12, 0.14, 0.35)
+	for y in 84:
+		@warning_ignore("integer_division")
+		var band := y / 3
+		if band % 2 == 0:
+			for x in range(3, 27):
+				sheet.set_pixel(x, y, _shade(bar, rng.randf_range(0.97, 1.03)))
+		if y % 3 == 1:
+			sheet.set_pixel(1, y, hole)
+			sheet.set_pixel(28, y, hole)
+		if y % 21 == 0 and y > 0:
+			# A fold: a dotted line of shadow.
+			for x in range(0, 30, 2):
+				sheet.set_pixel(x, y, _shade(sheet.get_pixel(x, y), 0.75))
+	# A piece of sticky tape over each corner.
+	for corner: Vector2i in [Vector2i(0, 0), Vector2i(25, 0), Vector2i(0, 81), Vector2i(25, 81)]:
+		sheet.fill_rect(Rect2i(corner, Vector2i(5, 3)), Color(0.86, 0.80, 0.55))
+	# Whoever kept the graph going wrote on it as they went. Like the line,
+	# it reads from the bottom up.
+	_draw_text(sheet, "500%", Vector2i(4, 71), ink)
+	_draw_text(sheet, "999%", Vector2i(4, 50), ink)
+	_draw_text(sheet, "OH NO", Vector2i(2, 29), ink)
+	_draw_text(sheet, "HELP", Vector2i(4, 8), ink)
+	# The marker line, starting in the column where the poster's left off.
+	for y in 84:
+		# 0 at the bottom of the paper, 1 at the top.
+		var climbed := (83 - y) / 83.0
+		# It drifts two pixels to the right on the way up and wobbles a
+		# little, because it was drawn by hand, the top of it from a chair.
+		var drift := int(round(climbed * (2.0 + 0.8 * sin(y * 0.4))))
+		sheet.fill_rect(Rect2i(POSTER_CHART_MARKER_TOP - POSTER_CHART_PRINTOUT_LEFT + drift, y, 2, 1), POSTER_CHART_MARKER)
+	return sheet
