@@ -80,6 +80,7 @@ scenes/              Reusable scenes
   zombie.tscn          Thin, limping enemy that chases and hits you (scripts/enemy.gd)
   zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
   zombie_window.tscn   A window that zombies climb in through
+  zombie_rounds.tscn   Sends zombies into a level a round at a time
   notebook.tscn        A notebook on a desk that you can read
   notebook_closed.tscn A shut notebook, only for show
   notebook_reader.tscn The paper page a notebook opens, and its "press E" prompt
@@ -99,7 +100,7 @@ scenes/              Reusable scenes
   pencil_cup.tscn      Pot of pencils and pens
   water_cooler.tscn    Water cooler with its bottle
   breakable_glass.tscn A window pane that cracks when shot and shatters
-  hud.tscn             Health / ammo / crosshair
+  hud.tscn             Health / ammo / crosshair, and the round in a level that has rounds
   pause_menu.tscn      Esc menu: pauses the game, graphics and audio settings, multiplayer, quit
 levels/
   test_facility.tscn   Half-Life-style research facility: lobby, lab, storage, test chamber
@@ -108,6 +109,7 @@ levels/
   test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
   office.tscn          One office break room, testing a window that zombies climb through
   start-level-demo.tscn Test map 2's control room and labs, copied out on their own
+  multiplayer-map-demo.tscn An arena for one player or several, with zombies in rounds
   test_room.tscn       Two-storey block-built building for testing destruction
 scripts/             One script per scene, plus:
   level_launcher.gd    Autoload: runs a level started on its own inside main.tscn
@@ -545,6 +547,9 @@ How it plays:
 - The host chooses the level: F2 and F3 only work for the host, and change
   it for everyone. Everyone starts where the level's `Player` node stands.
 - Dying respawns you at the start with full health; the game carries on.
+- In a level with rounds of zombies (the multiplayer map demo), everyone
+  fights the same round, and a round is bigger the more players there are
+  when it starts.
 - Esc doesn't pause the game online (the others are still playing). It
   only opens the menu and stops your player from moving.
 - Players can hurt each other: shots and explosions hit everyone, just as
@@ -567,6 +572,10 @@ How it works, in short (`scripts/network.gd` explains it in full):
   for show, so everyone sees the tracers, holes and explosions.
 - The level and the players are made on every computer by two
   `MultiplayerSpawner`s, which also catch up anyone who joins late.
+- Rounds of zombies are run by the host. Its `ZombieRounds` node makes each
+  zombie through a `MultiplayerSpawner` of its own, so it appears in
+  everyone's game, and sends everyone the round and the number left for
+  their HUD.
 
 ## Destruction
 
@@ -738,16 +747,54 @@ below, which is a dead end.
 It is a copy, not a link: changing one of the two levels does not change
 the other.
 
+### The multiplayer map demo
+
+`levels/multiplayer-map-demo.tscn` (the second level, so one press of F2) is
+a small arena for one player or several, where the zombies come in
+**rounds**. It is one brick hall, 20 x 20 m and 6 m high, with four concrete
+pillars and a few crates for cover. In the middle of each wall is a gate: a
+dark tunnel with a red lamp, hazard stripes across its floor and a
+biohazard sign above it. You start in the middle of the hall, holding the
+machine gun.
+
+The top right corner of the screen says what is going on. After a
+six-second count (**GET READY**, **ROUND 1 IN 6**) the first round starts:
+six zombies, one a second, each dropping out of a shaft in the roof at the
+back of one of the tunnels and walking out into the hall after you. The
+corner then shows the round and how many zombies are still to be killed
+(**ROUND 1**, **6 ZOMBIES LEFT**). Kill the last one and the round is over
+(**ROUND 1 CLEAR**, **ROUND 2 IN 6**). Each round has three more zombies
+than the one before, and they are 5% faster each time (up to 75% faster,
+from round 16 on). There is no last round. In single player, dying starts
+the level again from round 1.
+
+A red pylon stands beside each gate, about 3 m from where the zombies come
+out: set it off as a group passes and it takes them with it. The pylons and
+crates do not come back between rounds. No zombie appears at a gate while
+somebody is standing in its tunnel, so a tunnel is a place to make a stand
+with your back to the wall: the zombies from the other three gates have to
+come in through its mouth.
+
+In a multiplayer game (see "Multiplayer" above) everyone fights the same
+rounds, and each round is half as big again for every player after the
+first: two players get 9 zombies in round 1, three get 12. Someone who dies
+comes back in the middle of the hall and the round carries on. The level
+has no notebook.
+
+The rounds are run by the `ZombieRounds` node at the bottom of the level,
+and its four `Marker3D` children are the gates: see "Rounds of zombies"
+below for its settings, and for adding rounds to another level.
+
 ### The Half-Life level
 
-`levels/half-life-level.tscn` (the second level, so one press of F2) is a
+`levels/half-life-level.tscn` (the third level, so two presses of F2) is a
 security checkpoint, a long hallway with two offices, a loading bay full of
 crates, and a core room with a pit of toxic slime crossed by a catwalk. Its
 only enemies are zombies, sixteen of them. Standing in the slime hurts.
 
 ### The test map
 
-`levels/test-map.tscn` (the third level, so two presses of F2) is a bigger
+`levels/test-map.tscn` (the fourth level, so three presses of F2) is a bigger
 facility in the style of the Half-Life level, laid out for holding off waves
 of zombies. You start in a security checkpoint on the south side, which opens
 onto a tall 20 x 20 m hub with four pillars and some crates for cover. The
@@ -757,14 +804,15 @@ with two offices to the north. A passage at each end of the hallway leads
 down into the bay and the core, so you can run a loop instead of being
 cornered.
 
-There is no wave spawner yet: the 27 zombies stand at fixed points under the
+It has no rounds of zombies yet (see "Rounds of zombies" below; only the
+multiplayer map demo has them): the 27 zombies stand at fixed points under the
 level's `Enemies` node, named after the room they are in (`ZombieHub1`,
 `ZombieBay3`, ...). They only notice you within 14 m and with a clear line of
 sight, so they arrive in groups as you move through the level.
 
 ### Test map 2
 
-`levels/test-map-2.tscn` (the fourth level, so three presses of F2) is larger
+`levels/test-map-2.tscn` (the fifth level, so four presses of F2) is larger
 than the test map and mixes open rooms with tight ones. A small checkpoint
 opens onto a tall 24 x 24 m atrium. From there:
 
@@ -818,7 +866,7 @@ again, move `Player` back to (0, 0.1, 27).
 
 ### The facility test level
 
-`levels/test_facility.tscn` (the fifth level, so four presses of
+`levels/test_facility.tscn` (the sixth level, so five presses of
 F2) is a lobby, a corridor, a lab, a storage room and a tall test chamber
 carved out of one block, with six zombies in it. The glowing
 lamps, screens and the green sample under `Details` are only for show; the
@@ -827,7 +875,7 @@ at most 8 lamps shine on one object, and a level's walls are one object.
 
 ### The office
 
-`levels/office.tscn` (the sixth level: five presses of F2, or two of F3
+`levels/office.tscn` (the seventh level: six presses of F2, or two of F3
 from the first level) is a single room: an office break room, built
 as a test of a window that zombies climb through. You start facing the
 window. Five zombies wait in a brick yard on the other side of that wall;
@@ -836,7 +884,7 @@ drop in. There is no way out of the room, so it is a short fight.
 
 ### The test room
 
-`levels/test_room.tscn` (the seventh and last level: one press of F3 from the
+`levels/test_room.tscn` (the eighth and last level: one press of F3 from the
 first level) is a two-storey building, 24 x 16 m. The ground
 floor is a hall with six pillars holding up the upper floor, with stairs
 behind a lab wall at the east end. Upstairs there are pillars too, and a
@@ -853,7 +901,8 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/t
 
 ### Notebooks
 
-Every level except the test room has a notebook lying open on a desk, near
+Every level except the multiplayer map demo and the test room has a
+notebook lying open on a desk, near
 where you start (in the office it is on the table). Stand next to it, look
 at it, and **PRESS E TO READ** appears; E opens it at a page of a diary,
 and E or Esc closes it again. The page is ruled paper bound into a book,
@@ -918,6 +967,43 @@ from the wall a zombie stands before climbing, and lands after), **Climb
 Speed**, **Yard Size** (the space it watches: along the wall, up, and out
 from the wall) and **Alert Distance** (how close a player must come to wake
 the yard).
+
+### Rounds of zombies
+
+`scenes/zombie_rounds.tscn` sends zombies into a level a round at a time,
+and starts the next round once every one of them is dead. So far only the
+multiplayer map demo has one. To give a level rounds:
+
+1. Drag `scenes/zombie_rounds.tscn` into the level, next to its `Enemies`
+   node (the zombies it makes go in there).
+2. Add a `Marker3D` under it for each **gate**, a place where zombies
+   appear: somewhere players can't see, with its blue arrow pointing the way
+   a zombie should walk out. A marker up in the air is fine: the zombie
+   drops from there, which is how the demo hides them in its roof.
+3. Keep the way out of each gate clear of crates and pylons.
+
+A new zombie is walked straight out of its gate before it goes after the
+players, because enemies head straight for the nearest player, and that is
+a poor way out of a tunnel.
+
+Its settings, under **Rounds**: **Break Time** (seconds of rest before the
+first round and between rounds, 6), **First Round Zombies** (6), **Extra
+Zombies Per Round** (3), **Extra Zombies Per Player** (0.5: half as many
+again for each player after the first), **Spawn Interval** (seconds between
+one zombie appearing and the next, 1) and **Max Zombies At Once** (14: the
+rest of a big round waits its turn). Under **Zombies**: **Speed Gain Per
+Round** (0.05 = 5%), **Max Speed Gain** (0.75) and **Body Time** (a dead
+zombie sinks into the floor and is removed after 12 seconds, or a long game
+would fill the level with bodies). Under **Gates**: **Walk Out** (how far a
+zombie walks straight ahead from its marker: far enough to bring it into
+the open, 7.25 m in the demo), **Gate Clearance** (no zombie appears at a
+gate while a player is this close to its marker, unless there is a player
+that close to every gate; 6 m in the demo, which covers a whole tunnel)
+and **Fight Distance** (a zombie still on its way out turns on a player who
+comes this close). **Zombie Scene** is the enemy the rounds are made of.
+
+The words in the corner of the screen are the `RoundText` and `RoundNote`
+nodes in `scenes/hud.tscn`. They show nothing in a level without rounds.
 
 ### Lab props
 
@@ -1029,6 +1115,11 @@ editor, so turn that arrow to face into the room.
   started with F6 that isn't on the list can't be shared).
 - Enemies head straight for the player and can get stuck on walls. They
   will also walk straight into lava or slime.
+- A round of zombies only ends when every one of them is dead, so a zombie
+  stuck behind a pillar or a crate has to be gone and found. The rounds
+  keep no score, and pylons and crates don't come back between them.
+- Someone who joins in the middle of a round sees that round's dead zombies
+  fall over again (and lose again any limbs they had lost) as they arrive.
 - The pylon's warning lamp only glows; it doesn't light up its
   surroundings (a real lamp per pylon would use up the renderer's limit of
   8 lights per object).

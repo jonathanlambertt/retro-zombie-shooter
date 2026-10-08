@@ -1,6 +1,7 @@
 extends CanvasLayer
-## Heads-up display: health, ammo, a crosshair, and the multiplayer status
-## in the top corner.
+## Heads-up display: health, ammo, a crosshair, the multiplayer status in the
+## top left corner and, in a level with rounds of zombies, the round in the
+## top right.
 ##
 ## A CanvasLayer draws 2D things on top of the 3D world. Because this HUD is
 ## placed inside the low-res SubViewport (see scenes/main.tscn), it is drawn
@@ -22,6 +23,8 @@ var player: Node
 # (the alpha of its three rectangles).
 @onready var crosshair: Control = $Crosshair
 @onready var network_text: Control = $NetworkText
+@onready var round_text: Control = $RoundText
+@onready var round_note: Control = $RoundNote
 
 ## How see-through the red tint is at its strongest. 0 = invisible,
 ## 1 = solid red.
@@ -31,6 +34,13 @@ var player: Node
 func _process(_delta: float) -> void:
 	# "HOST  2 PLAYERS", "CONNECTING"... (empty in single player).
 	network_text.text = Network.hud_text()
+
+	# A level with rounds of zombies has a node in the "rounds" group (see
+	# scripts/zombie_rounds.gd), which says what to show: "ROUND 3" and, in
+	# smaller letters under it, "8 ZOMBIES LEFT". Other levels show nothing.
+	var rounds := get_tree().get_first_node_in_group("rounds")
+	round_text.text = rounds.get_hud_title() if rounds else ""
+	round_note.text = rounds.get_hud_note() if rounds else ""
 
 	# Find the player the first time (and again if the level was reloaded).
 	# Online there are several players: ours is the one in "local_player".

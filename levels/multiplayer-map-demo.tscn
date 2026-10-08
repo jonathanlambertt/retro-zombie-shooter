@@ -1,0 +1,303 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
+[ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
+[ext_resource type="Material" path="res://assets/materials/brick.tres" id="brick"]
+[ext_resource type="Material" path="res://assets/materials/dark_stone.tres" id="dark_stone"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="metal"]
+[ext_resource type="Material" path="res://assets/materials/hazard.tres" id="hazard"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://scenes/crate.tscn" id="crate_scene"]
+[ext_resource type="PackedScene" path="res://scenes/explosive_pylon.tscn" id="explosive_pylon"]
+[ext_resource type="PackedScene" path="res://scenes/poster.tscn" id="poster"]
+[ext_resource type="PackedScene" path="res://scenes/zombie_rounds.tscn" id="zombie_rounds"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
+shading_mode = 0
+albedo_color = Color(1, 0.98, 0.88, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lamp"]
+material = SubResource("StandardMaterial3D_lamp")
+size = Vector3(2.4, 0.06, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gate_lamp"]
+shading_mode = 0
+albedo_color = Color(1, 0.3, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_gate_lamp"]
+material = SubResource("StandardMaterial3D_gate_lamp")
+size = Vector3(0.4, 0.12, 0.4)
+
+[node name="MultiplayerMapDemo" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("env")
+
+[node name="Player" parent="." instance=ExtResource("player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+starting_weapon = 1
+
+[node name="World" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Solid" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+size = Vector3(38, 8, 38)
+material = ExtResource("concrete")
+
+[node name="CarveArena" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+operation = 2
+size = Vector3(20, 6.5, 20)
+material = ExtResource("brick")
+
+[node name="CarveGateNorth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.375, -13.375)
+operation = 2
+size = Vector3(3, 3.25, 7.25)
+material = ExtResource("dark_stone")
+
+[node name="CarveGateEast" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.375, 1.375, 0)
+operation = 2
+size = Vector3(7.25, 3.25, 3)
+material = ExtResource("dark_stone")
+
+[node name="CarveGateSouth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.375, 13.375)
+operation = 2
+size = Vector3(3, 3.25, 7.25)
+material = ExtResource("dark_stone")
+
+[node name="CarveGateWest" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.375, 1.375, 0)
+operation = 2
+size = Vector3(7.25, 3.25, 3)
+material = ExtResource("dark_stone")
+
+[node name="CarveShaftNorth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, -15.75)
+operation = 2
+size = Vector3(2.5, 3.5, 2)
+material = ExtResource("metal")
+
+[node name="CarveShaftEast" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.75, 4.5, 0)
+operation = 2
+size = Vector3(2, 3.5, 2.5)
+material = ExtResource("metal")
+
+[node name="CarveShaftSouth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 15.75)
+operation = 2
+size = Vector3(2.5, 3.5, 2)
+material = ExtResource("metal")
+
+[node name="CarveShaftWest" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.75, 4.5, 0)
+operation = 2
+size = Vector3(2, 3.5, 2.5)
+material = ExtResource("metal")
+
+[node name="FloorArena" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 0)
+size = Vector3(20, 0.25, 20)
+material = ExtResource("concrete")
+
+[node name="FloorGateNorth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, -14.25)
+size = Vector3(3, 0.25, 5.5)
+material = ExtResource("dark_stone")
+
+[node name="FloorGateEast" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, -0.125, 0)
+size = Vector3(5.5, 0.25, 3)
+material = ExtResource("dark_stone")
+
+[node name="FloorGateSouth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 14.25)
+size = Vector3(3, 0.25, 5.5)
+material = ExtResource("dark_stone")
+
+[node name="FloorGateWest" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, -0.125, 0)
+size = Vector3(5.5, 0.25, 3)
+material = ExtResource("dark_stone")
+
+[node name="ThresholdNorth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, -10.75)
+size = Vector3(3, 0.25, 1.5)
+material = ExtResource("hazard")
+
+[node name="ThresholdEast" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, -0.125, 0)
+size = Vector3(1.5, 0.25, 3)
+material = ExtResource("hazard")
+
+[node name="ThresholdSouth" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 10.75)
+size = Vector3(3, 0.25, 1.5)
+material = ExtResource("hazard")
+
+[node name="ThresholdWest" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.75, -0.125, 0)
+size = Vector3(1.5, 0.25, 3)
+material = ExtResource("hazard")
+
+[node name="CeilingArena" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.125, 0)
+size = Vector3(20, 0.25, 20)
+material = ExtResource("concrete")
+
+[node name="PillarNorthWest" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3, -5)
+size = Vector3(1.2, 6.2, 1.2)
+material = ExtResource("concrete")
+
+[node name="PillarNorthEast" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3, -5)
+size = Vector3(1.2, 6.2, 1.2)
+material = ExtResource("concrete")
+
+[node name="PillarSouthWest" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3, 5)
+size = Vector3(1.2, 6.2, 1.2)
+material = ExtResource("concrete")
+
+[node name="PillarSouthEast" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3, 5)
+size = Vector3(1.2, 6.2, 1.2)
+material = ExtResource("concrete")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="CrateNorthEast1" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.2, 0, -5)
+
+[node name="CrateNorthEast2" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.2, 1, -5)
+
+[node name="CrateNorthEast3" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -6.2)
+
+[node name="CrateSouthWest1" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 0, 5)
+
+[node name="CrateSouthWest2" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 1, 5)
+
+[node name="CrateSouthWest3" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 6.2)
+
+[node name="BigCrateNorthWest" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, -7.5)
+size = 2.0
+
+[node name="BigCrateSouthEast" parent="Props" instance=ExtResource("crate_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 7.5)
+size = 2.0
+
+[node name="PylonNorth" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -9)
+
+[node name="PylonEast" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 3)
+
+[node name="PylonSouth" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 9)
+
+[node name="PylonWest" parent="Props" instance=ExtResource("explosive_pylon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -3)
+
+[node name="SignNorth" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 4.4, -9.99)
+
+[node name="SignEast" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, -2, 0, 2, 0, 2, 0, 0, 9.99, 4.4, 0)
+
+[node name="SignSouth" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(-2, 0, 0, 0, 2, 0, 0, 0, -2, 0, 4.4, 9.99)
+
+[node name="SignWest" parent="Props" instance=ExtResource("poster")]
+transform = Transform3D(0, 0, 2, 0, 2, 0, -2, 0, 0, -9.99, 4.4, 0)
+
+[node name="Details" type="Node3D" parent="."]
+
+[node name="ArenaLamp" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.97, 0)
+mesh = SubResource("BoxMesh_lamp")
+
+[node name="GateLampNorth" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.94, -12)
+mesh = SubResource("BoxMesh_gate_lamp")
+
+[node name="GateLampEast" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.94, 0)
+mesh = SubResource("BoxMesh_gate_lamp")
+
+[node name="GateLampSouth" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.94, 12)
+mesh = SubResource("BoxMesh_gate_lamp")
+
+[node name="GateLampWest" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2.94, 0)
+mesh = SubResource("BoxMesh_gate_lamp")
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="ArenaLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.4, 0)
+light_color = Color(1, 0.92, 0.75, 1)
+light_energy = 4.0
+omni_range = 16.0
+omni_attenuation = 0.5
+
+[node name="GateLightNorth" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -12)
+light_color = Color(1, 0.3, 0.2, 1)
+light_energy = 2.5
+omni_range = 7.0
+omni_attenuation = 0.5
+
+[node name="GateLightEast" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 0)
+light_color = Color(1, 0.3, 0.2, 1)
+light_energy = 2.5
+omni_range = 7.0
+omni_attenuation = 0.5
+
+[node name="GateLightSouth" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 12)
+light_color = Color(1, 0.3, 0.2, 1)
+light_energy = 2.5
+omni_range = 7.0
+omni_attenuation = 0.5
+
+[node name="GateLightWest" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2.5, 0)
+light_color = Color(1, 0.3, 0.2, 1)
+light_energy = 2.5
+omni_range = 7.0
+omni_attenuation = 0.5
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="ZombieRounds" parent="." instance=ExtResource("zombie_rounds")]
+walk_out = 7.25
+gate_clearance = 6.0
+
+[node name="GateNorth" type="Marker3D" parent="ZombieRounds"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -15.75)
+gizmo_extents = 1.0
+
+[node name="GateEast" type="Marker3D" parent="ZombieRounds"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 15.75, 4, 0)
+gizmo_extents = 1.0
+
+[node name="GateSouth" type="Marker3D" parent="ZombieRounds"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 4, 15.75)
+gizmo_extents = 1.0
+
+[node name="GateWest" type="Marker3D" parent="ZombieRounds"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -15.75, 4, 0)
+gizmo_extents = 1.0

@@ -104,6 +104,11 @@ var state := State.IDLE:
 	set(value):
 		var previous := state
 		state = value
+		# An enemy made during the game (see scripts/zombie_rounds.gd) is sent
+		# to a player who joins later with its state already filled in, before
+		# its model is there to animate. _ready() catches up instead.
+		if not is_node_ready():
+			return
 		if value == State.CHASE and previous == State.IDLE:
 			alert_timer = ALERT_TIME
 		elif value == State.DEAD and previous != State.DEAD:
@@ -117,7 +122,9 @@ var death_direction := 1.0
 var attacks := 0:
 	set(value):
 		attacks = value
-		attack_timer = ATTACK_TIME
+		# (Not for the number an enemy is made with: see "state" above.)
+		if is_node_ready():
+			attack_timer = ATTACK_TIME
 var attack_cooldown := 0.0
 ## Seconds until the next line-of-sight check. Looking only a few times a
 ## second is plenty, and the short initial wait gives the level's collision
@@ -146,6 +153,10 @@ var lost_limbs: Array[String] = []
 var severed := PackedStringArray():
 	set(value):
 		severed = value
+		# (An enemy that is made already missing limbs loses them in _ready():
+		# see "state" above.)
+		if not is_node_ready():
+			return
 		for limb in value:
 			if limb not in lost_limbs:
 				_lose_limb(limb)
@@ -185,6 +196,16 @@ func _ready() -> void:
 	arm_right.rotation.x = ARMS_DOWN
 	# A limping enemy holds its head crooked.
 	head.rotation.z = 0.35 * limp
+
+	# Catch up with what the network said before the model existed (see the
+	# setter on "state"): for a player who joins part-way through a round, an
+	# enemy can arrive with limbs missing, or already dead. An enemy that
+	# starts the usual way has lost nothing and is alive, so this does nothing.
+	for limb in severed:
+		if limb not in lost_limbs:
+			_lose_limb(limb)
+	if state == State.DEAD:
+		_play_death()
 
 
 func _physics_process(delta: float) -> void:
@@ -297,6 +318,12 @@ func is_climbing() -> bool:
 ## standing idle, climbing or dead. A window only bothers with these.
 func is_chasing() -> bool:
 	return state == State.CHASE
+
+
+## True once it has been killed and is only a body on the floor. The rounds
+## (scripts/zombie_rounds.gd) count the enemies that aren't.
+func is_dead() -> bool:
+	return state == State.DEAD
 
 
 ## Makes an idle enemy notice the nearest player, even without seeing them.
