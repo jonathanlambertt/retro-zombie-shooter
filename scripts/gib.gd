@@ -1,10 +1,12 @@
 extends Node3D
-## A body part that has been shot off an enemy. It tumbles through the air,
-## bounces off walls, comes to rest on the floor and is cleared away later.
+## A body part that has been shot off an enemy, or a piece of something that
+## has been smashed. It tumbles through the air, bounces off walls, comes to
+## rest on the floor and is cleared away later.
 ##
 ## The gib has no picture of its own. Whoever makes it moves the severed
 ## limb (a piece of the enemy's model) inside it: see _sever() in
-## scripts/enemy.gd.
+## scripts/enemy.gd. A potted plant does the same with its stem, its leaves
+## and the pieces of its pot: see _throw() in scripts/potted_plant.gd.
 ##
 ## Like the bullet (scripts/bullet.gd) it is not a physics body: each physics
 ## step it traces a ray across the gap it is about to cross.

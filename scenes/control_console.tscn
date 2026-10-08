@@ -1,0 +1,116 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/control_console.tres" id="1_body"]
+[ext_resource type="Material" path="res://assets/materials/control_console_power.tres" id="2_power"]
+[ext_resource type="Material" path="res://assets/materials/control_console_cells.tres" id="3_cells"]
+[ext_resource type="Material" path="res://assets/materials/control_console_pulse.tres" id="4_pulse"]
+[ext_resource type="Material" path="res://assets/materials/soldier_marker.tres" id="5_red"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = ExtResource("1_body")
+size = Vector3(4, 0.9, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_power"]
+material = ExtResource("2_power")
+left_to_right = 0.0
+size = Vector3(0.32, 0.24, 0.6)
+
+[sub_resource type="PrismMesh" id="PrismMesh_cells"]
+material = ExtResource("3_cells")
+left_to_right = 0.0
+size = Vector3(0.32, 0.24, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_pulse"]
+material = ExtResource("4_pulse")
+left_to_right = 0.0
+size = Vector3(0.32, 0.24, 0.85)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_button_red"]
+shading_mode = 0
+albedo_color = Color(1, 0.15, 0.1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_button_green"]
+shading_mode = 0
+albedo_color = Color(0.2, 1, 0.3, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_button_amber"]
+shading_mode = 0
+albedo_color = Color(1, 0.7, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_button"]
+size = Vector3(0.06, 0.02, 0.06)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_stop"]
+material = ExtResource("5_red")
+top_radius = 0.04
+bottom_radius = 0.04
+height = 0.03
+radial_segments = 8
+rings = 0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_body"]
+size = Vector3(4, 0.9, 1)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_power"]
+points = PackedVector3Array(-1.95, 0.9, -0.48, -1.95, 1.14, -0.48, -1.95, 0.9, -0.16, -1.35, 0.9, -0.48, -1.35, 1.14, -0.48, -1.35, 0.9, -0.16)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_cells"]
+points = PackedVector3Array(-0.6, 0.9, -0.48, -0.6, 1.14, -0.48, -0.6, 0.9, -0.16, 0.4, 0.9, -0.48, 0.4, 1.14, -0.48, 0.4, 0.9, -0.16)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_pulse"]
+points = PackedVector3Array(1.1, 0.9, -0.48, 1.1, 1.14, -0.48, 1.1, 0.9, -0.16, 1.95, 0.9, -0.48, 1.95, 1.14, -0.48, 1.95, 0.9, -0.16)
+
+[node name="ControlConsole" type="StaticBody3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.45, 0)
+mesh = SubResource("BoxMesh_body")
+
+[node name="PowerPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.65, 1.02, -0.32)
+mesh = SubResource("PrismMesh_power")
+
+[node name="CellsPanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.1, 1.02, -0.32)
+mesh = SubResource("PrismMesh_cells")
+
+[node name="PulsePanel" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.525, 1.02, -0.32)
+mesh = SubResource("PrismMesh_pulse")
+
+[node name="StopButton" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7875, 0.915, 0.2125)
+mesh = SubResource("CylinderMesh_stop")
+
+[node name="ButtonVent" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.125, 0.91, 0.3)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_red")
+
+[node name="ButtonLift" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.91, 0.3)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_red")
+
+[node name="ButtonLock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.575, 0.91, 0.3)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_green")
+
+[node name="ButtonBell" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0.91, 0.3)
+mesh = SubResource("BoxMesh_button")
+material_override = SubResource("StandardMaterial3D_button_amber")
+
+[node name="BodyShape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("BoxShape3D_body")
+
+[node name="PowerPanelShape" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_power")
+
+[node name="CellsPanelShape" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_cells")
+
+[node name="PulsePanelShape" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_pulse")

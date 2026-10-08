@@ -75,7 +75,7 @@ scenes/              Reusable scenes
   explosive_pylon.tscn Red canister that explodes when shot
   blood_splash.tscn    Spray of square blood drops when an enemy is hit
   blood_stain.tscn     Stain the blood leaves on walls and floors
-  gib.tscn             A limb that has been shot off a zombie
+  gib.tscn             A limb shot off a zombie, or a piece of a smashed plant pot
   bullet_hole.tscn     Mark left on walls and floors by shots
   zombie.tscn          Thin, limping enemy that chases and hits you (scripts/enemy.gd)
   zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
@@ -87,12 +87,14 @@ scenes/              Reusable scenes
   bookshelf.tscn       Bookshelf full of books and binders
   server_rack.tscn     Rack of servers with status lights
   filing_cabinet.tscn  Four-drawer filing cabinet
-  potted_plant.tscn    Small tree in a clay pot
+  potted_plant.tscn    Small tree in a clay pot that can be shot to bits
   office_chair.tscn    Swivel chair
   specimen_tank.tscn   Glowing tank from the experimentation lab, intact or smashed
   desk.tscn            Office desk: wood-effect top, steel frame, a pedestal of drawers
   monitor.tscn         Beige computer monitor with a glowing screen
   keyboard.tscn        Computer keyboard
+  macintosh.tscn       A 1984 Macintosh with its keyboard and mouse
+  control_console.tscn Control desk: cupboards, sloping instrument panels, buttons
   cup.tscn             Cup of coffee
   pencil_cup.tscn      Pot of pencils and pens
   water_cooler.tscn    Water cooler with its bottle
@@ -230,10 +232,14 @@ and `hazard` for the levels, `rubble` for the heaps a collapse leaves,
 for the explosive pylon, and `armor` and `suit`
 for the armoured player model, the `soldier_*` textures for the soldier
 player model, and `bookshelf`, `server_rack`, `filing_cabinet`, `leaves`,
-`terracotta`, the `poster_*` pictures, `whiteboard` and the `sign_*` plates
-for the lab props, `desk_top`, `desk_steel` and `desk_drawers` for the desks,
+`terracotta`, the `poster_*` pictures, `whiteboard`, `whiteboard_flowchart`
+and the `sign_*` plates for the lab props, `control_console` and the three
+`control_console_*` panels for the control console, `fire_extinguisher` and
+`fire_extinguisher_valve` for the fire extinguisher, `desk_top`, `desk_steel` and `desk_drawers` for the desks,
 `monitor`, `monitor_base`, the `monitor_screen_*` pictures and `keyboard` for
-the computers, `cup` and `cup_handle` for the coffee cup, `water_cooler` and
+the computers, `macintosh`, `macintosh_foot`, `macintosh_screen`,
+`macintosh_keyboard` and `macintosh_mouse` for the Macintosh,
+`cup` and `cup_handle` for the coffee cup, `water_cooler` and
 `water_bottle` for the water cooler, `poster_chart_printout` for the paper
 taped above the infection rate poster,
 `notebook_page` for the notebook's open pages,
@@ -350,6 +356,17 @@ Select a node and use the Inspector; every value is an exported variable.
 - **Crate** (`scenes/crate.tscn`): health (20 = two pistol shots) and size.
   Its `Debris` node is the splinters. To add one to a level, drag
   `scenes/crate.tscn` into the level; set **Size** on it for a bigger one.
+- **Potted plant** (`scenes/potted_plant.tscn`): health (20 = two pistol
+  shots or four machine gun bullets), **Throw Speed**
+  (how hard its pieces are flung when it breaks, 3.5 m/s) and **Break
+  Sound**. A hit on the tree throws up leaves (the `LeafSpray` node) and a
+  hit on the pot throws chips of clay (`PotChips`). When it breaks, the
+  stem and the four clumps of leaves (under `Tree`) and five pieces of the
+  pot (under `Shards`) fly off as gibs, in a burst of leaves and soil
+  (`LeafBurst`, `DirtBurst`). They are the same gibs as a zombie's limbs,
+  so they bounce, lie where they land for 20 seconds and count towards the
+  same limit of 24. What stays is under `Remains`: the bottom of the pot, a
+  heap of soil and the stump. Every potted plant does this, in any level.
 - **Explosive pylon** (`scenes/explosive_pylon.tscn`): health (15 = two
   pistol shots), fuse time (the hiss before the bang, which is also the
   delay between pylons in a chain reaction), blast damage (100), blast
@@ -640,21 +657,60 @@ starts in. It is four pieces of test map 2 copied out on their own: the
 control room, the experimentation lab it looks down into, the lab below the
 control room, and the torn-out containment door that joins those two labs.
 Everything in those rooms is where it is in test map 2 (see "The control
-room and the experimentation lab" below), with the same notebook and eleven
-of its zombies: six in the experimentation lab and five in the lab below.
+room and the experimentation lab" below), with the same notebook (but for
+one sentence) and eleven of its zombies: six in the experimentation lab and
+five in the lab below.
 
-Two things are different from test map 2. You start with the machine gun in
-your hands instead of the pistol: that is **Starting Weapon** on the
+The control room is dressed differently from test map 2's, though, and one
+other thing is different. You start with the machine gun
+in your hands instead of the pistol: that is **Starting Weapon** on the
 level's `Player` node, and the other guns are still on their number keys.
-And four of the five monitors show programs. The two on the console in
-front of you have three lines of one, yellow on blue
-(`monitor_screen_code.png`), instead of the alarm and the dead camera. The
-ones on the left and middle desks by the window have a longer one, too
-small to read: green lines on black (`monitor_screen_listing.png`), instead
-of the cells' status and subject 7's heart. The right desk still has the
-abandoned game. The left desk also has a second notebook, shut, with a pot
-of pencils and pens behind it. That one is only there to be looked at:
-there is nothing to read in it, and no prompt appears.
+Three of the monitors show a program too small to read. On the left and
+middle desks by the window it is green lines on black
+(`monitor_screen_listing.png`), instead of the cells' status and subject
+7's heart. On the left of the console in front of you it is yellow lines on
+blue (`monitor_screen_listing_blue.png`), instead of the alarm. The right
+desk still has the abandoned game. And the monitor on the right of the
+console, the one with the dead camera on it, is gone. In its place is a
+1984 Macintosh (`scenes/macintosh.tscn`, see "Lab props" below) with its
+keyboard and its mouse, still showing the smiling face it started up with.
+It stands 30 cm nearer the middle of the console than the monitor did, to
+keep its mouse clear of the buttons.
+
+The console itself is a proper control desk here
+(`scenes/control_console.tscn`), where test map 2 has a plain steel block
+with four buttons on it. It has cupboards underneath and three sloping
+panels of instruments along the back of its top, with the two computers
+standing between them. The left panel has gauges for the power. The middle
+one has a lamp for each holding cell: 1 and 2 green and SHUT, 3 red and
+OPEN. The right one has a small screen with subject 7's pulse on it, a flat
+line. On the flat of the desk are an emergency STOP button, the MAINS
+switch, the intercom, and four lit buttons marked VENT, LIFT, LOCK and BELL
+for the things the notebook's writer did: sealed the vents, cut the lift,
+locked the room.
+
+Two things on the walls are different too. The infection rate poster by
+the water cooler has lost the green GREAT JOB TEAM! under its graph
+(`poster_chart_plain.tres`; the copy down in the experimentation lab still
+has it). And the whiteboard is about computers (`whiteboard_flowchart.tres`):
+a flowchart headed DEBUGGING, in which BUG? leads to SHIP IT! if the answer
+is no and round through COFFEE if it is yes, beside a tally of twelve cups.
+One sentence of the notebook's second page changed to match the poster: it
+"still has its hug day note" where in test map 2 it "still says great job
+team".
+
+The south wall, behind you as you start, has two more. The fire
+extinguisher is painted (`fire_extinguisher.tres` on its cylinder and
+`fire_extinguisher_valve.tres` on the valve on top), where test map 2's is
+plain red: a label with a flame and the letters A, B and C, a hose down its
+side, the strap that holds it to the wall, a rubber foot and a pressure
+gauge. And between it and the water cooler hangs a poster that test map 2
+has not (`poster_penguin.tres`): a penguin dangling from a branch high
+above the clouds, over the words HANG IN THERE!
+
+The left desk also has a second notebook, shut, with a pot of pencils and
+pens behind it. That one is only there to be looked at: there is nothing
+to read in it, and no prompt appears.
 
 The rest of test map 2 is not there. Where the control room's corridor and
 the lower lab's three exits (to the atrium, the warehouse and the tunnels)
@@ -732,7 +788,8 @@ there can't see you through it, but once a pane is gone they can, and any
 that do come and gather under the window.
 
 The control room itself has bookshelves, server racks, filing cabinets, a
-plant, chairs, a water cooler and the whiteboard. Each desk has a monitor
+plant (which can be shot to bits), chairs, a water cooler and the
+whiteboard. Each desk has a monitor
 and a keyboard, and so does the console in the middle of the room; every
 screen shows something different (the cells' status, subject 7's heart, an
 abandoned game, a dead camera and the alarm), one desk has a cup of
@@ -855,16 +912,23 @@ editor, so turn that arrow to face into the room.
 
 - **Poster** (`scenes/poster.tscn`): a 60 x 80 cm sheet. To pick the
   picture, set **Material Override** to one of the `poster_*.tres`,
-  `whiteboard.tres` or `sign_*.tres` materials in `assets/materials/`. Scale
+  `whiteboard*.tres` or `sign_*.tres` materials in `assets/materials/`
+  (`poster_chart_plain` is the infection rate poster without GREAT JOB
+  TEAM!, `poster_penguin` is a penguin told to HANG IN THERE!, and
+  `whiteboard_flowchart` is the whiteboard about debugging). Scale
   it for other sizes (the landscape posters, the whiteboard and the signs
   are scaled copies). Hang it a centimetre off the wall.
   `poster_chart_printout.tres` is the strip of printer paper that carries on
   the infection rate poster's line: scale it to 37.5 cm x 1.05 m (0.625 and
   1.3125) and stand it on the poster's top edge with its left edge 50 cm in
   from the poster's left, as `PosterChartPrintout` is in test map 2.
-- **Bookshelf**, **server rack**, **filing cabinet**, **potted plant** and
-  **office chair**: solid furniture with nothing to set. The books, drawers
-  and blinking lights are painted on (see `generate_textures.gd`).
+- **Bookshelf**, **server rack**, **filing cabinet** and **office chair**:
+  solid furniture with nothing to set. The books, drawers and blinking
+  lights are painted on (see `generate_textures.gd`).
+- **Potted plant** (`scenes/potted_plant.tscn`): solid like the furniture
+  until it is shot or blown to bits, which takes two pistol shots. Then you
+  can walk and shoot through where it stood, over the broken pot and the
+  soil it leaves. See "Tuning gameplay" for its health and its pieces.
 - **Desk** (`scenes/desk.tscn`): 2.2 m wide, 0.8 m tall and 1 m deep,
   with the drawers and the knee space on its +Z side, where the chair goes.
   Its top is 0.8 m above its origin: that is the height to put the next
@@ -873,12 +937,38 @@ editor, so turn that arrow to face into the room.
   like the furniture. **Screen** is the picture on the glass: drag one of
   the `monitor_screen_*.png` textures onto it (`cells`, `vitals`, `pong`,
   `signal`, `breach`, `code`: three lines of a program in yellow on blue,
-  and `listing`: a screen of green lines on black, like a program too small
-  to read), or a 26 x 22 pixel picture of your own. The screen
-  glows: the room's lights don't change it.
+  `listing`: a screen of green lines on black, like a program too small
+  to read, and `listing_blue`: the same in yellow on blue), or a 26 x 22
+  pixel picture of your own. The screen glows: the room's lights don't
+  change it.
 - **Keyboard** (`scenes/keyboard.tscn`) and **cup** (`scenes/cup.tscn`): only
   for show, so shots pass through them and you can walk over them if you
   jump onto the desk. The keyboard's space bar and the cup's heart face +Z.
+- **Macintosh** (`scenes/macintosh.tscn`): the first Apple Macintosh, of
+  1984, at its real size: a beige box 25 cm wide and 35 cm tall whose face
+  overhangs its foot, with a small black and white screen, a disk slot
+  under it and a rainbow badge. Its short keyboard, its one-button mouse
+  and their two leads are part of the same scene, so there is one thing to
+  place and the leads always reach. Put its origin where the computer
+  stands: the keyboard then reaches 47 cm in front of that (+Z) and the
+  mouse 28 cm to the right, and the mouse's lead wanders round behind. The
+  computer is solid like the monitor; the keyboard, the mouse and the leads
+  are only for show. The leads lie in loose curves, each made of a row of
+  short pieces under the scene's `Leads` node: hide or delete `Leads` for a
+  Macintosh with no wires. There is nothing else to set: the screen always
+  shows `macintosh_screen.png` (14 x 10 pixels), and like the monitor's it
+  glows.
+- **Control console** (`scenes/control_console.tscn`): a control desk 4 m
+  long, 0.9 m tall and 1 m deep, to stand at. Its origin is on the floor
+  under its middle and the operator's side faces +Z. All of it is solid,
+  sloping panels included, so shots leave marks on it. The panels along the
+  back of the top leave two bays 70 to 75 cm wide for a monitor and a
+  Macintosh, which are not part of the scene (nor is anything else you
+  stand on it): its top is 0.9 m above its origin. The four lit buttons and
+  the red emergency stop are part of it, and stand on plates painted on the
+  top, so they can't be moved without repainting it (see
+  `_make_control_console` in `generate_textures.gd`). There is nothing to
+  set.
 - **Water cooler** (`scenes/water_cooler.tscn`): the cabinet is solid, the
   bottle on top is not. The taps face +Z, so stand its back against a wall.
 - **Closed notebook** (`scenes/notebook_closed.tscn`) and **pencil pot**
@@ -913,7 +1003,9 @@ editor, so turn that arrow to face into the room.
 - Online, bullet holes, blood, gibs and cracks in glass are drawn by each
   computer for itself, so they can land in slightly different places, and
   someone who joins late doesn't see the ones made before they arrived (nor
-  the jagged edges of a pane broken before they joined).
+  the jagged edges of a pane broken before they joined, nor the broken pot
+  and soil of a plant smashed before they joined: for them the corner is
+  simply empty).
 - A level only works online if it is in Main's **Levels** list (a level
   started with F6 that isn't on the list can't be shared).
 - Enemies head straight for the player and can get stuck on walls. They

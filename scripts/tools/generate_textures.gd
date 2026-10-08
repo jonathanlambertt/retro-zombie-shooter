@@ -144,6 +144,32 @@ func _init() -> void:
 		_save(_make_glass_edge_variant(variant), "glass_edge_%d" % variant)
 	# The open pages of the notebook on the desk (scenes/notebook.tscn).
 	_save(_make_notebook_page(), "notebook_page")
+	# The Macintosh on the console in start-level-demo's control room
+	# (scenes/macintosh.tscn): its case, the foot the case stands on, what its
+	# screen shows, its keyboard and its mouse.
+	_save(_make_macintosh(), "macintosh")
+	_save(_make_macintosh_foot(), "macintosh_foot")
+	_save(_make_macintosh_screen(), "macintosh_screen")
+	_save(_make_macintosh_keyboard(), "macintosh_keyboard")
+	_save(_make_macintosh_mouse(), "macintosh_mouse")
+	# More for start-level-demo's control room: the infection rate poster
+	# without its line of praise, a whiteboard about computers, and a blue
+	# and yellow copy of the program too small to read.
+	_save(_make_poster_chart(false), "poster_chart_plain")
+	_save(_make_whiteboard_flowchart(), "whiteboard_flowchart")
+	_save(_make_monitor_screen_listing(SCREEN_BLUE, SCREEN_YELLOW), "monitor_screen_listing_blue")
+	# The control console in the middle of that room
+	# (scenes/control_console.tscn): its cabinet, and the three sloping
+	# panels of instruments along the back of its top.
+	_save(_make_control_console(), "control_console")
+	_save(_make_control_console_power(), "control_console_power")
+	_save(_make_control_console_cells(), "control_console_cells")
+	_save(_make_control_console_pulse(), "control_console_pulse")
+	# The fire extinguisher on that room's south wall (its cylinder, and the
+	# valve on top of it), and the poster hung along the wall from it.
+	_save(_make_fire_extinguisher(), "fire_extinguisher")
+	_save(_make_fire_extinguisher_valve(), "fire_extinguisher_valve")
+	_save(_make_poster_penguin(), "poster_penguin")
 	quit()
 
 
@@ -2261,7 +2287,11 @@ const POSTER_CHART_MARKER_TOP := 62
 ## Nothing here may use rng except the paper itself: this poster is made in
 ## the middle of the list, and drawing a different number of random numbers
 ## would change every texture made after it.
-func _make_poster_chart() -> Image:
+##
+## "praise" is the line personnel had printed under the graph: GREAT JOB
+## TEAM!, in green. The copy on the wall of start-level-demo's control room
+## (poster_chart_plain, made at the end of the list) is printed without it.
+func _make_poster_chart(praise := true) -> Image:
 	var poster := _new_poster(64, 48, Color(0.93, 0.93, 0.91))
 	var ink := Color(0.20, 0.22, 0.28)
 	var grid := Color(0.75, 0.82, 0.90)
@@ -2300,13 +2330,22 @@ func _make_poster_chart() -> Image:
 	for barb: Vector2i in [Vector2i(28, 31), Vector2i(32, 31), Vector2i(29, 32), Vector2i(31, 32)]:
 		poster.set_pixel(barb.x, barb.y, ink)  # the arrowhead
 
-	_draw_text_centred(poster, "GREAT JOB TEAM!", 42, Color(0.12, 0.48, 0.25))
+	if praise:
+		_draw_text_centred(poster, "GREAT JOB TEAM!", 42, Color(0.12, 0.48, 0.25))
 	return poster
 
 
-## The control room's whiteboard, 2.4 m x 1.2 m: notes in marker pen,
-## a sketch of a tank and the ghosts of things wiped off.
-func _make_whiteboard() -> Image:
+# The colours of the four marker pens that write on the whiteboards.
+const MARKER_BLUE := Color(0.15, 0.25, 0.65)
+const MARKER_RED := Color(0.75, 0.12, 0.10)
+const MARKER_BLACK := Color(0.12, 0.12, 0.14)
+const MARKER_GREEN := Color(0.12, 0.48, 0.25)
+
+
+## A whiteboard with nothing written on it yet, 96 x 48 pixels for a board
+## 2.4 m x 1.2 m: white, with the grey ghosts of things wiped off. Write on
+## it, then give it its edges with _frame_whiteboard().
+func _new_whiteboard() -> Image:
 	var board := _speckle(96, 48, Color(0.90, 0.91, 0.90), 0.02)
 	var smudges := _make_blotch_grid(6)
 	for y in 48:
@@ -2315,9 +2354,31 @@ func _make_whiteboard() -> Image:
 			var smudge := _blotch(smudges, 6, x * 64 / 96, y * 64 / 48)
 			if smudge > 0.7:
 				board.set_pixel(x, y, _shade(board.get_pixel(x, y), 0.94))
-	var blue := Color(0.15, 0.25, 0.65)
-	var red := Color(0.75, 0.12, 0.10)
-	var black := Color(0.12, 0.12, 0.14)
+	return board
+
+
+## Puts the aluminium frame round a whiteboard, and the pen tray along the
+## bottom with one pen lying in it for each colour in "pens".
+func _frame_whiteboard(board: Image, pens: Array[Color]) -> void:
+	for x in 96:
+		for y in [0, 1, 45]:
+			board.set_pixel(x, y, Color(0.62, 0.64, 0.67))
+	for y in 48:
+		for x in [0, 1, 94, 95]:
+			board.set_pixel(x, y, Color(0.62, 0.64, 0.67))
+	board.fill_rect(Rect2i(2, 46, 92, 2), Color(0.48, 0.50, 0.53))
+	for pen in pens.size():
+		# Each pen is six pixels long, with a gap of two before the next.
+		board.fill_rect(Rect2i(30 + pen * 8, 45, 6, 1), pens[pen])
+
+
+## The whiteboard in test-map-2's control room: notes in marker pen and a
+## sketch of a tank.
+func _make_whiteboard() -> Image:
+	var board := _new_whiteboard()
+	var blue := MARKER_BLUE
+	var red := MARKER_RED
+	var black := MARKER_BLACK
 	_draw_text(board, "DAY 31", Vector2i(5, 5), blue)
 	_draw_text(board, "DOSE > 40%", Vector2i(5, 13), black)
 	_draw_text(board, "SUBJ 07 AWAKE!", Vector2i(5, 21), red)
@@ -2334,17 +2395,94 @@ func _make_whiteboard() -> Image:
 	board.set_pixel(70, 21, black)
 	board.set_pixel(70, 23, black)
 	_draw_text(board, "WHY?", Vector2i(73, 32), red)
-	# The aluminium frame and the pen tray.
-	for x in 96:
-		for y in [0, 1, 45]:
-			board.set_pixel(x, y, Color(0.62, 0.64, 0.67))
-	for y in 48:
-		for x in [0, 1, 94, 95]:
-			board.set_pixel(x, y, Color(0.62, 0.64, 0.67))
-	board.fill_rect(Rect2i(2, 46, 92, 2), Color(0.48, 0.50, 0.53))
-	board.fill_rect(Rect2i(30, 45, 6, 1), red)
-	board.fill_rect(Rect2i(38, 45, 6, 1), blue)
+	var pens: Array[Color] = [red, blue]
+	_frame_whiteboard(board, pens)
 	return board
+
+
+## The whiteboard in start-level-demo's control room, where whoever looked
+## after the computers has drawn their job as a flowchart. Is there a bug?
+## If not, ship it. If there is, have a coffee and look again. Beside it is
+## a sketch of the cup and a count of the cups so far, in fives.
+##
+## A flowchart is the first thing a programmer is taught to draw, so the
+## board says "computers" from across the room, before the words on it can
+## be read.
+func _make_whiteboard_flowchart() -> Image:
+	var board := _new_whiteboard()
+	_draw_text(board, "DEBUGGING", Vector2i(5, 4), MARKER_BLUE)
+	board.fill_rect(Rect2i(5, 10, 35, 1), MARKER_BLUE)  # underlined
+
+	# The question, and the arrow from it to the answer everyone wants.
+	_draw_flowchart_box(board, "BUG?", Vector2i(12, 14), MARKER_BLACK)
+	board.fill_rect(Rect2i(33, 18, 19, 1), MARKER_BLACK)
+	_draw_arrowhead(board, Vector2i(51, 18), Vector2i.RIGHT, MARKER_BLACK)
+	_draw_text(board, "NO", Vector2i(39, 12), MARKER_GREEN)
+	_draw_flowchart_box(board, "SHIP IT!", Vector2i(53, 14), MARKER_GREEN)
+
+	# The other answer: down to the coffee, and back up to ask again.
+	board.fill_rect(Rect2i(19, 23, 1, 9), MARKER_BLACK)
+	_draw_arrowhead(board, Vector2i(19, 31), Vector2i.DOWN, MARKER_BLACK)
+	_draw_text(board, "YES", Vector2i(5, 25), MARKER_RED)
+	_draw_flowchart_box(board, "COFFEE", Vector2i(8, 33), MARKER_BLACK)
+	board.fill_rect(Rect2i(28, 23, 1, 10), MARKER_BLACK)
+	_draw_arrowhead(board, Vector2i(28, 23), Vector2i.UP, MARKER_BLACK)
+
+	# The cup: its rim, its two sides, its base and its handle, with two
+	# wisps of steam above it.
+	board.fill_rect(Rect2i(43, 33, 8, 1), MARKER_BLUE)
+	board.fill_rect(Rect2i(43, 34, 1, 6), MARKER_BLUE)
+	board.fill_rect(Rect2i(50, 34, 1, 6), MARKER_BLUE)
+	board.fill_rect(Rect2i(44, 40, 6, 1), MARKER_BLUE)
+	for handle: Vector2i in [Vector2i(51, 35), Vector2i(52, 36), Vector2i(52, 37), Vector2i(51, 38)]:
+		board.set_pixelv(handle, MARKER_BLUE)
+	for wisp: int in [45, 48]:
+		for step in 4:
+			# Each wisp wavers one pixel from side to side on its way up.
+			board.set_pixel(wisp + step % 2, 31 - step, MARKER_BLUE)
+
+	# The count: two full fives (four strokes with a fifth across them) and
+	# two strokes of the next. Each stroke is a pixel wide and seven tall.
+	_draw_text(board, "CUPS:", Vector2i(58, 27), MARKER_RED)
+	for five in 2:
+		var left := 58 + five * 12
+		for stroke in 4:
+			board.fill_rect(Rect2i(left + stroke * 2, 34, 1, 7), MARKER_RED)
+		for step in 9:
+			# The fifth stroke climbs one pixel for every two it goes along.
+			@warning_ignore("integer_division")
+			board.set_pixel(left - 1 + step, 39 - step / 2, MARKER_RED)
+	for stroke in 2:
+		board.fill_rect(Rect2i(82 + stroke * 2, 34, 1, 7), MARKER_RED)
+
+	var pens: Array[Color] = [MARKER_RED, MARKER_BLUE, MARKER_GREEN, MARKER_BLACK]
+	_frame_whiteboard(board, pens)
+	return board
+
+
+## Draws a box of a flowchart with its top-left corner at "at": the text,
+## with two clear pixels all round it inside a line one pixel thick. That
+## makes every box nine pixels tall.
+func _draw_flowchart_box(image: Image, text: String, at: Vector2i, color: Color) -> void:
+	var size := Vector2i(text.length() * 4 - 1 + 6, 9)
+	image.fill_rect(Rect2i(at.x, at.y, size.x, 1), color)
+	image.fill_rect(Rect2i(at.x, at.y + size.y - 1, size.x, 1), color)
+	image.fill_rect(Rect2i(at.x, at.y, 1, size.y), color)
+	image.fill_rect(Rect2i(at.x + size.x - 1, at.y, 1, size.y), color)
+	_draw_text(image, text, at + Vector2i(3, 2), color)
+
+
+## Draws the head of an arrow whose point is the pixel at "tip", for a line
+## that arrives there travelling in "direction" (Vector2i.RIGHT, DOWN or
+## UP): two pixels either side of the line, sloping back from the point.
+func _draw_arrowhead(image: Image, tip: Vector2i, direction: Vector2i, color: Color) -> void:
+	# Swapping x and y turns the direction a quarter of the way round, which
+	# gives the way across the line.
+	var across := Vector2i(direction.y, direction.x)
+	for step in range(1, 3):
+		image.set_pixelv(tip - direction * step + across * step, color)
+		image.set_pixelv(tip - direction * step - across * step, color)
+	image.set_pixelv(tip, color)
 
 
 ## The stencilled sign over the specimen tanks: yellow on black, 4 m x 0.5 m.
@@ -3064,9 +3202,12 @@ func _make_monitor_screen_code() -> Image:
 ## lines on black. Each row of the picture below is one line of the program
 ## and each run of # is one of its words, so a line is a row of dashes that
 ## starts further in from the left the deeper it is inside the program (the
-## way programmers set their lines out). Every # is one green pixel.
-func _make_monitor_screen_listing() -> Image:
-	var screen := _new_screen(SCREEN_BLACK)
+## way programmers set their lines out). Every # is one pixel of "ink" on a
+## screen of "paper": green on black unless you ask for other colours, as
+## monitor_screen_listing_blue does (yellow on blue, the colours of the
+## editor in _make_monitor_screen_code).
+func _make_monitor_screen_listing(paper := SCREEN_BLACK, ink := SCREEN_GREEN) -> Image:
+	var screen := _new_screen(paper)
 	var lines := [
 		"### #####",
 		"  ## #### # ##",
@@ -3080,11 +3221,11 @@ func _make_monitor_screen_listing() -> Image:
 		var words: String = lines[line]
 		for column in words.length():
 			if words[column] == "#":
-				# 3 from one line to the next leaves two black rows between
+				# 3 from one line to the next leaves two clear rows between
 				# them, so they stay apart when the monitor is seen from across
 				# the room. Starting 2 in from the top left corner, the seven
 				# lines end one row above the bottom of the 26 x 22 glass.
-				screen.set_pixel(2 + column, 2 + line * 3, SCREEN_GREEN)
+				screen.set_pixel(2 + column, 2 + line * 3, ink)
 	return screen
 
 
@@ -3390,3 +3531,715 @@ func _make_poster_chart_printout() -> Image:
 		var drift := int(round(climbed * (2.0 + 0.8 * sin(y * 0.4))))
 		sheet.fill_rect(Rect2i(POSTER_CHART_MARKER_TOP - POSTER_CHART_PRINTOUT_LEFT + drift, y, 2, 1), POSTER_CHART_MARKER)
 	return sheet
+
+
+# --- The Macintosh -----------------------------------------------------------
+#
+# One computer in the control room (scenes/macintosh.tscn) is made to look
+# like the first Apple Macintosh, of 1984: a small upright box with a black
+# and white screen in its face and a slot for disks under it, which came
+# with a short keyboard and a mouse (hardly any other computer had a mouse
+# then). It is painted at the same 80 pixels to the metre as the rest of the
+# desk equipment and in the same beige, which is close to the real one's.
+
+const MACINTOSH_KEY := Color(0.66, 0.61, 0.50)
+const MACINTOSH_SOCKET := Color(0.07, 0.07, 0.08)
+const MACINTOSH_LEAD := Color(0.42, 0.40, 0.35)
+
+
+## The Macintosh's case, without the foot it stands on: a box 25 cm wide,
+## 28.75 cm tall and 27.5 cm deep. Every side is drawn 20 x 23. That makes a
+## pixel of the front exactly 1.25 cm square, the same as a pixel of the
+## screen that lies over it (on the sides and the top they come out a
+## little wider or shorter).
+##
+## The screen is high up in the front, in a deep frame. Below it are the two
+## things the machine is known by: the slot of the disk drive on the right,
+## and the maker's badge in the six colours of the rainbow at the bottom
+## left.
+##
+## The glass is painted dark here. What the screen shows is the
+## macintosh_screen picture below, on a flat square of its own that the
+## scene lays over columns 3-16 of rows 3-12. That is one pixel smaller all
+## round than the glass, because the real tube's picture stopped short of
+## the frame and left a border of dark glass (the monitor's fills its frame).
+func _make_macintosh() -> Image:
+	var atlas := _new_atlas(20, 23)
+	var slit := _shade(PLASTIC_BEIGE, 0.35)
+
+	var front := _speckle(20, 23, PLASTIC_BEIGE, 0.03)
+	front.fill_rect(Rect2i(0, 0, 20, 1), _shade(PLASTIC_BEIGE, 1.15))  # light on the top edge
+	front.fill_rect(Rect2i(2, 2, 16, 12), Color(0.04, 0.05, 0.05))  # the glass
+	front.fill_rect(Rect2i(9, 17, 9, 1), MACINTOSH_SOCKET)  # the disk slot
+	front.fill_rect(Rect2i(12, 18, 3, 1), _shade(PLASTIC_BEIGE, 0.6))  # the dent for the thumb that pulls a disk out
+	# The badge: two pixels wide and three tall, one colour of the rainbow
+	# each, from green at the top left to blue at the bottom right.
+	var rainbow := [
+		Color(0.38, 0.73, 0.28), Color(0.99, 0.72, 0.15),
+		Color(0.96, 0.51, 0.12), Color(0.88, 0.23, 0.24),
+		Color(0.59, 0.24, 0.59), Color(0.0, 0.62, 0.86),
+	]
+	for stripe in rainbow.size():
+		@warning_ignore("integer_division")
+		front.set_pixel(2 + stripe % 2, 18 + stripe / 2, rainbow[stripe])
+	front.fill_rect(Rect2i(0, 22, 20, 1), _shade(PLASTIC_BEIGE, 0.7))  # the lip over the foot
+	_paint_face(atlas, FACE_FRONT, front)
+
+	_paint_face(atlas, FACE_RIGHT, _make_macintosh_side(true))
+	_paint_face(atlas, FACE_LEFT, _make_macintosh_side(false))
+
+	# The back: a raised panel over the end of the tube, with cooling slits
+	# and the maker's label, and the little door the clock's battery is
+	# behind.
+	var back := _speckle(20, 23, _shade(PLASTIC_BEIGE, 0.9), 0.03)
+	back.fill_rect(Rect2i(3, 2, 14, 13), _shade(PLASTIC_BEIGE, 0.78))
+	for y in range(4, 9, 2):
+		back.fill_rect(Rect2i(6, y, 8, 1), slit)
+	back.fill_rect(Rect2i(7, 10, 6, 3), Color(0.86, 0.86, 0.80))  # label
+	back.fill_rect(Rect2i(8, 11, 4, 1), Color(0.30, 0.30, 0.35))  # writing
+	back.fill_rect(Rect2i(14, 17, 4, 4), _shade(PLASTIC_BEIGE, 0.75))  # battery door
+	_paint_face(atlas, FACE_BACK, back)
+
+	# The top, with the back of the machine at the top of the picture. Near
+	# the back is the hollow you put your fingers in to carry it, with slits
+	# on either side of it: it had no fan, so the heat went out of the top.
+	# The line near the front is the seam where the front of the case is
+	# fitted to the back (the sides have it too).
+	var top := _speckle(20, 23, _shade(PLASTIC_BEIGE, 1.05), 0.03)
+	top.fill_rect(Rect2i(5, 2, 10, 5), _shade(PLASTIC_BEIGE, 0.4))
+	top.fill_rect(Rect2i(5, 2, 10, 1), _shade(PLASTIC_BEIGE, 0.25))  # the shadow under the hollow's back edge
+	for y in range(2, 7, 2):
+		top.fill_rect(Rect2i(1, y, 3, 1), slit)
+		top.fill_rect(Rect2i(16, y, 3, 1), slit)
+	top.fill_rect(Rect2i(0, 19, 20, 1), _shade(PLASTIC_BEIGE, 0.8))
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(20, 23, _shade(PLASTIC_BEIGE, 0.5), 0.03))
+	return atlas
+
+
+## One side of the Macintosh's case: plain, with the seam near the front and
+## a row of upright slits near the top at the back. front_on_right means
+## what it does in _make_monitor_side.
+func _make_macintosh_side(front_on_right: bool) -> Image:
+	var side := _speckle(20, 23, _shade(PLASTIC_BEIGE, 0.95), 0.03)
+	for slit in 5:
+		# Every other column, counted from three pixels in from the back.
+		var x := 3 + slit * 2
+		side.fill_rect(Rect2i(x if front_on_right else 19 - x, 2, 1, 4), _shade(PLASTIC_BEIGE, 0.35))
+	side.fill_rect(Rect2i(16 if front_on_right else 3, 0, 1, 23), _shade(PLASTIC_BEIGE, 0.7))
+	return side
+
+
+## The foot the Macintosh's case stands on: as wide as the case, 6.25 cm
+## tall and 25 cm deep, so its sides are 20 x 5. The scene sets its back
+## level with the case's, which leaves the case's face sticking out 2.5 cm
+## over it at the front, as the real one's does. The keyboard's socket is in
+## the front, in the shadow under there. The other sockets are in a row
+## along the back, and the first of them, as you look at the back, has the
+## mouse's plug in it: that is where the scene brings the mouse's lead.
+func _make_macintosh_foot() -> Image:
+	var atlas := _new_atlas(20, 5)
+	var front := _speckle(20, 5, _shade(PLASTIC_BEIGE, 0.8), 0.03)
+	front.fill_rect(Rect2i(0, 0, 20, 1), _shade(PLASTIC_BEIGE, 0.5))  # the shadow of the case above
+	front.fill_rect(Rect2i(13, 3, 2, 2), MACINTOSH_SOCKET)  # the keyboard's socket
+	_paint_face(atlas, FACE_FRONT, front)
+
+	var back := _speckle(20, 5, _shade(PLASTIC_BEIGE, 0.9), 0.03)
+	back.fill_rect(Rect2i(0, 4, 20, 1), _shade(PLASTIC_BEIGE, 0.7))
+	back.fill_rect(Rect2i(2, 3, 3, 2), MACINTOSH_LEAD)  # the mouse's plug
+	back.fill_rect(Rect2i(6, 2, 3, 1), MACINTOSH_SOCKET)  # disk drive, printer, telephone, sound
+	back.fill_rect(Rect2i(10, 2, 2, 1), MACINTOSH_SOCKET)
+	back.fill_rect(Rect2i(13, 2, 2, 1), MACINTOSH_SOCKET)
+	back.fill_rect(Rect2i(16, 2, 1, 1), MACINTOSH_SOCKET)
+	_paint_face(atlas, FACE_BACK, back)
+
+	# The sides carry on down from the sides of the case, so they are the
+	# same shade, with a line of shadow where they meet the desk.
+	for cell: Vector2i in [FACE_LEFT, FACE_RIGHT]:
+		var side := _speckle(20, 5, _shade(PLASTIC_BEIGE, 0.95), 0.03)
+		side.fill_rect(Rect2i(0, 4, 20, 1), _shade(PLASTIC_BEIGE, 0.7))
+		_paint_face(atlas, cell, side)
+	# The top is hidden under the case and the bottom is on the desk.
+	_paint_face(atlas, FACE_TOP, _speckle(20, 5, _shade(PLASTIC_BEIGE, 0.5), 0.03))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(20, 5, _shade(PLASTIC_BEIGE, 0.5), 0.03))
+	return atlas
+
+
+## What the Macintosh's screen shows, 14 x 10 pixels: the picture it greeted
+## you with every time it was switched on, a little Macintosh with a smile
+## on its screen, in the middle of an empty grey desktop. This one has been
+## smiling at an empty room for days.
+##
+## In the picture below each "." is a white pixel of the little computer and
+## each "#" a black one: its two eyes, its smile, and its disk slot at the
+## bottom right. The real screen's black and white were as sharp as paper,
+## which no screen of green or yellow letters was. The four corner pixels
+## are black because the real one drew its desktop with rounded corners;
+## against the dark glass the case has round the picture, they round it off.
+func _make_macintosh_screen() -> Image:
+	var screen := Image.create_empty(14, 10, false, Image.FORMAT_RGB8)
+	screen.fill(_shade(SCREEN_WHITE, 0.6))
+	var computer := [
+		"........",
+		"..#..#..",
+		"........",
+		".#....#.",
+		"..####..",
+		"........",
+		".....##.",
+		"........",
+	]
+	for row in computer.size():
+		var line: String = computer[row]
+		for column in line.length():
+			# Eight pixels wide in a screen of fourteen leaves three clear on
+			# either side, and eight tall in ten leaves one above and below.
+			screen.set_pixel(3 + column, 1 + row, SCREEN_BLACK if line[column] == "#" else SCREEN_WHITE)
+	for corner: Vector2i in [Vector2i(0, 0), Vector2i(13, 0), Vector2i(0, 9), Vector2i(13, 9)]:
+		screen.set_pixelv(corner, SCREEN_BLACK)
+	return screen
+
+
+## The Macintosh's keyboard: 33.75 cm wide, 3 cm tall and 16.25 cm deep. It
+## is a good deal shorter than the other keyboard (_make_keyboard) because
+## it has no number keys at the side and no arrow keys: the mouse was to do
+## their work. Its top is 27 x 13 pixels, drawn as the typist sees it: four
+## rows of eight keys in one dark well, all of one colour, with the long
+## space bar in the row nearest the typist.
+func _make_macintosh_keyboard() -> Image:
+	var atlas := _new_atlas(27, 13)
+	var top := _speckle(27, 13, PLASTIC_BEIGE, 0.03)
+	top.fill_rect(Rect2i(0, 0, 27, 1), _shade(PLASTIC_BEIGE, 1.15))  # light on the far edge
+	top.fill_rect(Rect2i(1, 1, 25, 11), _shade(PLASTIC_BEIGE, 0.5))  # the well
+	for row in 4:
+		for column in 8:
+			if row == 3 and column > 2 and column < 6:
+				continue  # under the space bar, which starts at column 2
+			# Keys are two pixels square and three pixels apart, like the
+			# other keyboard's. The space bar is as long as four of them.
+			var color := _shade(MACINTOSH_KEY, rng.randf_range(0.95, 1.05))
+			var width := 11 if row == 3 and column == 2 else 2
+			top.fill_rect(Rect2i(2 + column * 3, 1 + row * 3, width, 1), color)
+			top.fill_rect(Rect2i(2 + column * 3, 2 + row * 3, width, 1), _shade(color, 0.85))  # the key's front slope
+	_paint_face(atlas, FACE_TOP, top)
+
+	# All four edges are the same thin strip: the case above, the base in
+	# shadow below.
+	var edge := _speckle(27, 13, _shade(PLASTIC_BEIGE, 0.9), 0.03)
+	edge.fill_rect(Rect2i(0, 8, 27, 5), _shade(PLASTIC_BEIGE, 0.6))
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_LEFT, FACE_RIGHT]:
+		_paint_face(atlas, cell, edge)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(27, 13, _shade(PLASTIC_BEIGE, 0.4), 0.03))
+	return atlas
+
+
+## The mouse: a box 6.25 cm wide, 3.75 cm tall and 10 cm long, with a single
+## wide button (the real one had only one) across the end its lead comes out
+## of. Its top is 5 x 8 pixels, seen from above with that end at the top of
+## the picture. The button is the colour of the keyboard's keys.
+func _make_macintosh_mouse() -> Image:
+	var atlas := _new_atlas(5, 8)
+	var top := _speckle(5, 8, PLASTIC_BEIGE, 0.03)
+	top.fill_rect(Rect2i(0, 0, 5, 1), _shade(PLASTIC_BEIGE, 1.15))  # light on the far edge
+	top.fill_rect(Rect2i(1, 1, 3, 1), MACINTOSH_KEY)
+	top.fill_rect(Rect2i(1, 2, 3, 1), _shade(MACINTOSH_KEY, 0.85))  # the button's front slope
+	_paint_face(atlas, FACE_TOP, top)
+
+	# The four sides, like the keyboard's edges: the case above, the base in
+	# shadow below.
+	var edge := _speckle(5, 8, _shade(PLASTIC_BEIGE, 0.9), 0.03)
+	edge.fill_rect(Rect2i(0, 6, 5, 2), _shade(PLASTIC_BEIGE, 0.6))
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK, FACE_LEFT, FACE_RIGHT]:
+		_paint_face(atlas, cell, edge)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(5, 8, _shade(PLASTIC_BEIGE, 0.4), 0.03))
+	return atlas
+
+
+# --- The control console -------------------------------------------------------
+#
+# The long desk in the middle of start-level-demo's control room
+# (scenes/control_console.tscn): a steel cabinet 4 m long, 0.9 m tall and 1 m
+# deep that the room's operator stands at, facing the observation window.
+# Along the back of its top are three sloping panels of instruments. In
+# front of them the top is a desk, with a plate of controls let into it at
+# either end and a third for the intercom.
+#
+# Like the equipment that stands on it, it is painted at 80 pixels to the
+# metre, so the letters engraved on it are the size of a poster's and can be
+# read by somebody standing at it.
+
+const CONSOLE_PLATE := Color(0.09, 0.10, 0.11)
+const CONSOLE_WHITE := Color(0.86, 0.87, 0.82)
+const CONSOLE_BEZEL := Color(0.30, 0.31, 0.33)
+const CONSOLE_CHROME := Color(0.55, 0.57, 0.58)
+const CONSOLE_YELLOW := Color(0.92, 0.76, 0.10)
+const CONSOLE_RED := Color(0.95, 0.16, 0.10)
+const CONSOLE_GREEN := Color(0.20, 0.90, 0.30)
+const CONSOLE_AMBER := Color(1.0, 0.68, 0.10)
+
+# The sloping panels are PrismMeshes, which lay their atlas out in the same
+# three cells by two as a BoxMesh but have only five sides. The two ends are
+# triangles (each uses half of its cell). A prism's "left" and "right" are
+# the two sides that lean together: the scene stands the left one upright as
+# the panel's back, which makes the right one the slope the instruments are
+# on. The picture in a cell has the top of the prism along its top edge.
+const PRISM_FRONT := Vector2i(0, 0)
+const PRISM_RIGHT := Vector2i(1, 0)
+const PRISM_BACK := Vector2i(2, 0)
+const PRISM_LEFT := Vector2i(0, 1)
+const PRISM_BOTTOM := Vector2i(2, 1)
+
+
+## The console's cabinet. Its top is 320 x 80 pixels, so each of the other
+## sides is drawn 80 tall as well, for 0.9 m: their pixels are a little
+## shorter than they are wide. The two ends are drawn 80 wide and stretched
+## to four times that.
+##
+## The top is drawn as the operator sees it. Its far edge, where the sloping
+## panels stand, is the top of the picture, so a pixel (u, v) of it is the
+## spot u / 80 - 2 metres along the console and v / 80 - 0.5 metres towards
+## the operator from the console's middle. The scene's buttons are placed by
+## that sum: move a plate here and its buttons have to move with it.
+func _make_control_console() -> Image:
+	var atlas := _new_atlas(320, 80)
+	var seam := _shade(DESK_STEEL, 0.6)
+	var slit := _shade(DESK_STEEL, 0.4)
+	var dark := Color(0.12, 0.12, 0.13)
+
+	# The operator's side: four cupboards, each with a pair of doors that
+	# open from the middle. Every other cupboard has slits low down, to let
+	# air in to what is inside.
+	var front := _speckle(320, 80, seam, 0.03)
+	for door in 8:
+		var left := door * 40
+		front.fill_rect(Rect2i(left, 6, 39, 62), _shade(DESK_STEEL, rng.randf_range(0.97, 1.03)))
+		front.fill_rect(Rect2i(left, 6, 39, 1), _shade(DESK_STEEL, 1.2))  # light on the top edge
+		var handle := left + 34 if door % 2 == 0 else left + 3
+		front.fill_rect(Rect2i(handle, 30, 1, 8), dark)
+		front.fill_rect(Rect2i(handle + 1, 30, 1, 8), _shade(DESK_STEEL, 1.35))
+		@warning_ignore("integer_division")
+		if door / 2 % 2 == 1:
+			for y in range(50, 63, 3):
+				front.fill_rect(Rect2i(left + 8, y, 23, 1), slit)
+	front.fill_rect(Rect2i(168, 12, 27, 9), CONSOLE_YELLOW)  # a warning label
+	_draw_text(front, "DANGER", Vector2i(170, 14), dark)
+	front.fill_rect(Rect2i(52, 12, 10, 5), Color(0.86, 0.84, 0.76))  # a stores label
+	front.fill_rect(Rect2i(54, 14, 6, 1), Color(0.35, 0.35, 0.40))  # writing
+	_trim_console_side(front)
+	_paint_face(atlas, FACE_FRONT, front)
+
+	# The side towards the window: four panels that unscrew, one for each
+	# cupboard, with slits.
+	var back := _speckle(320, 80, seam, 0.03)
+	for panel in 4:
+		var left := panel * 80
+		back.fill_rect(Rect2i(left, 6, 79, 62), _shade(DESK_STEEL, rng.randf_range(0.9, 0.96)))
+		back.fill_rect(Rect2i(left, 6, 79, 1), _shade(DESK_STEEL, 1.15))
+		for screw: Vector2i in [Vector2i(2, 9), Vector2i(76, 9), Vector2i(2, 65), Vector2i(76, 65)]:
+			back.set_pixelv(Vector2i(left, 0) + screw, dark)
+		for y in range(16, 32, 3):
+			back.fill_rect(Rect2i(left + 14, y, 51, 1), slit)
+	_trim_console_side(back)
+	_paint_face(atlas, FACE_BACK, back)
+
+	for cell: Vector2i in [FACE_LEFT, FACE_RIGHT]:
+		var end := _speckle(80, 80, seam, 0.03)
+		end.fill_rect(Rect2i(1, 6, 78, 62), _shade(DESK_STEEL, 0.93))
+		end.fill_rect(Rect2i(1, 6, 78, 1), _shade(DESK_STEEL, 1.15))
+		for y in range(16, 32, 3):
+			end.fill_rect(Rect2i(14, y, 52, 1), slit)
+		_trim_console_side(end)
+		_paint_face(atlas, cell, end)
+
+	# The top: bare steel in four lengths, with a line where each joins the
+	# next.
+	var top := _speckle(320, 80, DESK_STEEL, 0.03)
+	top.fill_rect(Rect2i(0, 0, 320, 1), _shade(DESK_STEEL, 1.15))  # light on the far edge
+	for joint: int in [80, 160, 240]:
+		top.fill_rect(Rect2i(joint, 0, 1, 80), _shade(DESK_STEEL, 0.75))
+
+	# The plate at the left end. On its left is the emergency stop: a yellow
+	# square for the scene's red StopButton to stand in the middle of. On its
+	# right is the mains switch, a knob with a white line that turns from 0
+	# round to 1. It is at 1. A line down the plate keeps the two apart, so
+	# that their names don't read as one order.
+	_paint_console_plate(top, Rect2i(6, 38, 47, 33))
+	_draw_text(top, "STOP", Vector2i(10, 41), CONSOLE_WHITE)
+	top.fill_rect(Rect2i(9, 49, 16, 16), CONSOLE_YELLOW)
+	top.fill_rect(Rect2i(27, 40, 1, 29), CONSOLE_BEZEL)
+	_draw_text(top, "MAINS", Vector2i(30, 41), CONSOLE_WHITE)
+	for y in range(52, 63):
+		for x in range(34, 45):
+			var distance := Vector2(x - 39, y - 57).length()
+			if distance < 5.3:
+				top.set_pixel(x, y, CONSOLE_CHROME if distance > 3.3 else CONSOLE_BEZEL)
+	for step in range(1, 4):
+		top.set_pixel(39 + step, 57 - step, CONSOLE_WHITE)
+	_draw_text(top, "0", Vector2i(29, 55), CONSOLE_WHITE)
+	_draw_text(top, "1", Vector2i(47, 55), CONSOLE_WHITE)
+
+	# The intercom, between the keyboard and the papers: a grille with the
+	# loudspeaker behind it.
+	_paint_console_plate(top, Rect2i(112, 50, 25, 21))
+	_draw_text(top, "CALL", Vector2i(117, 53), CONSOLE_WHITE)
+	top.fill_rect(Rect2i(116, 60, 17, 7), CONSOLE_BEZEL)
+	for y in range(61, 66, 2):
+		for x in range(117, 132, 2):
+			top.set_pixel(x, y, Color(0.03, 0.03, 0.04))
+
+	# The plate at the right end, with the four things the manual tells the
+	# operator to do when something gets out: seal the vents, cut the lift,
+	# lock the room and ring the bell. Each has its name over a collar for
+	# one of the scene's lit buttons. They are 18 pixels (22.5 cm) apart,
+	# which leaves three clear pixels between one name and the next.
+	_paint_console_plate(top, Rect2i(240, 50, 75, 21))
+	var names := ["VENT", "LIFT", "LOCK", "BELL"]
+	for button in names.size():
+		var middle := 250 + button * 18
+		_draw_text(top, names[button], Vector2i(middle - 7, 53), CONSOLE_WHITE)
+		top.fill_rect(Rect2i(middle - 4, 60, 8, 8), CONSOLE_BEZEL)
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(320, 80, _shade(DESK_STEEL, 0.3), 0.03))
+	return atlas
+
+
+## Finishes one of the console's four upright sides: the edge of its top
+## along the top, with the shadow under it, and the dark plinth it stands on
+## along the floor, set back so that feet fit under the doors.
+func _trim_console_side(side: Image) -> void:
+	var width := side.get_width()
+	side.fill_rect(Rect2i(0, 0, width, 3), _shade(DESK_STEEL, 1.15))
+	side.fill_rect(Rect2i(0, 3, width, 1), _shade(DESK_STEEL, 0.45))
+	side.fill_rect(Rect2i(0, 70, width, 10), _shade(DESK_STEEL, 0.3))
+
+
+## Paints a control plate on a picture: black, the kind that has white
+## letters engraved in it, with light along its far edge and a screw in each
+## corner.
+func _paint_console_plate(image: Image, plate: Rect2i) -> void:
+	var metal := _speckle(plate.size.x, plate.size.y, CONSOLE_PLATE, 0.06)
+	# blit_rect copies one picture (here, all of it) into another.
+	image.blit_rect(metal, Rect2i(Vector2i.ZERO, plate.size), plate.position)
+	image.fill_rect(Rect2i(plate.position, Vector2i(plate.size.x, 1)), _shade(CONSOLE_PLATE, 2.2))
+	var last := plate.size - Vector2i(2, 2)
+	for corner: Vector2i in [Vector2i(1, 1), Vector2i(last.x, 1), Vector2i(1, last.y), last]:
+		image.set_pixelv(plate.position + corner, CONSOLE_CHROME)
+
+
+## The atlas for one of the console's sloping panels, "width" pixels long
+## (80 to the metre), with "slope" as the picture on its sloping side. The
+## slope is 40 cm from top to bottom, so every picture is 32 tall. The
+## panel's ends are plain steel and its upright back has slits in it.
+func _make_console_panel(slope: Image) -> Image:
+	var width := slope.get_width()
+	var atlas := _new_atlas(width, 32)
+	for cell: Vector2i in [PRISM_FRONT, PRISM_BACK, PRISM_BOTTOM]:
+		_paint_face(atlas, cell, _speckle(width, 32, _shade(DESK_STEEL, 0.93), 0.03))
+	var back := _speckle(width, 32, _shade(DESK_STEEL, 0.9), 0.03)
+	back.fill_rect(Rect2i(0, 0, width, 1), _shade(DESK_STEEL, 1.15))
+	for y in range(8, 24, 4):
+		back.fill_rect(Rect2i(6, y, width - 12, 1), _shade(DESK_STEEL, 0.4))
+	_paint_face(atlas, PRISM_LEFT, back)
+	_paint_face(atlas, PRISM_RIGHT, slope)
+	return atlas
+
+
+## The face of a sloping panel with no instruments on it yet: a black plate
+## with a rim of the console's steel showing round it.
+func _new_console_slope(width: int) -> Image:
+	var slope := _speckle(width, 32, DESK_STEEL, 0.03)
+	_paint_console_plate(slope, Rect2i(1, 1, width - 2, 30))
+	return slope
+
+
+## The left-hand panel, 60 cm long: the power coming in. Two round gauges,
+## for the volts and the amps, under three small lamps.
+func _make_control_console_power() -> Image:
+	var slope := _new_console_slope(48)
+	_draw_text(slope, "POWER", Vector2i(4, 3), CONSOLE_WHITE)
+	slope.fill_rect(Rect2i(32, 4, 2, 2), CONSOLE_GREEN)
+	slope.fill_rect(Rect2i(36, 4, 2, 2), CONSOLE_GREEN)
+	slope.fill_rect(Rect2i(40, 4, 2, 2), CONSOLE_AMBER)
+	_draw_dial(slope, Vector2i(13, 17), 6, 0.55)
+	_draw_text(slope, "VOLT", Vector2i(6, 25), CONSOLE_WHITE)
+	_draw_dial(slope, Vector2i(34, 17), 6, 0.2)
+	_draw_text(slope, "AMP", Vector2i(29, 25), CONSOLE_WHITE)
+	return _make_console_panel(slope)
+
+
+## Paints a round gauge: a pale face in a chrome rim, with the top end of
+## its scale marked in red, and a needle. "reading" is where the needle
+## points: 0 is low on the left, 0.5 straight up and 1 low on the right.
+func _draw_dial(image: Image, centre: Vector2i, radius: int, reading: float) -> void:
+	for y in range(centre.y - radius, centre.y + radius + 1):
+		for x in range(centre.x - radius, centre.x + radius + 1):
+			var offset := Vector2(x - centre.x, y - centre.y)
+			var distance := offset.length()
+			if distance > radius + 0.3:
+				continue  # outside the gauge: leave the corner of the square alone
+			if distance > radius - 0.7:
+				image.set_pixel(x, y, CONSOLE_CHROME)
+			elif distance > radius - 2.7 and offset.x > 0.0 and offset.y < 0.0:
+				image.set_pixel(x, y, CONSOLE_RED)  # the upper right of the scale
+			else:
+				image.set_pixel(x, y, Color(0.88, 0.86, 0.76))
+	# The needle swings through a third of a circle, from 150 degrees round
+	# to 30 (measured the usual way, anticlockwise from "three o'clock").
+	var angle := lerpf(PI * 5.0 / 6.0, PI / 6.0, reading)
+	# Up the picture is towards smaller y, hence the minus.
+	var reach := Vector2(cos(angle), -sin(angle)) * (radius - 2)
+	for step in radius * 2 + 1:
+		var point := Vector2(centre) + reach * (step / (radius * 2.0))
+		image.set_pixel(roundi(point.x), roundi(point.y), Color(0.10, 0.10, 0.12))
+
+
+## The middle panel, 1 m long: the three holding cells. Each has a long lamp
+## with its number cut out of the light, and a word under it. Cells 1 and 2
+## are green and SHUT. Cell 3, the one with the bars torn out of it, is red
+## and OPEN.
+func _make_control_console_cells() -> Image:
+	var slope := _new_console_slope(80)
+	_draw_text(slope, "HOLDING CELLS", Vector2i(4, 3), CONSOLE_WHITE)
+	for cell in 3:
+		var left := 4 + cell * 25
+		var open := cell == 2
+		slope.fill_rect(Rect2i(left, 10, 23, 9), CONSOLE_BEZEL)
+		slope.fill_rect(Rect2i(left + 1, 11, 21, 7), CONSOLE_RED if open else CONSOLE_GREEN)
+		_draw_text(slope, str(cell + 1), Vector2i(left + 10, 12), CONSOLE_PLATE)
+		_draw_text(slope, "OPEN" if open else "SHUT", Vector2i(left + 4, 22), CONSOLE_WHITE)
+	return _make_console_panel(slope)
+
+
+## The right-hand panel, 85 cm long. On the left is a small round-cornered
+## screen with a green line being drawn across it: subject 7's pulse, which
+## is flat (the notebook on the desk says so too, and that subject 7 is
+## walking about all the same). On the right are three rows of lamps over a
+## row of switches, two of them down.
+func _make_control_console_pulse() -> Image:
+	var slope := _new_console_slope(68)
+	slope.fill_rect(Rect2i(4, 4, 34, 17), CONSOLE_BEZEL)
+	slope.fill_rect(Rect2i(5, 5, 32, 15), SCREEN_DARK)
+	for y in range(8, 20, 4):
+		for x in range(8, 37, 4):
+			slope.set_pixel(x, y, _shade(SCREEN_GREEN, 0.3))  # the grid, a dot at each crossing
+	slope.fill_rect(Rect2i(6, 13, 29, 1), SCREEN_GREEN)
+	slope.set_pixel(35, 13, Color(0.85, 1.0, 0.88))  # the bright spot that draws the line
+	for corner: Vector2i in [Vector2i(5, 5), Vector2i(36, 5), Vector2i(5, 19), Vector2i(36, 19)]:
+		slope.set_pixelv(corner, CONSOLE_BEZEL)
+	_draw_text(slope, "SUBJ 7", Vector2i(4, 24), CONSOLE_WHITE)
+
+	# One letter for each lamp: Green, Amber, Red.
+	var lamps := ["GGAG", "GRGG", "AGGR"]
+	for row in lamps.size():
+		var line: String = lamps[row]
+		for column in line.length():
+			var color := CONSOLE_GREEN
+			if line[column] == "A":
+				color = CONSOLE_AMBER
+			elif line[column] == "R":
+				color = CONSOLE_RED
+			slope.fill_rect(Rect2i(43 + column * 6, 4 + row * 5, 3, 3), color)
+	for toggle in 4:
+		# A switch is a dark slot seven pixels tall with a chrome lever in
+		# the top or the bottom of it.
+		var down := toggle == 1 or toggle == 3
+		slope.fill_rect(Rect2i(43 + toggle * 6, 21, 3, 7), Color(0.02, 0.02, 0.03))
+		slope.fill_rect(Rect2i(43 + toggle * 6, 25 if down else 21, 3, 3), CONSOLE_CHROME)
+	return _make_console_panel(slope)
+
+
+# --- The fire extinguisher -----------------------------------------------------
+#
+# The extinguisher hanging on the south wall of start-level-demo's control
+# room is two meshes in the level itself (Details/Extinguisher and
+# Details/ExtinguisherNozzle): a cylinder with a small box on top of it for
+# the valve. These are their two pictures, at the desk equipment's 80 pixels
+# to the metre.
+
+const EXTINGUISHER_RED := Color(0.78, 0.10, 0.08)
+const EXTINGUISHER_BLACK := Color(0.08, 0.08, 0.09)
+const EXTINGUISHER_STEEL := Color(0.58, 0.60, 0.61)
+const EXTINGUISHER_LABEL := Color(0.93, 0.92, 0.86)
+
+
+## The extinguisher's cylinder: 16 cm across and 45 cm tall. A cylinder
+## lays its picture out as the coffee cup's does (see _make_cup): the top
+## half, 40 x 36 here, wraps once round the side, and the bottom half holds
+## the two ends as discs side by side.
+##
+## The two edges of the top half meet at the back, against the wall, so its
+## middle is the front. Only the middle third or so of the picture can be
+## seen properly from in front (the rest is turning away round the sides),
+## so the label is kept to twelve pixels: a flame, two lines of
+## instructions too small to read, and the letters of the three kinds of
+## fire it puts out, each on its own colour. Just to the right of the label
+## the black hose hangs down from the valve to its nozzle, and just to the
+## left is a streak of light on the paint. Round the cylinder go a cream
+## band near the top (the colour says what is inside), the steel strap that
+## holds it to the wall, and the black rubber foot it stands on when it is
+## taken down.
+func _make_fire_extinguisher() -> Image:
+	var picture := _speckle(40, 72, EXTINGUISHER_RED, 0.04)
+	var ink := Color(0.16, 0.16, 0.20)
+
+	picture.fill_rect(Rect2i(11, 2, 2, 31), _shade(EXTINGUISHER_RED, 1.35))  # the streak of light
+	picture.fill_rect(Rect2i(0, 0, 40, 2), EXTINGUISHER_STEEL)  # the collar the valve screws into
+	picture.fill_rect(Rect2i(0, 2, 40, 1), _shade(EXTINGUISHER_RED, 1.2))  # light on the shoulder
+	picture.fill_rect(Rect2i(0, 4, 40, 2), Color(0.90, 0.84, 0.62))  # the cream band
+
+	picture.fill_rect(Rect2i(14, 7, 12, 21), EXTINGUISHER_LABEL)
+	# The flame: "R" is its orange-red and "Y" the yellow at its heart.
+	var flame := [
+		"..R...",
+		"..RR..",
+		".RRR..",
+		".RRRR.",
+		"RRYRRR",
+		"RYYYRR",
+		"RYYYRR",
+		".RYYR.",
+	]
+	var flame_colors := {"R": Color(0.90, 0.30, 0.08), "Y": Color(1.0, 0.80, 0.15)}
+	for row in flame.size():
+		var line: String = flame[row]
+		for column in line.length():
+			if flame_colors.has(line[column]):
+				picture.set_pixel(17 + column, 8 + row, flame_colors[line[column]])
+	picture.fill_rect(Rect2i(15, 17, 10, 1), ink)
+	picture.fill_rect(Rect2i(15, 19, 7, 1), ink)
+	var kinds := [Color(0.15, 0.55, 0.25), Color(0.80, 0.14, 0.12), Color(0.15, 0.30, 0.70)]
+	for kind in 3:
+		# A patch four pixels wide across the foot of the label, with A, B
+		# or C on it in white. Three of them are exactly as wide as the
+		# label, and four pixels is also what the font allows a letter.
+		picture.fill_rect(Rect2i(14 + kind * 4, 21, 4, 7), kinds[kind])
+		_draw_text(picture, "ABC"[kind], Vector2i(14 + kind * 4, 22), EXTINGUISHER_LABEL)
+
+	picture.fill_rect(Rect2i(0, 29, 40, 2), EXTINGUISHER_STEEL)  # the strap
+	picture.fill_rect(Rect2i(19, 29, 2, 2), _shade(EXTINGUISHER_STEEL, 0.55))  # its buckle
+	picture.fill_rect(Rect2i(0, 31, 40, 1), _shade(EXTINGUISHER_RED, 0.6))  # the strap's shadow
+	picture.fill_rect(Rect2i(0, 33, 40, 3), EXTINGUISHER_BLACK)  # the rubber foot
+	picture.fill_rect(Rect2i(28, 0, 2, 22), EXTINGUISHER_BLACK)  # the hose
+	picture.fill_rect(Rect2i(27, 22, 4, 5), EXTINGUISHER_BLACK)  # its nozzle
+	picture.fill_rect(Rect2i(27, 26, 4, 1), _shade(EXTINGUISHER_STEEL, 0.55))  # the nozzle's open end
+
+	for y in 36:
+		for x in 20:
+			# How far this pixel is from the middle of its disc: 1 at the rim.
+			var distance := Vector2((x + 0.5 - 10.0) / 10.0, (y + 0.5 - 18.0) / 18.0).length()
+			# The top: red, with the steel neck the valve stands on in the
+			# middle. The underside: all rubber.
+			picture.set_pixel(x, 36 + y, EXTINGUISHER_STEEL if distance < 0.45 else _shade(EXTINGUISHER_RED, 1.1))
+			picture.set_pixel(20 + x, 36 + y, EXTINGUISHER_BLACK)
+	return picture
+
+
+## The valve on top of the extinguisher: a black box 6 cm square and 8 cm
+## tall, each side drawn 5 x 6. On the side that faces the room is the
+## pressure gauge, a white dial with a green mark at the top (where the
+## needle should be) and the needle's black middle. The steel lever you
+## squeeze runs across the top from front to back, and the yellow ring of
+## the safety pin shows on each side.
+func _make_fire_extinguisher_valve() -> Image:
+	var atlas := _new_atlas(5, 6)
+	var body := Color(0.13, 0.13, 0.14)
+	var front := _speckle(5, 6, body, 0.05)
+	front.fill_rect(Rect2i(1, 1, 3, 3), Color(0.92, 0.92, 0.88))
+	front.set_pixel(2, 1, Color(0.20, 0.75, 0.30))
+	front.set_pixel(2, 2, EXTINGUISHER_BLACK)
+	_paint_face(atlas, FACE_FRONT, front)
+	_paint_face(atlas, FACE_BACK, _speckle(5, 6, body, 0.05))
+	for cell: Vector2i in [FACE_LEFT, FACE_RIGHT]:
+		var side := _speckle(5, 6, body, 0.05)
+		side.fill_rect(Rect2i(0, 0, 5, 1), EXTINGUISHER_STEEL)  # the edge of the lever
+		side.set_pixel(2, 2, Color(0.92, 0.76, 0.10))
+		_paint_face(atlas, cell, side)
+	var top := _speckle(5, 6, body, 0.05)
+	top.fill_rect(Rect2i(1, 0, 3, 6), EXTINGUISHER_STEEL)
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(5, 6, body, 0.05))
+	return atlas
+
+
+## A poster to keep the staff's spirits up, 60 x 80 cm. It is the well-known
+## one of a kitten clinging to a branch by its front paws over the words
+## HANG IN THERE, except that this is a penguin: a bird that cannot fly, a
+## long way up, above the clouds, and sweating.
+##
+## In the picture of the penguin below, "#" is black, "W" is white and "O"
+## is the orange of its beak and feet. Its two flippers are the long black
+## bars at the sides. Their ends are hooked over the branch, which is three
+## rows thick and passes behind the second to fourth rows.
+func _make_poster_penguin() -> Image:
+	var poster := _new_poster(48, 64, Color(0.93, 0.93, 0.91))
+	var sky := Color(0.50, 0.75, 0.93)
+	var cloud := Color(0.95, 0.97, 1.0)
+	var bark := Color(0.42, 0.27, 0.13)
+	var leaf := Color(0.25, 0.55, 0.20)
+	var black := Color(0.10, 0.11, 0.14)
+	var white := Color(0.96, 0.96, 0.94)
+	var orange := Color(0.95, 0.55, 0.10)
+
+	# The photograph, with a white margin round it: sky, two clouds a long
+	# way below and a small one further off.
+	poster.fill_rect(Rect2i(3, 3, 42, 43), sky)
+	for puff: Rect2i in [
+		Rect2i(5, 42, 13, 4), Rect2i(8, 41, 7, 1),
+		Rect2i(27, 43, 15, 3), Rect2i(31, 42, 8, 1),
+		Rect2i(6, 21, 7, 2), Rect2i(8, 20, 3, 1),
+	]:
+		poster.fill_rect(puff, cloud)
+
+	# The branch, lit from above, with a twig and two leaves near its end.
+	poster.fill_rect(Rect2i(3, 9, 42, 3), bark)
+	poster.fill_rect(Rect2i(3, 9, 42, 1), _shade(bark, 1.3))
+	poster.fill_rect(Rect2i(3, 11, 42, 1), _shade(bark, 0.7))
+	poster.set_pixel(38, 8, bark)
+	poster.set_pixel(39, 7, bark)
+	poster.fill_rect(Rect2i(40, 5, 3, 2), leaf)
+	poster.fill_rect(Rect2i(35, 6, 3, 2), leaf)
+
+	var penguin := [
+		"##..........##",
+		"##..........##",
+		"##..........##",
+		"##..........##",
+		"##..........##",
+		"##..........##",
+		"##...####...##",
+		"##..######..##",
+		"##.########.##",
+		"##.#WW##WW#.##",
+		"##.#W#OO#W#.##",
+		"##.###OO###.##",
+		"##..######..##",
+		"##############",
+		"..###WWWW###..",
+		"..##WWWWWW##..",
+		"..##WWWWWW##..",
+		".###WWWWWW###.",
+		".##WWWWWWWW##.",
+		".##WWWWWWWW##.",
+		".##WWWWWWWW##.",
+		".##WWWWWWWW##.",
+		".##WWWWWWWW##.",
+		".###WWWWWW###.",
+		"..##########..",
+		"...OOO..OOO...",
+		"...OOO..OOO...",
+	]
+	var colors := {"#": black, "W": white, "O": orange}
+	for row in penguin.size():
+		var line: String = penguin[row]
+		for column in line.length():
+			if colors.has(line[column]):
+				# 14 pixels wide in a poster of 48 leaves 17 on either side.
+				poster.set_pixel(17 + column, 8 + row, colors[line[column]])
+	# Two drops of sweat flying off its head.
+	poster.fill_rect(Rect2i(33, 13, 1, 2), Color(0.20, 0.45, 0.85))
+	poster.fill_rect(Rect2i(35, 16, 1, 2), Color(0.20, 0.45, 0.85))
+
+	var ink := Color(0.12, 0.18, 0.40)
+	_draw_text_centred(poster, "HANG IN", 49, ink)
+	_draw_text_centred(poster, "THERE!", 56, ink)
+	return poster

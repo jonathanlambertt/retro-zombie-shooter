@@ -1,0 +1,155 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/macintosh.tres" id="1_case"]
+[ext_resource type="Material" path="res://assets/materials/macintosh_foot.tres" id="2_foot"]
+[ext_resource type="Texture2D" path="res://assets/textures/macintosh_screen.png" id="3_screen"]
+[ext_resource type="Material" path="res://assets/materials/macintosh_keyboard.tres" id="4_keyboard"]
+[ext_resource type="Material" path="res://assets/materials/macintosh_mouse.tres" id="5_mouse"]
+[ext_resource type="Material" path="res://assets/materials/macintosh_lead.tres" id="6_lead"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_foot"]
+material = ExtResource("2_foot")
+size = Vector3(0.25, 0.0625, 0.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_case"]
+material = ExtResource("1_case")
+size = Vector3(0.25, 0.2875, 0.275)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_screen"]
+shading_mode = 0
+albedo_texture = ExtResource("3_screen")
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="QuadMesh_screen"]
+material = SubResource("StandardMaterial3D_screen")
+size = Vector2(0.175, 0.125)
+
+[sub_resource type="BoxMesh" id="BoxMesh_keyboard"]
+material = ExtResource("4_keyboard")
+size = Vector3(0.3375, 0.03, 0.1625)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mouse"]
+material = ExtResource("5_mouse")
+size = Vector3(0.0625, 0.0375, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_keyboard_lead"]
+material = ExtResource("6_lead")
+size = Vector3(0.018, 0.011, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mouse_lead"]
+material = ExtResource("6_lead")
+size = Vector3(0.0125, 0.006, 0.05)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_case"]
+size = Vector3(0.25, 0.2875, 0.275)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_foot"]
+size = Vector3(0.25, 0.0625, 0.25)
+
+[node name="Macintosh" type="StaticBody3D"]
+
+[node name="Foot" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.03125, -0.0125)
+mesh = SubResource("BoxMesh_foot")
+
+[node name="Case" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.20625, 0)
+mesh = SubResource("BoxMesh_case")
+
+[node name="Screen" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.1415)
+mesh = SubResource("QuadMesh_screen")
+
+[node name="Keyboard" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.015, 0.3875)
+mesh = SubResource("BoxMesh_keyboard")
+
+[node name="Mouse" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.25, 0.01875, 0.38)
+mesh = SubResource("BoxMesh_mouse")
+
+[node name="Leads" type="Node3D" parent="."]
+
+[node name="Keyboard1" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.99875, 0, 0.05798, 0, 1, 0, -0.04994, 0, 1.15955, 0.051, 0.0055, 0.12)
+mesh = SubResource("BoxMesh_keyboard_lead")
+
+[node name="Keyboard2" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.94386, 0, -0.39893, 0, 1, 0, 0.33035, 0, 1.13979, 0.045, 0.005, 0.16)
+mesh = SubResource("BoxMesh_keyboard_lead")
+
+[node name="Keyboard3" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.77611, 0, -0.74701, 0, 1, 0, 0.63059, 0, 0.9194, 0.025, 0.0055, 0.196)
+mesh = SubResource("BoxMesh_keyboard_lead")
+
+[node name="Keyboard4" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.92164, 0, -0.4597, 0, 1, 0, 0.38806, 0, 1.09179, 0.004, 0.005, 0.231)
+mesh = SubResource("BoxMesh_keyboard_lead")
+
+[node name="Keyboard5" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.98058, 0, 0.2306, 0, 1, 0, -0.19612, 0, 1.15301, 0, 0.0055, 0.27)
+mesh = SubResource("BoxMesh_keyboard_lead")
+
+[node name="Keyboard6" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.96152, 0, 0.2589, 0, 1, 0, -0.27472, 0, 0.90615, 0.008, 0.005, 0.304)
+mesh = SubResource("BoxMesh_keyboard_lead")
+
+[node name="Mouse1" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.99852, 0, 0.07362, 0, 1, 0, -0.05446, 0, -1.34963, 0.2515, 0.003, 0.3125)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse2" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.97732, 0, 0.31294, 0, 1, 0, -0.21175, 0, -1.44433, 0.2595, 0.0025, 0.255)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse3" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.99944, 0, 0.04833, 0, 1, 0, -0.03331, 0, -1.44986, 0.267, 0.003, 0.195)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse4" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.96623, 0, -0.38442, 0, 1, 0, 0.25766, 0, -1.44156, 0.26, 0.0025, 0.135)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse5" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.92848, 0, -0.53285, 0, 1, 0, 0.37139, 0, -1.33212, 0.241, 0.003, 0.0775)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse6" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.99123, 0, -0.19304, 0, 1, 0, 0.13216, 0, -1.44781, 0.226, 0.0025, 0.02)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse7" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.98639, 0, 0.2411, 0, 1, 0, -0.1644, 0, -1.4466, 0.227, 0.003, -0.04)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse8" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.99737, 0, 0.09813, 0, 1, 0, -0.07254, 0, -1.34934, 0.234, 0.0025, -0.0975)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse9" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.92848, 0, -0.45285, 0, 1, 0, 0.37139, 0, -1.13212, 0.227, 0.003, -0.1475)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse10" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(-0.56468, 0, -0.96633, 0, 1, 0, 0.82531, 0, -0.66117, 0.199, 0.0025, -0.183)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse11" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0, 0, -1.15, 0, 1, 0, 1, 0, 0, 0.1575, 0.003, -0.196)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse12" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.56553, 0, -0.90618, 0, 1, 0, 0.82473, 0, 0.62138, 0.1175, 0.0025, -0.184)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="Mouse13" type="MeshInstance3D" parent="Leads"]
+transform = Transform3D(0.92848, 0, -0.41285, 0, 1, 0, 0.37139, 0, 1.03212, 0.092, 0.003, -0.152)
+mesh = SubResource("BoxMesh_mouse_lead")
+
+[node name="CaseShape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.20625, 0)
+shape = SubResource("BoxShape3D_case")
+
+[node name="FootShape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03125, -0.0125)
+shape = SubResource("BoxShape3D_foot")
