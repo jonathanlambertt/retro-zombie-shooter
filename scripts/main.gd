@@ -4,7 +4,8 @@ extends Control
 ## How it works:
 ##   1. The whole game (3D world + HUD) lives inside a SubViewport, which is
 ##      an off-screen "virtual screen" with a small fixed size (640x480
-##      for now: see Render Size below).
+##      for now: see Render Size below). The HUD and the menus are drawn as
+##      if it were 320x240 and stretched to fit it.
 ##   2. A SubViewportContainer shows that small image in the real window.
 ##   3. This script scales the container up to fill the window, keeping the
 ##      4:3 shape. Because the container uses nearest-neighbour filtering,
@@ -19,16 +20,22 @@ extends Control
 ## Levels list when F2 or F3 is pressed. In multiplayer only the host does
 ## that: scripts/network.gd shares the host's level with everyone else.
 
+## How tall a picture the HUD, the pause menu and the notebook's page are
+## laid out for, in pixels. They were all drawn for the 320 x 240 the game
+## was first made at, with their places and sizes given in pixels of that
+## picture. _scale_interface() stretches them to fit whatever Render Size
+## is, so this only needs changing if they are drawn again for another size.
+const INTERFACE_HEIGHT := 240
+
 ## The resolution the game is rendered at. THIS IS THE ONE PLACE TO CHANGE IT.
 ## It is 640 x 480 for now: a sharper, late-90s "high-res mode" look. The
 ## game was made at 320 x 240, and the line for that is kept below, switched
 ## off with a "#", to go back to.
 ## (You can also change it in the Inspector by selecting the Main node.)
 ##
-## NOT FINISHED: the HUD, the pause menu and the notebook's page have not
-## been scaled to match. They are still laid out for 320 x 240, so at 640 x
-## 480 they are drawn at half the size they should be, and the notebook's
-## page sits in the top left corner instead of the middle of the screen.
+## The HUD, the pause menu and the notebook's page stay the same size on
+## screen whichever you choose (see _scale_interface() below). They keep
+## their chunky pixels: at 640 x 480 each of their pixels is drawn 2 x 2.
 #@export var render_size := Vector2i(320, 240)
 @export var render_size := Vector2i(640, 480)
 
@@ -68,6 +75,7 @@ func _ready() -> void:
 	# container exactly the same size so it shows the image 1:1 before scaling.
 	game_viewport.size = render_size
 	viewport_container.size = Vector2(render_size)
+	_scale_interface()
 
 	# "resized" is emitted whenever this Control changes size, which happens
 	# whenever the window does (it is anchored to fill the whole window).
@@ -76,6 +84,30 @@ func _ready() -> void:
 	Network.register_main(self)
 	_use_direct_level()
 	load_level()
+
+
+## Keeps the HUD, the pause menu and the notebook's page the same size on
+## screen whatever Render Size is.
+##
+## Everything flat that is drawn inside the viewport (its "2D" contents, as
+## opposed to the 3D level) is placed in pixels, counted from the top left
+## corner: the notebook's page starts 50 across and 8 down, for one. Those
+## numbers were chosen for a picture 320 x 240. On a bigger picture they
+## would leave everything too small, and the page up in the corner.
+##
+## A viewport can be told that its 2D contents are a different size from the
+## picture it really makes, and to stretch the one to fit the other. So the
+## 2D size is always INTERFACE_HEIGHT (240) tall, and as wide as that makes
+## it for the picture's shape: 320 for 4:3. The 3D level is not touched by
+## this, and is drawn at the full Render Size.
+##
+## The mouse is converted the same way: a click reaches the pause menu as a
+## place in the 320 x 240 picture, which is where its rows think they are.
+func _scale_interface() -> void:
+	# How many real pixels one pixel of the interface covers: 2 at 640 x 480.
+	var pixel_size := float(render_size.y) / INTERFACE_HEIGHT
+	game_viewport.size_2d_override = Vector2i(roundi(render_size.x / pixel_size), INTERFACE_HEIGHT)
+	game_viewport.size_2d_override_stretch = true
 
 
 ## Handles a level scene that was run on its own: makes sure it is in Levels

@@ -157,13 +157,18 @@ the Inspector. On the same node, **Integer Scaling** scales only by whole
 numbers (2x, 3x...), so every pixel is exactly the same size, with thicker
 black bars.
 
-**The interface has not been scaled to match 640 x 480 yet, so it looks
-off.** The HUD is anchored to the corners and the crosshair to the middle,
-so they stay in place at any size, but nothing makes them bigger: the HUD,
-the pause menu and the notebook's page are all still drawn for 320 x 240.
-At 640 x 480 their writing is half the size it should be, and the
-notebook's page sits in the top left corner instead of the middle of the
-screen. Everything works; it is only small and out of place.
+The HUD, the pause menu and the notebook's page are the same size on
+screen whatever you choose. They are laid out for a picture 240 pixels tall
+(320 x 240) and `main.gd` stretches them to fit the real one
+(`_scale_interface()`), so at 640 x 480 each of their pixels is drawn 2 x 2
+and they keep their chunky look while the level gets sharper. Only the
+level is drawn at the full size. Whole multiples of 320 x 240 (640 x 480,
+960 x 720) keep the interface's pixels all the same size; in between
+(480 x 360) some come out a pixel wider than others.
+
+Keep to the 4:3 shape if you can. At another shape (640 x 360, say) nothing
+is squashed and the HUD still sits in the corners, but the notebook's page
+has fixed places for a picture 320 wide and ends up left of the middle.
 
 ## Changing the shader settings
 
@@ -1002,10 +1007,9 @@ editor, so turn that arrow to face into the room.
 
 ## Known limitations
 
-- The game is rendered at 640 x 480 for now, but the HUD, the pause menu
-  and the notebook's page are still laid out for 320 x 240: they are half
-  the size they should be, and the notebook's page is in the top left
-  corner instead of the middle (see "Changing the resolution").
+- The notebook's page is laid out for a 4:3 picture: at any other shape of
+  **Render Size** it sits left of the middle (see "Changing the
+  resolution").
 - Zombies only climb in through a window, never back out, and a crouch-jump
   may get you out through it. The window has only been tested in single
   player, not online.
