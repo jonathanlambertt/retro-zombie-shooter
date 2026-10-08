@@ -34,7 +34,7 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --import
 
 ### Rendering pipeline (`scenes/main.tscn` + `scripts/main.gd`)
 
-`Main` (a `Control`) is the entry scene and owns the low-res look. The entire game — the level **and** the HUD — lives inside `ViewportContainer/GameViewport`, a `SubViewport` sized by `render_size` (default 320x240). `main.gd` scales the container to the window (4:3, letterboxed, nearest-neighbour) and the container carries `shaders/color_quantize.gdshader` as a post-process over the finished frame.
+`Main` (a `Control`) is the entry scene and owns the low-res look. The entire game — the level **and** the HUD — lives inside `ViewportContainer/GameViewport`, a `SubViewport` sized by `render_size` (640x480 for now; the game was made at 320x240, which is kept as a commented-out line beside it). The interface has not been scaled to match: `hud.tscn`, `pause_menu.tscn` and `notebook_reader.tscn` are still laid out in 320x240 pixels, so at 640x480 their text is half the intended size and the notebook's page sits in the top left corner. Fixing that is still to do; until then, sizes quoted for HUD and menu text elsewhere in this file are for 320x240. `main.gd` scales the container to the window (4:3, letterboxed, nearest-neighbour) and the container carries `shaders/color_quantize.gdshader` as a post-process over the finished frame.
 
 Consequences to keep in mind:
 

@@ -144,15 +144,26 @@ post effects.
 Open `scripts/main.gd` and edit one line:
 
 ```gdscript
-@export var render_size := Vector2i(320, 240)   # try Vector2i(640, 480)
+#@export var render_size := Vector2i(320, 240)
+@export var render_size := Vector2i(640, 480)
 ```
+
+The game was made at 320 x 240 and is set to 640 x 480 for now, for a
+sharper picture. The line for 320 x 240 is still there, switched off with
+a `#`: to go back, move the `#` to the other line.
 
 Or select the `Main` node in `scenes/main.tscn` and change **Render Size** in
 the Inspector. On the same node, **Integer Scaling** scales only by whole
 numbers (2x, 3x...), so every pixel is exactly the same size, with thicker
 black bars.
 
-The HUD is anchored to the corners, so it adapts to the new size.
+**The interface has not been scaled to match 640 x 480 yet, so it looks
+off.** The HUD is anchored to the corners and the crosshair to the middle,
+so they stay in place at any size, but nothing makes them bigger: the HUD,
+the pause menu and the notebook's page are all still drawn for 320 x 240.
+At 640 x 480 their writing is half the size it should be, and the
+notebook's page sits in the top left corner instead of the middle of the
+screen. Everything works; it is only small and out of place.
 
 ## Changing the shader settings
 
@@ -991,6 +1002,10 @@ editor, so turn that arrow to face into the room.
 
 ## Known limitations
 
+- The game is rendered at 640 x 480 for now, but the HUD, the pause menu
+  and the notebook's page are still laid out for 320 x 240: they are half
+  the size they should be, and the notebook's page is in the top left
+  corner instead of the middle (see "Changing the resolution").
 - Zombies only climb in through a window, never back out, and a crouch-jump
   may get you out through it. The window has only been tested in single
   player, not online.

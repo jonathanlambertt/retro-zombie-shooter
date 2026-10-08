@@ -3,7 +3,8 @@ extends Control
 ##
 ## How it works:
 ##   1. The whole game (3D world + HUD) lives inside a SubViewport, which is
-##      an off-screen "virtual screen" with a small fixed size (320x240).
+##      an off-screen "virtual screen" with a small fixed size (640x480
+##      for now: see Render Size below).
 ##   2. A SubViewportContainer shows that small image in the real window.
 ##   3. This script scales the container up to fill the window, keeping the
 ##      4:3 shape. Because the container uses nearest-neighbour filtering,
@@ -19,9 +20,17 @@ extends Control
 ## that: scripts/network.gd shares the host's level with everyone else.
 
 ## The resolution the game is rendered at. THIS IS THE ONE PLACE TO CHANGE IT.
-## Try Vector2i(640, 480) for a sharper, late-90s "high-res mode" look.
+## It is 640 x 480 for now: a sharper, late-90s "high-res mode" look. The
+## game was made at 320 x 240, and the line for that is kept below, switched
+## off with a "#", to go back to.
 ## (You can also change it in the Inspector by selecting the Main node.)
-@export var render_size := Vector2i(320, 240)
+##
+## NOT FINISHED: the HUD, the pause menu and the notebook's page have not
+## been scaled to match. They are still laid out for 320 x 240, so at 640 x
+## 480 they are drawn at half the size they should be, and the notebook's
+## page sits in the top left corner instead of the middle of the screen.
+#@export var render_size := Vector2i(320, 240)
+@export var render_size := Vector2i(640, 480)
 
 ## If true, only scale by whole numbers (2x, 3x, 4x...). Every game pixel is
 ## then exactly the same size on screen, at the cost of thicker black bars.
