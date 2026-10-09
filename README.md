@@ -79,6 +79,7 @@ scenes/              Reusable scenes
   bullet_hole.tscn     Mark left on walls and floors by shots
   zombie.tscn          Thin, limping enemy that chases and hits you (scripts/enemy.gd)
   zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
+  zombie-rexture-demo.tscn The same zombie with a rounded body, and a different look on each one
   zombie_window.tscn   A window that zombies climb in through
   zombie_rounds.tscn   Sends zombies into a level a round at a time
   notebook.tscn        A notebook on a desk that you can read
@@ -120,15 +121,19 @@ scripts/             One script per scene, plus:
   surface_mark.gd      Shared by bullet holes and blood stains
   placeholder_sound.gd Generates stand-in gunshot noise from code
   damage_zone.gd       Area that hurts whatever stands in it (lava, slime)
+  zombie_look.gd       Hands out the looks of the rounded zombie
   tools/generate_textures.gd   Generates the placeholder textures
+  tools/generate_zombie.gd     Builds the rounded zombie's meshes and paints its looks
   tools/generate_blocks.gd     Builds assets/blocks.tres from scripts/blocks.gd
   tools/build_test_room.gd     Builds levels/test_room.tscn
 shaders/
   retro_surface.gdshader    Every 3D surface: snapping, banded light, UVs
   color_quantize.gdshader   Post-process: limits the number of colours
 assets/
-  textures/            64x64 PNG textures, plus one per part of the zombie, soldier, guns and projectiles
+  textures/            64x64 PNG textures, plus one per part of the zombie, soldier, guns and projectiles,
+                       and zombie_look_01.png to 24: a whole zombie painted in each
   materials/           One material per texture, all using the retro shader
+  meshes/              The rounded zombie's body parts
   blocks.tres          The block palette destructible levels are painted with (a MeshLibrary)
   retro_environment.tres    Fog, ambient light and background colour
 ```
@@ -275,6 +280,10 @@ To regenerate the placeholders after editing the generator:
 ```
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/tools/generate_textures.gd
 ```
+
+The rounded zombie's looks (and its meshes) have a generator of their own,
+`scripts/tools/generate_zombie.gd`: see "The rounded zombie" under "Tuning
+gameplay" below.
 
 ## Tuning gameplay
 
@@ -442,8 +451,59 @@ Select a node and use the Inspector; every value is an exported variable.
   file, one for each side of the box (the layout is drawn at the top of the
   zombie section in `scripts/tools/generate_textures.gd`), so you can paint
   over them in any pixel-art program. Every zombie in the levels is this
-  one; the plain green `zombie.tscn` is kept but no level uses it. To add
-  one to a level, drag the scene under the level's `Enemies` node.
+  one, except in the start level demo (see the next entry); the plain green
+  `zombie.tscn` is kept but no level uses it. To add one to a level, drag
+  the scene under the level's `Enemies` node.
+- **The rounded zombie** (`scenes/zombie-rexture-demo.tscn`): the same
+  enemy once more, with the same script and the same settings, but two
+  things are new. Its body is seven rounded meshes instead of boxes: a head
+  with a brow, a nose and a jaw, a torso with shoulders and a waist, arms
+  that end in hands and legs that end in feet. And no two of them standing
+  together look alike. It is the zombie of the start level demo; every
+  other level still has the textured one. To add one to a level, drag the
+  scene under the level's `Enemies` node.
+
+  What a zombie looks like is its **look**: one 128 x 96 picture with the
+  whole zombie painted in it, from its face and hair to its clothes, its
+  wounds and what its two glowing eyes show. There are 24,
+  `zombie_look_01.png` to `zombie_look_24.png` in `assets/textures/`. They
+  come in eight kinds that take turns (a scientist in a lab coat, a
+  security guard, a test subject in a numbered jumpsuit, an office worker,
+  a maintenance worker, a medic, someone in a sealed suit and hood, and a
+  patient in a gown), so looks next to each other in number never dress
+  alike, and each kind turns up in three different colours. Skin, hair,
+  dirt, blood and wounds are different on every one.
+
+  Each zombie takes a look when it appears. The first zombie under a
+  level's `Enemies` node wears look 1, the second look 2 and so on, back to
+  1 after the last, so the eleven in the start level demo are eleven
+  different zombies. (A zombie made while the game runs, as the rounds make
+  them, goes by the number in its name instead.) In multiplayer everyone
+  sees the same looks. To choose one zombie's look yourself, right-click
+  that zombie in the level, turn on **Editable Children**, select its
+  `Model` node and set **Look**: 0 lets it choose, 7 is
+  `zombie_look_07.png`. The editor draws every zombie with look 1; the
+  looks are handed out when the game runs (`scripts/zombie_look.gd`).
+
+  The looks, and the meshes, are made by `scripts/tools/generate_zombie.gd`.
+  It rolls dice for every look (which skin, which hair, is the coat open,
+  where is it bitten), but the dice start from the look's number, so a look
+  comes out the same every time. For more looks, raise `LOOK_COUNT` at the
+  top of that script and run it, then import the new pictures:
+
+  ```
+  Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/tools/generate_zombie.gd
+  Godot_v4.7-stable_win64_console.exe --headless --path . --import
+  ```
+
+  The game counts the files itself, so nothing else needs changing. You can
+  also paint a look by hand in any pixel-art program: the top of that
+  script draws where each part of the body is in the picture. Save it as
+  the next number.
+
+  Shoot an arm or the head off and you see the raw end of it, and the
+  socket it leaves in the body. Those are painted in every look as well:
+  they sit hidden inside the joint until the limb is gone.
 
 The enemies' animations (walking, attacking, flinching, dying...) are not made
 in Godot's animation editor. They are a few lines of maths in the `_animate`
@@ -684,7 +744,9 @@ control room, and the torn-out containment door that joins those two labs.
 Everything in those rooms is where it is in test map 2 (see "The control
 room and the experimentation lab" below), with the same notebook (but for
 one sentence) and eleven of its zombies: six in the experimentation lab and
-five in the lab below.
+five in the lab below. Here they are the rounded kind, each with a look of
+its own (see "The rounded zombie" under "Tuning gameplay" above); test map
+2's are the textured boxes.
 
 The control room is dressed differently from test map 2's, though, and one
 other thing is different. You start with the machine gun
@@ -1102,6 +1164,11 @@ editor, so turn that arrow to face into the room.
 - In the view behind you (F4), shots come from your eyes, 30 cm below the
   camera's line, so at close range they land slightly below the crosshair.
 - Crouching doesn't hide you from enemies that are already looking your way.
+- The rounded zombie is only in the start level demo, and the specimens
+  floating in that level's tanks are still made of the old boxes. Its arms
+  and legs do not bend as it moves: each is one stiff piece, with a slight
+  bend at the elbow and the knee built into its shape. A leg that is shot
+  off leaves no wound on the body (an arm or the head does).
 - Multiplayer has no smoothing for bad connections: other players move as
   often as their updates arrive, so over the internet they can look jerky.
   It also has no player names, chat or scoreboard.

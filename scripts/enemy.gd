@@ -16,8 +16,12 @@ extends CharacterBody3D
 ##   pain    - jerks backwards when shot
 ##   death   - falls onto its back or its face (picked at random)
 ##
-## Two scenes use this script: scenes/zombie.tscn, and its copy with painted
-## body parts, scenes/zombie_textured.tscn. Both set Limp and Hunch high,
+## Three scenes use this script: scenes/zombie.tscn, its copy with painted
+## body parts, scenes/zombie_textured.tscn, and
+## scenes/zombie-rexture-demo.tscn, whose parts are rounded meshes instead
+## of boxes and which wears one of many painted looks (see
+## scripts/zombie_look.gd). All three have the same pivots with the same
+## names, which is all this script needs, and all set Limp and Hunch high,
 ## which makes the zombie drag one leg, lurch along, stoop, and let one arm
 ## hang. They also have Loses Limbs switched on: shoot it in an arm, a leg
 ## or the head often enough and that part comes off (see "Dismemberment"
