@@ -11,6 +11,10 @@ extends Node3D
 ## Online, the other players' games repeat each shot with replay_shot(),
 ## which leaves the same bullet hole but does no damage (the damage was
 ## already dealt by the game that fired).
+##
+## Two scenes run this script: scenes/pistol.tscn and scenes/m1911.tscn,
+## which is the same gun built from differently shaped and textured boxes.
+## Each scene keeps its own values for the settings below.
 
 const PlaceholderSound := preload("res://scripts/placeholder_sound.gd")
 const BULLET_HOLE_SCENE := preload("res://scenes/bullet_hole.tscn")

@@ -1,6 +1,9 @@
 extends Node
-## Lets you run a level scene on its own (F6 in the editor, "Run Current
-## Scene") and still get the whole game around it.
+## Lets the game be started on a level scene and still get the whole game
+## around it. That is how the game starts now: the project's main scene
+## (Project Settings > Application > Run > Main Scene) is a level,
+## levels/start-level-demo.tscn. It is also what makes F6 in the editor
+## ("Run Current Scene") work for any other level.
 ##
 ## A level is only the 3D world. The low-res picture, the HUD and the pause
 ## menu all belong to scenes/main.tscn, which normally loads the level inside

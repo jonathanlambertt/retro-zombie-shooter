@@ -27,21 +27,32 @@ Godot_v4.7-stable_win64_console.exe --path .
 | Mouse | Look |
 | Space | Jump |
 | Ctrl or C | Crouch (hold). Crouch in mid-air to pull your legs up and reach higher ledges |
+| W / S on a ladder | Climb the way you are looking / the opposite way. A and D slide sideways; Space lets go |
 | Left mouse button | Shoot (hold for the machine gun and the MP40) |
 | Right mouse button | Machine gun and MP40: fire a grenade. Shotgun: double shot |
-| 1 / 2 / 3 / 4 / 5 | Switch to pistol / machine gun / rocket launcher / shotgun / MP40 |
+| 1 / 2 / 3 / 4 / 5 / 6 | Switch to pistol / machine gun / rocket launcher / shotgun / MP40 / M1911 |
 | Mouse wheel | Next / previous weapon |
 | E | Read a notebook you are standing at and looking at (E or Esc closes it) |
 | A / D, left / right arrow, mouse wheel | While reading: turn back / on a page |
 | Esc | Pause menu: resume, graphics and audio settings, multiplayer, or quit. Esc again resumes |
 | F1 | Toggle the colour quantization post-process (also works while paused) |
-| F2 / F3 | Next / previous level (in multiplayer, only the host) |
+| F2 / F3 | Next / previous level. Switched off for now: see "Choosing which level to play" |
 | F4 | Change view: first person, behind your player, in front looking at your face, and back |
 
 Crouching makes you shorter (1.2 m instead of 1.8 m) and slower. Let go and
 you stand up again as soon as there is room above you. Crouching in the air
 works like Half-Life's "crouch-jump": instead of lowering your view, it tucks
 your legs up, so a jump plus crouch gets you onto ledges a plain jump can't.
+
+**Ladders** work as they do in Half-Life. Walk into one and you are on it:
+there is no key to press. While you are on it nothing pulls you down, and W
+takes you the way you are looking. So face the ladder, or look up, and hold
+W to climb; look down at your feet and hold W, or just hold S, to go down.
+A and D slide you sideways, and off the edge if you keep going. Let go of
+the keys and you hang where you are. Space lets go of the ladder and throws
+you clear of it. At the top, keep W held: you come up over the edge with a
+small hop and land on the floor beyond. To go down a ladder from the top,
+walk off the edge above it, or back onto it facing the wall and hold S.
 
 When you are hurt you grunt and the screen flashes red. If your health
 reaches 0 the game restarts.
@@ -57,11 +68,13 @@ about 4 metres. It hurts you too, so shoot it from a distance.
 ```
 project.godot        Project settings (renderer, input map, import defaults)
 scenes/              Reusable scenes
-  main.tscn            Entry point: low-res viewport + HUD + the level
+  main.tscn            The game around a level: low-res viewport + HUD + the level
   player.tscn          First-person player (with the guns attached)
   player_model_soldier.tscn  The player's body, as other players see it: a special forces soldier
   player_model.tscn    The earlier body, an armoured hazard suit (kept, not in use)
   pistol.tscn          Hitscan pistol viewmodel
+  m1911.tscn           The pistol again, modelled and textured as an M1911
+  m1911_model.tscn     The M1911's boxes: used by m1911.tscn and by both player models
   machine_gun.tscn     Automatic gun that fires bullet.tscn projectiles
   mp40.tscn            The machine gun again, modelled and textured as an MP40
   bullet.tscn          One yellow machine gun bullet
@@ -101,6 +114,7 @@ scenes/              Reusable scenes
   pencil_cup.tscn      Pot of pencils and pens
   water_cooler.tscn    Water cooler with its bottle
   breakable_glass.tscn A window pane that cracks when shot and shatters
+  ladder.tscn          A ladder, climbed the way Half-Life's are
   hud.tscn             Health / ammo / crosshair, and the round in a level that has rounds
   pause_menu.tscn      Esc menu: pauses the game, graphics and audio settings, multiplayer, quit
 levels/
@@ -109,7 +123,7 @@ levels/
   test-map.tscn        Bigger facility built for zombie waves: a hub with four wings
   test-map-2.tscn      Bigger again: two-storey atrium, warehouse, cramped tunnels
   office.tscn          One office break room, testing a window that zombies climb through
-  start-level-demo.tscn Test map 2's control room and labs, copied out on their own
+  start-level-demo.tscn Where the game starts: test map 2's control room and labs on their own
   multiplayer-map-demo.tscn An arena for one player or several, with zombies in rounds
   test_room.tscn       Two-storey block-built building for testing destruction
 scripts/             One script per scene, plus:
@@ -303,10 +317,16 @@ Select a node and use the Inspector; every value is an exported variable.
   crouched; standing it is 1.8), **Crouch Speed** and **Crouch Transition
   Speed** (how fast the view sinks and rises).
 
+  Under **Ladders**: **Ladder Speed** (how fast you climb), **Ladder Jump
+  Speed** (how hard Space throws you off), **Ladder Let Go Time** (how long
+  after that before a ladder can catch you again), **Ladder Step Interval**
+  (the time between clanks of your boots on the rungs) and **Ladder Sound**
+  (drag in a `.wav`/`.ogg` to replace the placeholder clank).
+
   Under **Weapons**: **Starting Weapon**, the gun in your hands when a level
   starts (the pistol, unless changed). Every level has a `Player` node of
   its own, so select that node in a level to change it for that level only,
-  as `levels/start-level-demo.tscn` does (machine gun); changing it in
+  as `levels/start-level-demo.tscn` does (the M1911); changing it in
   `scenes/player.tscn` changes it for every level that hasn't set its own.
   It works the same in multiplayer: everyone starts a level with the weapon
   its `Player` node says.
@@ -315,7 +335,7 @@ Select a node and use the Inspector; every value is an exported variable.
   the player scene, add it to the `weapons` list in `scripts/player.gd` (and
   its name, in the same place, to the list of names on the `starting_weapon`
   line near the top of that script), and
-  give it a `weapon_5` input action (Project > Project Settings > Input Map).
+  give it a `weapon_7` input action (Project > Project Settings > Input Map).
   The mouse wheel picks it up automatically. Its script needs a `get_hud_text()`
   function, which returns the words shown in the bottom-right corner. If it
   fires projectiles, start them at `owner.get_projectile_start(muzzle)` rather
@@ -342,7 +362,10 @@ Select a node and use the Inspector; every value is an exported variable.
   in hand is shown. Each has two `Marker3D` children, `GripRight` and
   `GripLeft`, and the arms bend themselves so the hands land on them: move a
   marker and the hand follows. A weapon with no gun model of its own leaves
-  the arms hanging empty.
+  the arms hanging empty. Most gun models are boxes placed in the player
+  model's own scene. The M1911's is `scenes/m1911_model.tscn` placed there
+  (the node called `Model`, a fifth bigger than life so that it can be seen
+  from across a room).
 - **Pistol** (`scenes/pistol.tscn`): damage, range, fire interval, ammo, and
   **Shoot Sound** (drag in a `.wav`/`.ogg` to replace the placeholder noise).
 - **Machine gun** (`scenes/machine_gun.tscn`): damage per bullet, fire
@@ -359,6 +382,30 @@ Select a node and use the Inspector; every value is an exported variable.
   other stays as it was) and the same right-mouse grenades. Its boxes are
   textured by `mp40_body`, `_barrel`, `_rest` (the bar under the barrel),
   `_magazine` and `_grip`; `mp40_stock` is only on the player model's.
+- **M1911** (`scenes/m1911.tscn`, key 6): the pistol again, looking like the
+  .45 automatic the American army adopted in 1911, in blued steel with
+  chequered walnut on the handle. It is the gun you start with. It runs the
+  pistol's script, so it has the same settings (with its own values: change
+  one gun and the other stays as it was) and does the same damage.
+
+  Its shape is in a scene of its own, `scenes/m1911_model.tscn`, which the
+  gun in your hands and the guns both player models carry all use: change a
+  box there and it changes in all three. It is thirteen boxes: the `Slide`,
+  the `SpringTunnel` under its muzzle, the `Frame`, the two sights, the
+  `Hammer` (pulled back), the `GripSafety` sticking out under it, the
+  `Trigger` inside its guard (`GuardFront`, `GuardBottom`), and the
+  `Grip`, which leans back 18 degrees and carries the wooden `Panels` and
+  the `MagazineBase` with it. The slide and the frame have
+  **Subdivide Depth** set on their meshes. Leave it: the shader's trick for
+  drawing the gun in your hands in front of the walls is worked out at the
+  corners of each box, and on a long box with nothing between its ends the
+  small parts behind it can show through.
+
+  It is painted finer than the other guns, half a centimetre to a pixel.
+  `m1911_slide`, `_tunnel`, `_frame`, `_grip`, `_panel`, `_hammer` and
+  `_rear_sight` are laid out as six small pictures like the other guns'.
+  `m1911_steel` is not: it is one plain square of steel, which its material
+  lays over the small parts 8 cm to a copy.
 - **Gun and projectile textures**: the other guns are textured the same
   way, one PNG per box: `pistol_slide` and `pistol_grip`; `shotgun_receiver`,
   `_barrel`, `_tube`, `_pump`, `_grip` and `_rib` (the sighting rib on top,
@@ -370,6 +417,26 @@ Select a node and use the Inspector; every value is an exported variable.
 - **Shotgun** (`scenes/shotgun.tscn`): pellets per shell, damage per pellet,
   spread, range, time between shots, time after a double shot, and
   **Shoot Sound**. It never runs out of shells.
+- **Ladder** (`scenes/ladder.tscn`): **Height** (how far it climbs, from
+  the floor at its foot to the floor it leads up to), **Width**, **Rung
+  Spacing**, and **Grab Distance** (how far out from the wall it catches
+  hold of you). Changing Height in the editor rebuilds its rails and rungs
+  there and then.
+
+  To put one in a level: place it under `Props` with its origin on the
+  floor against a wall and its blue arrow (+Z) pointing out of the wall,
+  and set Height to exactly the height of the floor at the top. The ladder
+  stops holding you at that height, so if it is set higher you can't step
+  off, and if lower you are let go before you can reach the edge. The floor
+  at the top has to begin where the wall ends (the ladder goes up the face
+  of a ledge, or the side of a hole in the floor), because you leave the
+  ladder by carrying on forwards over it. The rails and rungs have no
+  collision: the wall behind them stops you, and takes the bullet holes.
+
+  Being on a ladder is nothing more than touching the space in front of
+  it. Every physics step `scripts/player.gd` asks each ladder (the nodes in
+  the `ladder` group) whether the player is in that space, and if one says
+  yes it moves the player Half-Life's way instead of walking (`_climb()`).
 - **Breakable glass** (`scenes/breakable_glass.tscn`): **Size** (width and
   height, in metres), health (20 = two pistol shots) and **Break Sound**.
   Each hit leaves a bullet hole where it lands, with a few cracks running
@@ -604,8 +671,10 @@ How it plays:
 
 - Each player gets their own armour colour: orange for the host, then
   blue, green, red, yellow, purple, white and black.
-- The host chooses the level: F2 and F3 only work for the host, and change
-  it for everyone. Everyone starts where the level's `Player` node stands.
+- The host's level is everyone's level. (When level switching is on, F2
+  and F3 only work for the host, and change it for everyone.) Everyone
+  starts where the level's `Player` node stands, holding the gun that node
+  says.
 - Dying respawns you at the start with full health; the game carries on.
 - In a level with rounds of zombies (the multiplayer map demo), everyone
   fights the same round, and a round is bigger the more players there are
@@ -719,26 +788,34 @@ node marks where players start.
 
 ## Choosing which level to play
 
-Press **F2** in the game for the next level and **F3** for the previous one.
-If you die, you restart in the level you were playing.
+For now the game is one level, `levels/start-level-demo.tscn`. It is the
+project's **main scene** (Project Settings > Application > Run > Main
+Scene): the scene that F5, or running the game from a terminal, starts.
 
-The levels are listed on the `Main` node in `scenes/main.tscn`, under
-**Levels** in the Inspector. The game starts in the first one on the list
-(currently `levels/start-level-demo.tscn`), so drag a different level to the
-top to start there instead. A new level has to be added to this list before
-F2 will reach it.
-
-You can also open a level in the editor and press **F6** (Run Current Scene).
 A level on its own has no HUD, pause menu or low-res picture, so
 `scripts/level_launcher.gd` (an autoload, under **Project Settings > Globals >
-Autoload**) notices that a scene from `levels/` was started and restarts it
-inside `scenes/main.tscn`. This works for a level that isn't on the list yet
-too; it is added to the end of the list for that run.
+Autoload**) notices that the game was started on a scene from `levels/` and
+restarts it inside `scenes/main.tscn`. To start in a different level,
+right-click it in the FileSystem dock and choose **Set as Main Scene**.
+
+**F2** (next level) and **F3** (previous level) are switched off for now. To
+switch them back on, select the `Main` node in `scenes/main.tscn` and tick
+**Level Switching** in the Inspector. They step through the levels listed
+on that node, under **Levels**, in order and round again: the "presses of
+F2" given for each level below are counted from the first on the list. A
+new level has to be added to the list before F2 will reach it. If you die,
+you restart in the level you were playing.
+
+Until then, the way to play one of the other levels is to open it in the
+editor and press **F6** (Run Current Scene), which the launcher handles the
+same way. This works for a level that isn't on the list yet too; it is
+added to the end of the list for that run.
 
 ### The start level demo
 
-`levels/start-level-demo.tscn` is the first level, so it is the one the game
-starts in. It is four pieces of test map 2 copied out on their own: the
+`levels/start-level-demo.tscn` is the level the game starts in: it is the
+project's main scene (and the first on the list of levels). It is four
+pieces of test map 2 copied out on their own: the
 control room, the experimentation lab it looks down into, the lab below the
 control room, and the torn-out containment door that joins those two labs.
 Everything in those rooms is where it is in test map 2 (see "The control
@@ -749,9 +826,10 @@ its own (see "The rounded zombie" under "Tuning gameplay" above); test map
 2's are the textured boxes.
 
 The control room is dressed differently from test map 2's, though, and one
-other thing is different. You start with the machine gun
-in your hands instead of the pistol: that is **Starting Weapon** on the
-level's `Player` node, and the other guns are still on their number keys.
+other thing is different. You start with the M1911 (see "Tuning gameplay"
+above) in your hands instead of the plain pistol: that is **Starting
+Weapon** on the level's `Player` node, and the other guns are still on
+their number keys.
 Three of the monitors show a program too small to read. On the left and
 middle desks by the window it is green lines on black
 (`monitor_screen_listing.png`), instead of the cells' status and subject
@@ -801,10 +879,19 @@ to read in it, and no prompt appears.
 
 The rest of test map 2 is not there. Where the control room's corridor and
 the lower lab's three exits (to the atrium, the warehouse and the tunnels)
-used to be, there is plain wall. So the only way down from the control room
-is the observation window: shoot out a pane, jump onto the sill and drop
-into the lab. From there the hole in the south wall leads into the lab
-below, which is a dead end.
+used to be, there is plain wall.
+
+In their place this level has something test map 2 has not: a ladder
+(`scenes/ladder.tscn`, see "Controls" and "Tuning gameplay" above). There
+is a hatch in the control room's floor, edged with hazard stripes, to your
+right as you start, in front of the server racks. It opens onto the lab
+below, and the ladder runs 4 m up that lab's north wall into it, beside
+the torn-out door. So the rooms make a loop, and there are two ways round
+it. Shoot out a pane of the observation window, jump onto the sill, drop
+into the experimentation lab, go through the hole in its south wall into
+the lab below, and climb the ladder back to where you started. Or go down
+the ladder first, into the five zombies waiting in that lab. They can't
+climb after you.
 
 It is a copy, not a link: changing one of the two levels does not change
 the other.
@@ -1164,6 +1251,9 @@ editor, so turn that arrow to face into the room.
 - In the view behind you (F4), shots come from your eyes, 30 cm below the
   camera's line, so at close range they land slightly below the crosshair.
 - Crouching doesn't hide you from enemies that are already looking your way.
+- Zombies can't climb ladders. On a ladder, the body other players see (and
+  you, with F4) has no climbing animation: it hangs there in its jumping
+  pose. Only you hear your boots on the rungs.
 - The rounded zombie is only in the start level demo, and the specimens
   floating in that level's tanks are still made of the old boxes. Its arms
   and legs do not bend as it moves: each is one stiff piece, with a slight

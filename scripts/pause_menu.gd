@@ -240,16 +240,16 @@ func _activate() -> void:
 
 
 ## Turns the selected setting down (direction -1) or up (+1). On/off settings
-## simply flip. "wrap" decides whether going past the end comes round to the
+## simply flip. "wraps" decides whether going past the end comes round to the
 ## other end or stops there.
-func _change(direction: int, wrap: bool) -> void:
+func _change(direction: int, wraps: bool) -> void:
 	var row := rows[selected]
 	if row == retro_effects_row:
 		retro_effects = not retro_effects
 	elif row == snap_row:
-		snap_strength = _step(snap_strength, direction, wrap)
+		snap_strength = _step(snap_strength, direction, wraps)
 	elif row == light_bands_row:
-		light_band_strength = _step(light_band_strength, direction, wrap)
+		light_band_strength = _step(light_band_strength, direction, wraps)
 	elif row == color_quantize_row:
 		color_quantize = not color_quantize
 	elif row == view_bob_row:
@@ -260,7 +260,7 @@ func _change(direction: int, wrap: bool) -> void:
 		# Ten steps of 10%. snappedf rounds to the nearest 0.1, which keeps
 		# tiny rounding errors from building up over many presses.
 		var volume := snappedf(master_volume + 0.1 * direction, 0.1)
-		if wrap:
+		if wraps:
 			# A click turns it down, and from silent back round to full.
 			master_volume = 1.0 if volume < 0.0 else minf(volume, 1.0)
 		else:
@@ -272,7 +272,7 @@ func _change(direction: int, wrap: bool) -> void:
 
 
 ## Returns the strength one notch up or down STRENGTH_STEPS from "value".
-func _step(value: float, direction: int, wrap: bool) -> float:
+func _step(value: float, direction: int, wraps: bool) -> float:
 	# Start from whichever step is closest, since Project Settings may hold a
 	# value in between the steps.
 	var index := 0
@@ -281,7 +281,7 @@ func _step(value: float, direction: int, wrap: bool) -> float:
 			index = i
 
 	index += direction
-	if wrap:
+	if wraps:
 		index = posmod(index, STRENGTH_STEPS.size())
 	else:
 		index = clampi(index, 0, STRENGTH_STEPS.size() - 1)

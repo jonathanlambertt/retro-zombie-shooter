@@ -170,6 +170,17 @@ func _init() -> void:
 	_save(_make_fire_extinguisher(), "fire_extinguisher")
 	_save(_make_fire_extinguisher_valve(), "fire_extinguisher_valve")
 	_save(_make_poster_penguin(), "poster_penguin")
+	# The M1911 (scenes/m1911.tscn, whose boxes are in
+	# scenes/m1911_model.tscn): a picture for each box that needs one of its
+	# own, and a plain square of blued steel that its small parts share.
+	_save(_make_m1911_slide(), "m1911_slide")
+	_save(_make_m1911_tunnel(), "m1911_tunnel")
+	_save(_make_m1911_frame(), "m1911_frame")
+	_save(_make_m1911_grip(), "m1911_grip")
+	_save(_make_m1911_panel(), "m1911_panel")
+	_save(_make_m1911_hammer(), "m1911_hammer")
+	_save(_make_m1911_rear_sight(), "m1911_rear_sight")
+	_save(_make_m1911_steel(), "m1911_steel")
 	quit()
 
 
@@ -2487,20 +2498,20 @@ func _draw_arrowhead(image: Image, tip: Vector2i, direction: Vector2i, color: Co
 
 ## The stencilled sign over the specimen tanks: yellow on black, 4 m x 0.5 m.
 func _make_sign_containment() -> Image:
-	var sign := _speckle(128, 16, Color(0.12, 0.12, 0.13), 0.05)
+	var image := _speckle(128, 16, Color(0.12, 0.12, 0.13), 0.05)
 	var yellow := Color(0.86, 0.70, 0.12)
-	sign.fill_rect(Rect2i(1, 1, 126, 1), yellow)
-	sign.fill_rect(Rect2i(1, 14, 126, 1), yellow)
-	_draw_text_centred(sign, "CONTAINMENT LAB", 3, yellow, 2)
-	return sign
+	image.fill_rect(Rect2i(1, 1, 126, 1), yellow)
+	image.fill_rect(Rect2i(1, 14, 126, 1), yellow)
+	_draw_text_centred(image, "CONTAINMENT LAB", 3, yellow, 2)
+	return image
 
 
 ## The number plate over a holding cell: "CELL 1" in yellow on black,
 ## 80 cm x 25 cm.
 func _make_sign_cell(number: int) -> Image:
-	var sign := _speckle(32, 10, Color(0.12, 0.12, 0.13), 0.05)
-	_draw_text_centred(sign, "CELL %d" % number, 3, Color(0.86, 0.70, 0.12))
-	return sign
+	var image := _speckle(32, 10, Color(0.12, 0.12, 0.13), 0.05)
+	_draw_text_centred(image, "CELL %d" % number, 3, Color(0.86, 0.70, 0.12))
+	return image
 
 
 # --- Desks -------------------------------------------------------------------
@@ -4243,3 +4254,298 @@ func _make_poster_penguin() -> Image:
 	_draw_text_centred(poster, "HANG IN", 49, ink)
 	_draw_text_centred(poster, "THERE!", 56, ink)
 	return poster
+
+
+# --- The M1911 -----------------------------------------------------------------
+#
+# The M1911 (scenes/m1911.tscn) is the pistol in a different skin: the .45
+# automatic the American army adopted in 1911. Blued steel all over, with
+# chequered walnut panels on the handle. It is built from more boxes than
+# the other guns (they are in scenes/m1911_model.tscn), and it is painted
+# finer: here a pixel is half a centimetre, so the 20 cm slide is 40 pixels
+# long, where the pistol's 22 cm are 32.
+#
+# The boxes with something to show get an atlas each, like the other guns'.
+# Every side of a box is stretched to fill its cell (see _paint_face), and
+# that only comes out in whole pixels if the cell's width and height can be
+# divided by the width and height of every picture that goes in it. So a
+# cell is the smallest size that all of a box's sides divide: 40 x 40 for
+# the slide (its sides are 40 x 5, its top 8 x 40 and its ends 8 x 5).
+#
+# In the first-person view the gun is seen from behind, from above and from
+# its left. So the back of every box, the tops and the left sides are what
+# the player looks at; the right side is only seen by other players.
+
+## The barrel was left as bare polished steel, not blued like the rest.
+const M1911_BARREL := Color(0.52, 0.54, 0.55)
+## Letters stamped into the steel: a little paler than it.
+const M1911_STAMP := Color(0.33, 0.36, 0.40)
+
+
+## The slide, the top half of the gun, which jumps back with every shot: 4 cm
+## wide, 2.5 cm tall and 20 cm long. Its sides are 40 x 5 pixels.
+func _make_m1911_slide() -> Image:
+	var atlas := _new_atlas(40, 40)
+	_paint_gun_strip(atlas, FACE_RIGHT, _make_m1911_slide_side(true))
+	_paint_gun_strip(atlas, FACE_LEFT, _make_m1911_slide_side(false))
+
+	# The top, which is most of what you see of the gun in your hands: 8
+	# pixels across, with the back at the top of the picture and the gun's
+	# right side at the left. It is rounded, so light runs along its middle
+	# and its edges fall into shadow.
+	var top := _speckle(8, 40, GUN_BLUED, 0.07)
+	for y in 40:
+		for x: int in [3, 4]:
+			top.set_pixel(x, y, _shade(top.get_pixel(x, y), 1.4))
+		for x: int in [0, 7]:
+			top.set_pixel(x, y, _shade(top.get_pixel(x, y), 0.6))
+	# The grooves for pulling the slide back come up over both edges.
+	for y in range(2, 11, 2):
+		top.set_pixel(0, y, _shade(GUN_BLUED, 0.35))
+		top.set_pixel(7, y, _shade(GUN_BLUED, 0.35))
+	# The ejection port is cut into the right side and a little way across
+	# the top. The barrel shows through it.
+	top.fill_rect(Rect2i(0, 15, 3, 8), GUN_BLACK)
+	top.fill_rect(Rect2i(0, 16, 2, 7), M1911_BARREL)
+	top.fill_rect(Rect2i(0, 39, 8, 1), _shade(GUN_WORN, 0.75))  # worn muzzle
+	_paint_face(atlas, FACE_TOP, top)
+	# The underside rests on the frame.
+	_paint_face(atlas, FACE_BOTTOM, _speckle(8, 40, _shade(GUN_BLUED, 0.7), 0.07))
+
+	# The back, which faces you: the plate that holds the firing pin in,
+	# with the end of the extractor beside it (on the gun's right, which is
+	# the right of this picture too). The hammer stands in front of it.
+	var back := _speckle(8, 5, GUN_BLUED, 0.07)
+	back.fill_rect(Rect2i(0, 0, 8, 1), _shade(GUN_BLUED, 1.4))
+	back.fill_rect(Rect2i(2, 1, 4, 4), _shade(GUN_BLUED, 1.25))
+	back.set_pixel(6, 1, _shade(GUN_WORN, 0.8))
+	_paint_face(atlas, FACE_BACK, back)
+
+	# The muzzle: the end of the barrel, and the bore in the middle of it.
+	var front := _speckle(8, 5, GUN_BLUED, 0.07)
+	front.fill_rect(Rect2i(2, 0, 4, 4), M1911_BARREL)
+	front.fill_rect(Rect2i(3, 1, 2, 2), GUN_BLACK)
+	_paint_face(atlas, FACE_FRONT, front)
+	return atlas
+
+
+## One side of the slide, 40 x 5 pixels with the back of the gun at the
+## left. Both sides have the grooves for pulling it back and the maker's
+## lettering. The right side has the port that spent cartridges are thrown
+## out of (ejection_port), with the barrel showing through it.
+func _make_m1911_slide_side(ejection_port: bool) -> Image:
+	var side := _speckle(40, 5, GUN_BLUED, 0.07)
+	for x in 40:
+		side.set_pixel(x, 0, _shade(side.get_pixel(x, 0), 1.5))  # light on the top edge
+		# The frame underneath is narrower, which leaves the slide's bottom
+		# edge in shadow. Not the last 2 cm: there the slide carries on down
+		# (the next function).
+		if x < 36:
+			side.set_pixel(x, 4, _shade(side.get_pixel(x, 4), 0.6))
+	for x in range(2, 11, 2):
+		side.fill_rect(Rect2i(x, 1, 1, 4), _shade(GUN_BLUED, 0.35))  # groove
+	side.fill_rect(Rect2i(39, 0, 1, 5), _shade(GUN_WORN, 0.75))  # worn muzzle
+	if ejection_port:
+		side.fill_rect(Rect2i(15, 0, 8, 3), GUN_BLACK)
+		side.fill_rect(Rect2i(16, 1, 7, 2), M1911_BARREL)
+		for x: int in [26, 28, 30, 32]:
+			side.set_pixel(x, 2, M1911_STAMP)  # MODEL OF 1911. U.S. ARMY
+	else:
+		# Two blocks of lettering (the patents, the maker) either side of
+		# the maker's badge, a rearing horse.
+		for x: int in [14, 16, 18, 24, 26, 28]:
+			side.set_pixel(x, 2, M1911_STAMP)
+		side.fill_rect(Rect2i(21, 1, 1, 3), M1911_STAMP)
+	return side
+
+
+## The front of the slide carries on down below the barrel, as a tunnel
+## with the spring in it that pushes the slide forward again: 4 cm wide,
+## 1.5 cm tall and 2 cm long. It is a box of its own because the frame,
+## which is narrower than the slide, stops short of the muzzle; this is
+## what is in front of it. Its sides are 4 x 3 pixels.
+func _make_m1911_tunnel() -> Image:
+	var atlas := _new_atlas(8, 12)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT]:
+		var side := _speckle(4, 3, GUN_BLUED, 0.07)
+		for x in 4:
+			side.set_pixel(x, 2, _shade(side.get_pixel(x, 2), 0.6))  # underside in shadow
+		side.fill_rect(Rect2i(3, 0, 1, 3), _shade(GUN_WORN, 0.75))  # worn muzzle
+		_paint_gun_strip(atlas, cell, side)
+	# The muzzle end: the cap that holds the spring in.
+	var front := _speckle(8, 3, GUN_BLUED, 0.07)
+	front.fill_rect(Rect2i(3, 0, 2, 2), _shade(GUN_WORN, 0.8))
+	_paint_face(atlas, FACE_FRONT, front)
+	_paint_face(atlas, FACE_BACK, _speckle(8, 3, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_TOP, _speckle(8, 4, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(8, 4, _shade(GUN_BLUED, 0.7), 0.07))
+	return atlas
+
+
+## The frame, the bottom half of the gun that the slide runs along: 3 cm
+## wide, 1.5 cm tall and 18 cm long. Its sides are 36 x 3 pixels.
+func _make_m1911_frame() -> Image:
+	var atlas := _new_atlas(36, 36)
+	_paint_gun_strip(atlas, FACE_RIGHT, _make_m1911_frame_side(false))
+	_paint_gun_strip(atlas, FACE_LEFT, _make_m1911_frame_side(true))
+	# The slide covers the top. The underside is in shadow, with the
+	# trigger and its guard hanging from it.
+	_paint_face(atlas, FACE_TOP, _speckle(6, 36, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(6, 36, _shade(GUN_BLUED, 0.7), 0.07))
+	for cell: Vector2i in [FACE_BACK, FACE_FRONT]:
+		_paint_face(atlas, cell, _speckle(6, 3, GUN_BLUED, 0.07))
+	return atlas
+
+
+## One side of the frame, 36 x 3 pixels with the back of the gun at the
+## left. Everything the thumb works is on the left side (controls): the
+## safety catch at the back, the lever that holds the slide open above the
+## trigger, and the button that drops the magazine.
+func _make_m1911_frame_side(controls: bool) -> Image:
+	var side := _make_gun_strip(36, 3, GUN_BLUED)
+	var lever := _shade(GUN_BLUED, 1.6)
+	# The pins the hammer and the trigger's parts turn on go right through.
+	side.set_pixel(8, 1, _shade(GUN_WORN, 0.8))
+	side.set_pixel(10, 2, _shade(GUN_WORN, 0.8))
+	if controls:
+		# The safety catch: a plate with a ledge for the thumb.
+		side.fill_rect(Rect2i(1, 0, 4, 1), lever)
+		side.fill_rect(Rect2i(3, 1, 3, 1), lever)
+		side.set_pixel(5, 1, GUN_WORN)
+		# The slide stop: a lever lying along the top edge, from its thumb
+		# pad at the left to its pin above the trigger.
+		side.fill_rect(Rect2i(12, 0, 6, 1), lever)
+		side.set_pixel(12, 0, GUN_WORN)
+		side.set_pixel(17, 1, GUN_WORN)
+		side.set_pixel(14, 2, GUN_WORN)  # magazine button
+		for x: int in [27, 29, 31, 33]:
+			side.set_pixel(x, 1, M1911_STAMP)  # UNITED STATES PROPERTY
+	else:
+		side.set_pixel(17, 1, GUN_WORN)  # the other end of the slide stop's pin
+		for x: int in [20, 22, 24]:
+			side.set_pixel(x, 1, M1911_STAMP)  # serial number
+	return side
+
+
+## The steel of the handle: 2.5 cm wide, 10 cm tall and 5 cm deep. (In the
+## scene the box leans back, as the handle of a real one does.) The wooden
+## panels cover most of its two sides, so what shows is its front, its back
+## and a strip round the bottom. Each side is 10 x 20 pixels, the front and
+## the back 5 x 20.
+func _make_m1911_grip() -> Image:
+	var atlas := _new_atlas(10, 20)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT]:
+		_paint_face(atlas, cell, _speckle(10, 20, GUN_BLUED, 0.07))
+
+	# The front, where the fingers go: smooth, rounded, and rubbed pale down
+	# the middle.
+	var front := _speckle(5, 20, GUN_BLUED, 0.07)
+	for y in 20:
+		front.set_pixel(0, y, _shade(front.get_pixel(0, y), 0.7))
+		front.set_pixel(2, y, _shade(front.get_pixel(2, y), 1.3))
+		front.set_pixel(4, y, _shade(front.get_pixel(4, y), 0.7))
+	_paint_face(atlas, FACE_FRONT, front)
+
+	# The back, which faces you. Its top five rows are inside the frame.
+	# Below them is the grip safety, a plate the palm presses in before the
+	# gun will fire; then a seam; then the smooth housing of the hammer's
+	# spring, with a loop at the bottom for a cord.
+	var back := _speckle(5, 20, GUN_BLUED, 0.07)
+	for y in 20:
+		back.set_pixel(0, y, _shade(back.get_pixel(0, y), 0.7))
+		back.set_pixel(4, y, _shade(back.get_pixel(4, y), 0.7))
+	back.fill_rect(Rect2i(1, 5, 3, 6), _shade(GUN_BLUED, 1.35))
+	back.fill_rect(Rect2i(0, 11, 5, 1), _shade(GUN_BLUED, 0.4))
+	back.fill_rect(Rect2i(1, 17, 3, 3), _shade(GUN_WORN, 0.7))
+	back.set_pixel(2, 18, GUN_BLACK)
+	_paint_face(atlas, FACE_BACK, back)
+
+	# The top is inside the frame. The magazine's base covers the bottom.
+	_paint_face(atlas, FACE_TOP, _speckle(5, 10, GUN_BLUED, 0.07))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(5, 10, _shade(GUN_BLUED, 0.7), 0.07))
+	return atlas
+
+
+## The two wooden panels on the handle. They are one box, 4.5 cm wide, 8 cm
+## tall and 4 cm deep, that goes right through the steel and stands 1 cm
+## proud of it on each side. Each panel is 8 x 16 pixels of walnut, cut
+## with a criss-cross of grooves to stop the hand slipping (chequering),
+## and held on by two screws. Round each screw the wood is left smooth, in
+## the shape of a diamond.
+func _make_m1911_panel() -> Image:
+	var atlas := _new_atlas(72, 16)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT]:
+		var side := _speckle(8, 16, GUN_WOOD, 0.06)
+		for y in 16:
+			for x in 8:
+				# How many pixels this one is from the middle of the nearer
+				# screw, counting steps across plus steps down. Everything
+				# within the same count makes a diamond.
+				var from_screw := absf(x - 3.5) + minf(absf(y - 3.5), absf(y - 11.5))
+				if x == 0 or x == 7 or y == 0 or y == 15:
+					# A smooth border, darker where the edge is rounded off.
+					side.set_pixel(x, y, _shade(side.get_pixel(x, y), 0.8))
+				elif from_screw > 2.5 and (x + y) % 2 == 0:
+					# Every other pixel, like the squares of one colour on a
+					# chessboard.
+					side.set_pixel(x, y, _shade(side.get_pixel(x, y), 0.55))
+		for y: int in [3, 11]:
+			side.fill_rect(Rect2i(3, y, 2, 1), GUN_WORN)  # screw...
+			side.fill_rect(Rect2i(3, y + 1, 2, 1), _shade(GUN_WORN, 0.55))  # ...and its slot
+		_paint_face(atlas, cell, side)
+	# The edges of the panels: all that shows of the other four sides.
+	for cell: Vector2i in [FACE_FRONT, FACE_BACK]:
+		_paint_face(atlas, cell, _speckle(9, 16, _shade(GUN_WOOD, 0.75), 0.06))
+	_paint_face(atlas, FACE_TOP, _speckle(9, 8, _shade(GUN_WOOD, 0.9), 0.06))
+	_paint_face(atlas, FACE_BOTTOM, _speckle(9, 8, _shade(GUN_WOOD, 0.6), 0.06))
+	return atlas
+
+
+## The hammer, pulled back ready to fire: 1 cm wide, 1 cm thick and 2.5 cm
+## long, leaning back out of the slide. The end you see is its spur, grooved
+## for the thumb. Its sides are 5 x 2 pixels.
+func _make_m1911_hammer() -> Image:
+	var atlas := _new_atlas(10, 10)
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT]:
+		_paint_gun_strip(atlas, cell, _make_gun_strip(5, 2, GUN_BLUED))
+	var spur := _speckle(2, 2, GUN_BLUED, 0.07)
+	spur.fill_rect(Rect2i(0, 0, 2, 1), _shade(GUN_BLUED, 1.7))
+	spur.fill_rect(Rect2i(0, 1, 2, 1), _shade(GUN_BLUED, 0.5))
+	_paint_face(atlas, FACE_BACK, spur)
+	_paint_face(atlas, FACE_FRONT, _speckle(2, 2, GUN_BLUED, 0.07))
+	# The top, with the spur's grooves across the end nearest you.
+	var top := _speckle(2, 5, GUN_BLUED, 0.07)
+	top.fill_rect(Rect2i(0, 0, 2, 1), _shade(GUN_BLUED, 0.5))
+	top.fill_rect(Rect2i(0, 1, 2, 1), _shade(GUN_BLUED, 1.7))
+	top.fill_rect(Rect2i(0, 2, 2, 1), _shade(GUN_BLUED, 0.5))
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(2, 5, _shade(GUN_BLUED, 0.7), 0.07))
+	return atlas
+
+
+## The rear sight: 2.5 cm wide, 0.5 cm tall and 1 cm long. A dark bar with a
+## notch in the middle to line the front sight up in. The notch is painted
+## on the back, the front and the top, so it looks cut right through.
+func _make_m1911_rear_sight() -> Image:
+	var atlas := _new_atlas(10, 2)
+	var steel := _shade(GUN_BLUED, 0.75)
+	for cell: Vector2i in [FACE_BACK, FACE_FRONT]:
+		var end := _speckle(5, 1, steel, 0.07)
+		end.set_pixel(2, 0, GUN_BLACK)
+		_paint_face(atlas, cell, end)
+	var top := _speckle(5, 2, steel, 0.07)
+	top.fill_rect(Rect2i(2, 0, 1, 2), GUN_BLACK)
+	_paint_face(atlas, FACE_TOP, top)
+	_paint_face(atlas, FACE_BOTTOM, _speckle(5, 2, steel, 0.07))
+	for cell: Vector2i in [FACE_RIGHT, FACE_LEFT]:
+		_paint_face(atlas, cell, _speckle(2, 1, steel, 0.07))
+	return atlas
+
+
+## Plain blued steel, 16 x 16 pixels, for the M1911's small parts: the front
+## sight, the trigger and its guard, the grip safety's tail and the base of
+## the magazine. It is not an atlas. Its material lays it over each box by
+## the box's own shape, 8 cm to a copy, which makes a pixel half a
+## centimetre here too.
+func _make_m1911_steel() -> Image:
+	return _speckle(16, 16, GUN_BLUED, 0.07)

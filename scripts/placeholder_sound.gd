@@ -41,6 +41,29 @@ static func make_grunt(duration := 0.22) -> AudioStreamWAV:
 	return _make_sound(samples)
 
 
+## Builds a short metallic "clank": a boot on the rung of a ladder.
+##
+## Struck metal rings at several pitches at once, and they are not tidy
+## multiples of each other as the pitches in a voice are. That is what makes
+## it sound like metal. Here it is three of them, dying away quickly, behind
+## a click of noise for the moment the boot lands.
+static func make_clank(duration := 0.09) -> AudioStreamWAV:
+	var sample_count := int(SAMPLE_RATE * duration)
+	var samples := PackedFloat32Array()
+	for i in sample_count:
+		var progress := float(i) / sample_count
+		# How many seconds into the sound this sample is.
+		var time := float(i) / SAMPLE_RATE
+		var ring := 0.5 * sin(time * 830.0 * TAU)
+		ring += 0.3 * sin(time * 1370.0 * TAU)
+		ring += 0.2 * sin(time * 2210.0 * TAU)
+		# The click is over in the first eighth of the sound.
+		var click := randf_range(-0.5, 0.5) * maxf(1.0 - progress * 8.0, 0.0)
+		var fade := 1.0 - progress
+		samples.append(ring * fade * fade + click)
+	return _make_sound(samples)
+
+
 ## Packs a list of samples (each from -1.0 to 1.0) into a playable sound.
 static func _make_sound(samples: PackedFloat32Array) -> AudioStreamWAV:
 	var data := PackedByteArray()

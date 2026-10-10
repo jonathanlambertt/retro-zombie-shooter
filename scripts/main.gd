@@ -16,9 +16,10 @@ extends Control
 ##      that reduces the number of colours in the final picture. F1 and the
 ##      pause menu (scripts/pause_menu.gd) switch it on and off.
 ##
-## It also loads the level, and swaps it for the next or previous one in its
-## Levels list when F2 or F3 is pressed. In multiplayer only the host does
-## that: scripts/network.gd shares the host's level with everyone else.
+## It also loads the level. It can swap it for the next or previous one in
+## its Levels list when F2 or F3 is pressed, but that is switched off for now
+## (see Level Switching below). In multiplayer only the host would do that:
+## scripts/network.gd shares the host's level with everyone else.
 
 ## How tall a picture the HUD, the pause menu and the notebook's page are
 ## laid out for, in pixels. They were all drawn for the 320 x 240 the game
@@ -44,23 +45,34 @@ const INTERFACE_HEIGHT := 240
 ## If false, the picture fills as much of the window as possible.
 @export var integer_scaling := false
 
-## Every level in the game, in the order F2 steps through them. The game
-## starts in the first one. To add a level, add its .tscn file to this list
-## in the Inspector (select the Main node in scenes/main.tscn).
+## Every level in the game, in the order F2 steps through them (while Level
+## Switching is on). A game started on this scene opens the first one. But
+## the project's main scene is a level, levels/start-level-demo.tscn, and a
+## game started on a level opens that level: see direct_level_path below.
+## To add a level, add its .tscn file to this list in the Inspector (select
+## the Main node in scenes/main.tscn).
 @export var levels: Array[PackedScene] = []
+
+## If true, F2 and F3 swap the level for the next or the previous one in
+## Levels. It is off for now: the game is one level, the start level demo.
+## The other levels are still in the list, and any of them can be played by
+## opening it in the editor and pressing F6 (Run Current Scene).
+@export var level_switching := false
 
 ## Which entry of Levels is being played. "static" keeps the number when the
 ## whole game is reloaded after the player dies, so you restart in the level
 ## you died in instead of being sent back to the first one.
 static var level_index := 0
 
-## The file of a level scene that was run on its own (F6 in the editor)
-## rather than through this scene, or "" if the game was started normally.
-## scripts/level_launcher.gd sets it. It is kept for the whole run, because a
-## level that isn't in Levels has to be added again after every reload.
+## The file of the level scene the game was started on, or "" if it was
+## started on this scene instead. Starting on a level is the usual way now:
+## the project's main scene is one, and F6 in the editor runs whichever level
+## is open. scripts/level_launcher.gd sets it. It is kept for the whole run,
+## because a level that isn't in Levels has to be added again after every
+## reload.
 static var direct_level_path := ""
 ## True until the level above has been opened once. After that F2 and F3 are
-## free to move away from it.
+## free to move away from it (while Level Switching is on).
 static var open_direct_level := false
 
 ## The level currently loaded inside the low-res viewport.
@@ -134,6 +146,9 @@ func _use_direct_level() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Changing level is switched off for now (see Level Switching above).
+	if not level_switching:
+		return
 	# In multiplayer the host picks the level for everyone.
 	if Network.is_client():
 		return

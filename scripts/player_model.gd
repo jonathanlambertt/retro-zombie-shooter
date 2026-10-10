@@ -342,12 +342,12 @@ func show_shot(sound: AudioStream) -> void:
 
 ## Shows the gun model with the same name as the weapon in hand (if there is
 ## one) and puts the hands on its GripRight and GripLeft markers.
-func _hold(weapon_name: String) -> void:
-	held_weapon = weapon_name
+func _hold(gun_name: String) -> void:
+	held_weapon = gun_name
 	var right_hand := EMPTY_HAND_RIGHT
 	var left_hand := EMPTY_HAND_LEFT
 	for gun: Node3D in guns.get_children():
-		gun.visible = gun.name == weapon_name
+		gun.visible = gun.name == gun_name
 		if gun.visible:
 			# to_local turns a position in the world into one measured from
 			# the Aim node, which is where the shoulders are.

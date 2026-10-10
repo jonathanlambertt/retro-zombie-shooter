@@ -1,4 +1,4 @@
-[gd_scene load_steps=79 format=3]
+[gd_scene load_steps=82 format=3]
 
 [ext_resource type="Environment" path="res://assets/retro_environment.tres" id="env"]
 [ext_resource type="Material" path="res://assets/materials/concrete.tres" id="concrete"]
@@ -50,6 +50,7 @@
 [ext_resource type="Material" path="res://assets/materials/fire_extinguisher.tres" id="fire_extinguisher"]
 [ext_resource type="Material" path="res://assets/materials/fire_extinguisher_valve.tres" id="fire_extinguisher_valve"]
 [ext_resource type="Material" path="res://assets/materials/poster_penguin.tres" id="poster_penguin"]
+[ext_resource type="PackedScene" path="res://scenes/ladder.tscn" id="ladder"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
 shading_mode = 0
@@ -196,6 +197,14 @@ rings = 0
 material = ExtResource("hazard")
 size = Vector3(15.6, 0.02, 0.5)
 
+[sub_resource type="BoxMesh" id="BoxMesh_hatch_strip_long"]
+material = ExtResource("hazard")
+size = Vector3(1.5, 0.02, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hatch_strip_short"]
+material = ExtResource("hazard")
+size = Vector3(0.15, 0.02, 1.1)
+
 [node name="StartLevelDemo" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -203,7 +212,7 @@ environment = ExtResource("env")
 
 [node name="Player" parent="." instance=ExtResource("player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.1, -15.5)
-starting_weapon = 1
+starting_weapon = 5
 
 [node name="World" type="CSGCombiner3D" parent="."]
 use_collision = true
@@ -313,6 +322,12 @@ material = ExtResource("metal")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, -0.125, -23.2)
 size = Vector3(2.4, 0.25, 2.6)
 material = ExtResource("hazard")
+
+[node name="CarveLadderHatch" type="CSGBox3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 3.5, -21.45)
+operation = 2
+size = Vector3(1.2, 1.2, 1.1)
+material = ExtResource("concrete")
 
 [node name="WindowMullion1" type="CSGBox3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 5.6, -24.25)
@@ -744,6 +759,10 @@ height = 0.9
 sides = 10
 material = ExtResource("drum")
 
+[node name="LabLadder" parent="Props" instance=ExtResource("ladder")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 0, -22)
+height = 4.0
+
 [node name="Details" type="Node3D" parent="."]
 
 [node name="LabLamp1" type="MeshInstance3D" parent="Details"]
@@ -995,6 +1014,22 @@ mesh = SubResource("BoxMesh_sheet")
 [node name="ExperimentPaper6" type="MeshInstance3D" parent="Details"]
 transform = Transform3D(0.9848, 0, 0.1736, 0, 1, 0, -0.1736, 0, 0.9848, 6.8, 0.006, -30.5)
 mesh = SubResource("BoxMesh_sheet")
+
+[node name="HatchStripNorth" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 4.01, -22.075)
+mesh = SubResource("BoxMesh_hatch_strip_long")
+
+[node name="HatchStripSouth" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 4.01, -20.825)
+mesh = SubResource("BoxMesh_hatch_strip_long")
+
+[node name="HatchStripWest" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.125, 4.01, -21.45)
+mesh = SubResource("BoxMesh_hatch_strip_short")
+
+[node name="HatchStripEast" type="MeshInstance3D" parent="Details"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.475, 4.01, -21.45)
+mesh = SubResource("BoxMesh_hatch_strip_short")
 
 [node name="Lights" type="Node3D" parent="."]
 

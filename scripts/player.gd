@@ -26,6 +26,12 @@ extends CharacterBody3D
 ## camera. Who controls a player is its "multiplayer authority", taken from
 ## its name, which is the controlling peer's ID.
 ##
+## Ladders work the way they do in Half-Life: touch one and you are on it,
+## with no key to press. On a ladder there is no gravity, and the movement
+## keys take you the way you are looking, up and down included, so looking
+## up and walking forward climbs. Jump lets go. See _climb() below, and
+## scripts/ladder.gd for the ladder itself.
+##
 ## Holding crouch shrinks the collision capsule and lowers the view, so you
 ## fit under lower things, and slows you down. Crouching in mid-air pulls
 ## your legs up instead of lowering your head ("crouch-jumping", as in
@@ -80,6 +86,23 @@ enum View { FIRST_PERSON, BEHIND, FRONT }
 ## How fast the view sinks and rises. 6 = all the way in a sixth of a second.
 @export var crouch_transition_speed := 6.0
 
+@export_group("Ladders")
+## How fast you climb, in metres per second. (Half-Life climbs at five
+## eighths of its running speed, which is what this is of Max Speed.)
+@export var ladder_speed := 4.4
+## How fast a jump throws you off a ladder, straight out from it, in metres
+## per second.
+@export var ladder_jump_speed := 5.9
+## Seconds after jumping off a ladder before a ladder can catch hold of you
+## again. Without it, a quick tap of the jump key would only carry you a few
+## centimetres before you were holding on once more.
+@export var ladder_let_go_time := 0.25
+## Seconds between the clanks of your boots on the rungs while you climb.
+@export var ladder_step_interval := 0.35
+## SOUND HOOK: drag a .wav or .ogg file here in the Inspector to use your own
+## sound for a boot on a rung. If left empty, a clank is generated instead.
+@export var ladder_sound: AudioStream
+
 @export_group("Mouse")
 ## Radians of turn per pixel of mouse movement.
 @export var mouse_sensitivity := 0.0025
@@ -114,7 +137,7 @@ enum View { FIRST_PERSON, BEHIND, FRONT }
 ## different gun from the rest. The number saved is the weapon's place in
 ## the weapons list further down (0 = the first), so these names must stay
 ## in the same order as that list.
-@export_enum("Pistol", "Machine gun", "Rocket launcher", "Shotgun", "MP40") var starting_weapon := 0
+@export_enum("Pistol", "Machine gun", "Rocket launcher", "Shotgun", "MP40", "M1911") var starting_weapon := 0
 
 var health := 0
 ## How strong the red "you are being hurt" tint is right now, from 0 (none)
@@ -140,6 +163,13 @@ var is_local := true
 ## True while standing on something. The controlling computer keeps it up to
 ## date and the network sends it to the others, for the body's animation.
 var grounded := true
+## The ladder being held on to (scenes/ladder.tscn), or null. It is worked
+## out again every physics step: holding on is nothing more than touching.
+var ladder: Node3D
+## Counts down to the next clank of a boot on a rung.
+var ladder_step_time := 0.0
+## Counts down after a jump off a ladder (see Ladder Let Go Time).
+var ladder_wait := 0.0
 ## The two collision capsules: the one from the scene, and a shorter copy.
 ## The shapes are swapped rather than resized because every player made
 ## from player.tscn shares the scene's shape: resizing it would crouch them all.
@@ -157,9 +187,11 @@ var stand_eye_height := 0.0
 	$Head/Camera3D/RocketLauncher,
 	$Head/Camera3D/Shotgun,
 	$Head/Camera3D/MP40,
+	$Head/Camera3D/M1911,
 ]
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var hurt_sound_player: AudioStreamPlayer = $HurtSound
+@onready var ladder_sound_player: AudioStreamPlayer = $LadderSound
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var model: Node3D = $Model
 @onready var chase_arm: SpringArm3D = $Head/ChaseArm
@@ -192,6 +224,9 @@ func _ready() -> void:
 	if hurt_sound == null:
 		hurt_sound = PlaceholderSound.make_grunt()
 	hurt_sound_player.stream = hurt_sound
+	if ladder_sound == null:
+		ladder_sound = PlaceholderSound.make_clank()
+	ladder_sound_player.stream = ladder_sound
 
 	stand_shape = collision_shape.shape as CapsuleShape3D
 	crouch_shape = stand_shape.duplicate() as CapsuleShape3D
@@ -334,7 +369,11 @@ func _physics_process(delta: float) -> void:
 
 	_update_crouch(delta)
 
-	if is_on_floor():
+	ladder_wait = maxf(ladder_wait - delta, 0.0)
+	ladder = _find_ladder() if ladder_wait == 0.0 else null
+	if ladder != null:
+		_climb(delta)
+	elif is_on_floor():
 		_apply_friction(delta)
 		var top_speed := crouch_speed if crouching else max_speed
 		_accelerate(wish_direction, top_speed, ground_acceleration, delta)
@@ -348,6 +387,78 @@ func _physics_process(delta: float) -> void:
 	# Moves the body by "velocity", sliding along walls and floors it hits.
 	move_and_slide()
 	grounded = is_on_floor()
+
+
+## Returns the ladder this player is touching, or null if there is none.
+## Every ladder is in the "ladder" group, and can say whether a body of a
+## given size is inside its climb volume (see holds() in scripts/ladder.gd).
+func _find_ladder() -> Node3D:
+	var capsule := collision_shape.shape as CapsuleShape3D
+	for candidate: Node3D in get_tree().get_nodes_in_group("ladder"):
+		if candidate.holds(global_position, capsule.radius, capsule.height):
+			return candidate
+	# Off the ladder: the first rung of the next one clanks straight away.
+	ladder_step_time = 0.0
+	return null
+
+
+## Sets the velocity for a physics step spent on a ladder. This is how
+## Half-Life does it, quirks included:
+##   - Nothing pulls you down. With no key held you hang where you are.
+##   - The keys take you where you are looking, as if you could fly:
+##     forward is the way the camera points, up or down as well as along.
+##   - Whatever part of that points into the ladder turns into climbing
+##     instead, and whatever part points away from it into climbing down.
+##     So facing the ladder and walking forward takes you up, the back key
+##     takes you down, and so does walking forward while looking at your
+##     feet (the looking down outweighs the walking in).
+##   - The left and right keys slide you sideways, off the edge if you
+##     keep going.
+##   - Jump lets go and throws you straight out from the ladder.
+## Because the parts are simply added up, climbing at a slant (looking up
+## and to one side with forward and a sideways key held) is faster than
+## climbing straight. Half-Life's players use that too.
+func _climb(delta: float) -> void:
+	# The direction straight out of the ladder, towards the climber.
+	var out: Vector3 = ladder.get_facing()
+
+	if _has_control() and Input.is_action_pressed("jump"):
+		# Held, not just pressed: keeping jump down as you fall past a
+		# ladder stops it catching you.
+		velocity = out * ladder_jump_speed
+		ladder_wait = ladder_let_go_time
+		return
+
+	var forward := 0.0
+	var sideways := 0.0
+	if _has_control():
+		# get_axis is -1 while its first action is held and +1 for its second.
+		forward = Input.get_axis("move_back", "move_forward")
+		sideways = Input.get_axis("move_left", "move_right")
+	if forward == 0.0 and sideways == 0.0:
+		velocity = Vector3.ZERO
+		return
+
+	# Where the keys would take a flying player. A camera looks along its
+	# own negative Z axis, and its X axis points to its right.
+	var wish := (-camera.global_basis.z * forward + camera.global_basis.x * sideways) * ladder_speed
+	# dot() measures how much of one direction lies along another: here,
+	# the speed away from the ladder (negative = into it). Taking that part
+	# out leaves the movement that lies flat against the ladder.
+	var away := wish.dot(out)
+	var along := wish - out * away
+	velocity = along - Vector3.UP * away
+	if is_on_floor() and away > 0.0:
+		# Standing at the foot and backing off: the floor stops you climbing
+		# down any further, so walk away from the ladder instead.
+		velocity += out * ladder_speed
+
+	ladder_step_time -= delta
+	if ladder_step_time <= 0.0:
+		ladder_step_time = ladder_step_interval
+		# A slightly different pitch each time, so it isn't one sound on a loop.
+		ladder_sound_player.pitch_scale = randf_range(0.9, 1.1)
+		ladder_sound_player.play()
 
 
 ## True while the keyboard and mouse are steering this player: the mouse is
