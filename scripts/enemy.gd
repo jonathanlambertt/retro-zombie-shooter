@@ -18,8 +18,9 @@ extends CharacterBody3D
 ##
 ## Three scenes use this script: scenes/zombie.tscn, its copy with painted
 ## body parts, scenes/zombie_textured.tscn, and
-## scenes/zombie-rexture-demo.tscn, whose parts are rounded meshes instead
-## of boxes and which wears one of many painted looks (see
+## scenes/zombie-rexture-demo.tscn, whose parts are shaped blocks (meshes
+## with flat sides and bevelled edges) instead of plain boxes and which
+## wears one of many painted looks (see
 ## scripts/zombie_look.gd). All three have the same pivots with the same
 ## names, which is all this script needs, and all set Limp and Hunch high,
 ## which makes the zombie drag one leg, lurch along, stoop, and let one arm

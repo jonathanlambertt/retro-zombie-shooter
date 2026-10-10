@@ -16,10 +16,12 @@ extends Control
 ##      that reduces the number of colours in the final picture. F1 and the
 ##      pause menu (scripts/pause_menu.gd) switch it on and off.
 ##
-## It also loads the level. It can swap it for the next or previous one in
-## its Levels list when F2 or F3 is pressed, but that is switched off for now
-## (see Level Switching below). In multiplayer only the host would do that:
-## scripts/network.gd shares the host's level with everyone else.
+## It also loads the level, and starts it again from the beginning when F5
+## is pressed (see restart_level() below). It can swap it for the next or
+## previous one in its Levels list when F2 or F3 is pressed, but that is
+## switched off for now (see Level Switching below). In multiplayer only the
+## host does any of that: scripts/network.gd shares the host's level with
+## everyone else.
 
 ## How tall a picture the HUD, the pause menu and the notebook's page are
 ## laid out for, in pixels. They were all drawn for the 320 x 240 the game
@@ -60,8 +62,9 @@ const INTERFACE_HEIGHT := 240
 @export var level_switching := false
 
 ## Which entry of Levels is being played. "static" keeps the number when the
-## whole game is reloaded after the player dies, so you restart in the level
-## you died in instead of being sent back to the first one.
+## whole game is reloaded (after the player dies, or when F5 is pressed), so
+## you restart in the level you were in instead of being sent back to the
+## first one.
 static var level_index := 0
 
 ## The file of the level scene the game was started on, or "" if it was
@@ -146,6 +149,13 @@ func _use_direct_level() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# F5 starts the level again. (This one works whether Level Switching is
+	# on or not. It doesn't work while the game is paused, by the menu or by
+	# a notebook's page: a paused node, as this one then is, gets no input.)
+	if event.is_action_pressed("level_restart"):
+		restart_level()
+		return
+
 	# Changing level is switched off for now (see Level Switching above).
 	if not level_switching:
 		return
@@ -160,6 +170,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("level_previous"):
 		level_index = posmod(level_index - 1, levels.size())
 		load_level()
+
+
+## Starts the level being played again from the beginning: every enemy back
+## on its feet where it first stood, every crate and window whole, and the
+## player at the start with full health. F5 (the "level_restart" action)
+## calls it.
+func restart_level() -> void:
+	# In multiplayer the host's level is everyone's, so only the host may.
+	if Network.is_client():
+		return
+	if Network.is_online():
+		# Hosting: a fresh copy of the level for everyone, each with a new
+		# player in it, just as when the host changes level.
+		load_level()
+	else:
+		# On your own, do what dying does: load the whole game (this scene)
+		# again. level_index is static, so it comes back in the same level.
+		get_tree().reload_current_scene()
 
 
 ## Removes the level being played (if any) and puts levels[level_index] in

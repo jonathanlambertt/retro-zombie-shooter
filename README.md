@@ -38,6 +38,7 @@ Godot_v4.7-stable_win64_console.exe --path .
 | F1 | Toggle the colour quantization post-process (also works while paused) |
 | F2 / F3 | Next / previous level. Switched off for now: see "Choosing which level to play" |
 | F4 | Change view: first person, behind your player, in front looking at your face, and back |
+| F5 | Start the level again from the beginning (not while the game is paused). In multiplayer only the host can, and it starts again for everyone |
 
 Crouching makes you shorter (1.2 m instead of 1.8 m) and slower. Let go and
 you stand up again as soon as there is room above you. Crouching in the air
@@ -55,7 +56,9 @@ small hop and land on the floor beyond. To go down a ladder from the top,
 walk off the edge above it, or back onto it facing the wall and hold S.
 
 When you are hurt you grunt and the screen flashes red. If your health
-reaches 0 the game restarts.
+reaches 0 the game restarts: you are back where the level starts, with
+full health, and everything in it is as it was, the zombies on their feet
+again. **F5** does the same whenever you like, without dying first.
 
 Red **explosive pylons** with a blinking lamp stand around every level,
 usually next to a group of enemies. Two pistol shots (or a nearby blast) light
@@ -92,7 +95,7 @@ scenes/              Reusable scenes
   bullet_hole.tscn     Mark left on walls and floors by shots
   zombie.tscn          Thin, limping enemy that chases and hits you (scripts/enemy.gd)
   zombie_textured.tscn The same zombie with a painted face, lab coat and trousers
-  zombie-rexture-demo.tscn The same zombie with a rounded body, and a different look on each one
+  zombie-rexture-demo.tscn The same zombie built from shaped blocks, with a different look on each one
   zombie_window.tscn   A window that zombies climb in through
   zombie_rounds.tscn   Sends zombies into a level a round at a time
   notebook.tscn        A notebook on a desk that you can read
@@ -135,9 +138,9 @@ scripts/             One script per scene, plus:
   surface_mark.gd      Shared by bullet holes and blood stains
   placeholder_sound.gd Generates stand-in gunshot noise from code
   damage_zone.gd       Area that hurts whatever stands in it (lava, slime)
-  zombie_look.gd       Hands out the looks of the rounded zombie
+  zombie_look.gd       Hands out the looks of the blocky zombie
   tools/generate_textures.gd   Generates the placeholder textures
-  tools/generate_zombie.gd     Builds the rounded zombie's meshes and paints its looks
+  tools/generate_zombie.gd     Builds the blocky zombie's meshes and paints its looks
   tools/generate_blocks.gd     Builds assets/blocks.tres from scripts/blocks.gd
   tools/build_test_room.gd     Builds levels/test_room.tscn
 shaders/
@@ -147,7 +150,7 @@ assets/
   textures/            64x64 PNG textures, plus one per part of the zombie, soldier, guns and projectiles,
                        and zombie_look_01.png to 24: a whole zombie painted in each
   materials/           One material per texture, all using the retro shader
-  meshes/              The rounded zombie's body parts
+  meshes/              The blocky zombie's body parts
   blocks.tres          The block palette destructible levels are painted with (a MeshLibrary)
   retro_environment.tres    Fog, ambient light and background colour
 ```
@@ -214,7 +217,8 @@ is, from `100%` down to `OFF` in steps of 10%.
 
 Up/down (or W/S) choose a line, left/right (or A/D) turn it down or up.
 Enter or a click steps it down, and from `OFF` back round to `100%`. The
-settings are kept when you die, but not when you quit.
+settings are kept when you die or start the level again, but not when you
+quit.
 
 `100%` means "exactly as set in the shader and the materials" (the
 `snap_resolution` and `light_bands` values below); `50%` makes the snapping
@@ -295,8 +299,8 @@ To regenerate the placeholders after editing the generator:
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://scripts/tools/generate_textures.gd
 ```
 
-The rounded zombie's looks (and its meshes) have a generator of their own,
-`scripts/tools/generate_zombie.gd`: see "The rounded zombie" under "Tuning
+The blocky zombie's looks (and its meshes) have a generator of their own,
+`scripts/tools/generate_zombie.gd`: see "The blocky zombie" under "Tuning
 gameplay" below.
 
 ## Tuning gameplay
@@ -521,14 +525,18 @@ Select a node and use the Inspector; every value is an exported variable.
   one, except in the start level demo (see the next entry); the plain green
   `zombie.tscn` is kept but no level uses it. To add one to a level, drag
   the scene under the level's `Enemies` node.
-- **The rounded zombie** (`scenes/zombie-rexture-demo.tscn`): the same
+- **The blocky zombie** (`scenes/zombie-rexture-demo.tscn`): the same
   enemy once more, with the same script and the same settings, but two
-  things are new. Its body is seven rounded meshes instead of boxes: a head
-  with a brow, a nose and a jaw, a torso with shoulders and a waist, arms
-  that end in hands and legs that end in feet. And no two of them standing
-  together look alike. It is the zombie of the start level demo; every
-  other level still has the textured one. To add one to a level, drag the
-  scene under the level's `Enemies` node.
+  things are new. Its body is seven shaped meshes instead of plain boxes:
+  a square head with a brow and a jaw, a torso with broad shoulders and a
+  waist, arms that end in hands and legs that end in feet. Every part has
+  flat sides and bevelled edges, as if it had been cut out of a block, so
+  it is as chunky as the textured zombie but has the outline of a person.
+  (Its parts were rounded at first. The shape was changed; the looks
+  stayed exactly as they were.) And no two of them standing together look
+  alike. It is the zombie of the start level demo; every other level still
+  has the textured one. To add one to a level, drag the scene under the
+  level's `Enemies` node.
 
   What a zombie looks like is its **look**: one 128 x 96 picture with the
   whole zombie painted in it, from its face and hair to its clothes, its
@@ -565,12 +573,30 @@ Select a node and use the Inspector; every value is an exported variable.
 
   The game counts the files itself, so nothing else needs changing. You can
   also paint a look by hand in any pixel-art program: the top of that
-  script draws where each part of the body is in the picture. Save it as
-  the next number.
+  script draws where each part of the body is in the picture, and lists
+  which columns of each part's piece are on its front, its back and its
+  sides. Save it as the next number.
+
+  The shape comes from the same script. Near its top is a table of "rings"
+  for each part (`_head_rings()`, `_torso_rings()`, `_arm_rings()`,
+  `_leg_rings()` and `_foot_rings()`). Each line is one slice through the
+  part: where it is along the part, half its width, half its depth, how
+  far its middle is moved, and how much is cut off its four corners. The
+  less is cut off, the more the part looks like a plain box. Change a
+  number and run the script (the first of the two commands above is
+  enough: the pictures are not touched, so there is nothing to import) and
+  the meshes in `assets/meshes/` are written again. The joints are in the
+  scene: the `LegLeft`, `LegRight`, `Upper`, `Head`, `ArmLeft` and
+  `ArmRight` nodes under `Model` are where each part turns, and each mesh
+  is measured from its own.
 
   Shoot an arm or the head off and you see the raw end of it, and the
   socket it leaves in the body. Those are painted in every look as well:
-  they sit hidden inside the joint until the limb is gone.
+  they sit hidden inside the joint until the limb is gone. That only works
+  while each arm and leg begins with a block big enough to cover its
+  socket, and the neck reaches down inside the collar, so after reshaping
+  a shoulder, a hip or the neck, watch a zombie turn its head, walk and
+  fall over to see that no red shows at the joints.
 
 The enemies' animations (walking, attacking, flinching, dying...) are not made
 in Godot's animation editor. They are a few lines of maths in the `_animate`
@@ -672,9 +698,10 @@ How it plays:
 - Each player gets their own armour colour: orange for the host, then
   blue, green, red, yellow, purple, white and black.
 - The host's level is everyone's level. (When level switching is on, F2
-  and F3 only work for the host, and change it for everyone.) Everyone
-  starts where the level's `Player` node stands, holding the gun that node
-  says.
+  and F3 only work for the host, and change it for everyone.) F5 is the
+  host's too: it starts the level again for everyone, with every player
+  back at the start. Everyone starts where the level's `Player` node
+  stands, holding the gun that node says.
 - Dying respawns you at the start with full health; the game carries on.
 - In a level with rounds of zombies (the multiplayer map demo), everyone
   fights the same round, and a round is bigger the more players there are
@@ -804,7 +831,8 @@ switch them back on, select the `Main` node in `scenes/main.tscn` and tick
 on that node, under **Levels**, in order and round again: the "presses of
 F2" given for each level below are counted from the first on the list. A
 new level has to be added to the list before F2 will reach it. If you die,
-you restart in the level you were playing.
+you restart in the level you were playing, and **F5** restarts it without
+your having to die (that one is not switched off).
 
 Until then, the way to play one of the other levels is to open it in the
 editor and press **F6** (Run Current Scene), which the launcher handles the
@@ -821,8 +849,8 @@ control room, and the torn-out containment door that joins those two labs.
 Everything in those rooms is where it is in test map 2 (see "The control
 room and the experimentation lab" below), with the same notebook (but for
 one sentence) and eleven of its zombies: six in the experimentation lab and
-five in the lab below. Here they are the rounded kind, each with a look of
-its own (see "The rounded zombie" under "Tuning gameplay" above); test map
+five in the lab below. Here they are the blocky kind, each with a look of
+its own (see "The blocky zombie" under "Tuning gameplay" above); test map
 2's are the textured boxes.
 
 The control room is dressed differently from test map 2's, though, and one
@@ -1254,7 +1282,7 @@ editor, so turn that arrow to face into the room.
 - Zombies can't climb ladders. On a ladder, the body other players see (and
   you, with F4) has no climbing animation: it hangs there in its jumping
   pose. Only you hear your boots on the rungs.
-- The rounded zombie is only in the start level demo, and the specimens
+- The blocky zombie is only in the start level demo, and the specimens
   floating in that level's tanks are still made of the old boxes. Its arms
   and legs do not bend as it moves: each is one stiff piece, with a slight
   bend at the elbow and the knee built into its shape. A leg that is shot

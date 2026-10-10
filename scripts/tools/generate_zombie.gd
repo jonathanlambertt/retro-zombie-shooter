@@ -1,12 +1,13 @@
 extends SceneTree
-## The zombie generator. It makes everything the rounded zombie
+## The zombie generator. It makes everything the blocky zombie
 ## (scenes/zombie-rexture-demo.tscn) is drawn with:
 ##
 ##   1. The meshes of its body, saved in assets/meshes/ as
 ##      zombie_body_head.tres, zombie_body_torso.tres and so on. Each part
-##      is a stack of rings joined into a skin, like a row of hoops with
-##      cloth pulled over them, so it is round where the first zombie's
-##      boxes were square.
+##      is a block with flat sides and bevelled edges that changes size
+##      along its length: a head with a brow and a jaw, a torso with square
+##      shoulders and a waist, arms that end in hands. The first zombie's
+##      parts were plain boxes; these are boxes that have been given a shape.
 ##   2. Its "looks", saved in assets/textures/ as zombie_look_01.png and up.
 ##      A look is one picture with every part of the body painted in it: a
 ##      face, hair, clothes, wounds. Each number rolls its own dice for all of
@@ -44,6 +45,21 @@ extends SceneTree
 ## way: their edges are the underside (the palm, the sole) and the middle
 ## column runs along the top, from the shoulder (or heel) in the top row to
 ## the fingertips (or toes) in the bottom row.
+##
+## Every part has four flat sides with a narrow cut corner between each two,
+## so some columns of its piece lie on one side and some on the next. These
+## are the columns on the flat of each side, counted from the left edge of
+## the part's own piece (the ones in between are on the cut corners):
+##
+##                 back            right side     front           left side
+##   torso (64)    54 to 10        12 to 20       22 to 42        44 to 52
+##   head (48)     41.5 to 6.5     8 to 16        17.5 to 30.5    32 to 40
+##   leg (24)      21.75 to 2.25   3.75 to 8.25   9.75 to 14.25   15.75 to 20.25
+##
+## (The back runs off one edge of the piece and on again at the other. An
+## arm has the same columns as a leg, but for "back" read its underside and
+## for "front" its top. A foot, 16 columns, has its sole on 13.5 to 2.5 and
+## its top on 5.5 to 10.5.) The ..._SHARE numbers further down set these.
 
 const PixelText := preload("res://scripts/pixel_text.gd")
 
@@ -98,9 +114,12 @@ func _init() -> void:
 # A mesh is a list of corners (vertices) and a list of triangles joining
 # them. Every part here is made the same way: a list of rings from one end
 # of the part to the other, each with a place along the part, a width and a
-# depth. _add_loft() puts a ring of corners at each and joins every ring to
-# the next with triangles. A ring with no width at all is a single point,
-# which closes the end of the part.
+# depth. A ring is a rectangle with its four corners cut off, and
+# _add_loft() joins every ring to the next with flat faces. So a part is a
+# block that widens and narrows along its length and has bevelled edges: it
+# has more shape than the first zombie's plain boxes, but it is still made
+# of flat sides. A ring with no size at all is a single point, which closes
+# the end of the part.
 #
 # Every corner also says where it is in a look's picture (its "UV"): how far
 # round the ring it is picks the column, and the ring's "row" picks the row.
@@ -111,13 +130,27 @@ func _init() -> void:
 # from the hips, an arm from its shoulder, a leg from its hip. The zombie
 # looks along -Z, with +X to its right and +Y up. All sizes are in metres.
 
-## How many corners each ring has. More = rounder (and more to draw).
-const HEAD_SIDES := 12
-const TORSO_SIDES := 12
-const LIMB_SIDES := 8
-## How square the torso's rings are. 1 = an oval; lower = flatter in front
-## and behind with tighter corners at the sides, like a rib cage.
-const TORSO_ROUNDNESS := 0.85
+## How the columns of a part's piece of the picture are shared out round
+## its rings. Going round a ring there is a flat side, a cut corner, the
+## next flat side, another cut corner, and so on. Of the two numbers:
+##   x - how many columns the flat of the front takes either side of the
+##       piece's middle column. (For an arm or a foot that side is the top.
+##       The flat of the side opposite takes as many either side of the
+##       piece's two edges.)
+##   y - how many columns from the middle column the cut corner next to it
+##       ends.
+## The flats of the other two sides get the columns in between. With
+## (10, 12) and a piece 64 columns wide, the front is columns 22 to 42, the
+## cut corners beside it are 20 to 22 and 42 to 44, and the two sides are
+## 12 to 20 and 44 to 52.
+##
+## The numbers are chosen to suit what is painted, not to match the sizes
+## in metres: a breast pocket has to stay on the front of the chest, and an
+## ear in the middle of the side of the head.
+const TORSO_SHARE := Vector2(10.0, 12.0)
+const HEAD_SHARE := Vector2(6.5, 8.0)
+const LIMB_SHARE := Vector2(2.25, 3.75)
+const FOOT_SHARE := Vector2(2.5, 3.0)
 ## Corners keep this far (in pixels) inside the edge of their piece of the
 ## picture, so that rounding never picks up the piece next door.
 const EDGE := 0.05
@@ -126,42 +159,44 @@ const EDGE := 0.05
 ## them (see _add_eye()).
 const SOCKET_TOP := 8.5
 const SOCKET_BOTTOM := 11.0
-## The eye's place in its socket. Across: 0 = at the nose, 1 = at the
-## socket's outer corner. Down: 0 = the socket's top, 1 = its bottom.
-const EYE_ACROSS := Vector2(0.25, 0.92)
-const EYE_DOWN := Vector2(0.14, 0.86)
+## Where each eye is on the face: the columns of the head's piece it covers
+## (from x to y), and the rows. The sockets are painted at columns 19 to 23
+## and 25 to 29, rows 9 to 11, so a dark rim is left round each eye.
+const EYE_RIGHT_AT := Vector2(19.5, 22.5)
+const EYE_LEFT_AT := Vector2(25.5, 28.5)
+const EYE_ROWS := Vector2(9.1, 10.8)
 ## How far the eye floats in front of the face, so the two never flicker.
 const EYE_LIFT := 0.003
 
-## The mesh being built: its corners, where each one is in the picture (as
-## a fraction of the picture's size), and its triangles (three corner
-## numbers each).
+## The mesh being built: its corners, which way the surface faces at each
+## one (its "normal", which is what the lighting goes by), where each one
+## is in the picture (as a fraction of the picture's size), and its
+## triangles (three corner numbers each).
 var corners := PackedVector3Array()
+var normals := PackedVector3Array()
 var picture_spots := PackedVector2Array()
 var triangles := PackedInt32Array()
 
 
 func _build_meshes() -> void:
-	_add_loft(_head_rings(), HEAD_SIDES, HEAD, true)
+	_add_loft(_head_rings(), HEAD_SHARE, HEAD, true)
 	_save_mesh("zombie_body_head")
-	_add_loft(_torso_rings(), TORSO_SIDES, TORSO, true, TORSO_ROUNDNESS)
+	_add_loft(_torso_rings(), TORSO_SHARE, TORSO, true)
 	_save_mesh("zombie_body_torso")
 	# The two arms are the same shape, and so are the two legs. Each still
 	# gets a mesh of its own, because each has its own piece of the picture.
-	_add_loft(_arm_rings(), LIMB_SIDES, ARM_LEFT, false)
+	_add_loft(_arm_rings(), LIMB_SHARE, ARM_LEFT, false)
 	_save_mesh("zombie_body_arm_left")
-	_add_loft(_arm_rings(), LIMB_SIDES, ARM_RIGHT, false)
+	_add_loft(_arm_rings(), LIMB_SHARE, ARM_RIGHT, false)
 	_save_mesh("zombie_body_arm_right")
-	_add_loft(_leg_rings(), LIMB_SIDES, LEG_LEFT, true)
-	_add_loft(_foot_rings(), LIMB_SIDES, FOOT_LEFT, false)
+	_add_loft(_leg_rings(), LIMB_SHARE, LEG_LEFT, true)
+	_add_loft(_foot_rings(), FOOT_SHARE, FOOT_LEFT, false)
 	_save_mesh("zombie_body_leg_left")
-	_add_loft(_leg_rings(), LIMB_SIDES, LEG_RIGHT, true)
-	_add_loft(_foot_rings(), LIMB_SIDES, FOOT_RIGHT, false)
+	_add_loft(_leg_rings(), LIMB_SHARE, LEG_RIGHT, true)
+	_add_loft(_foot_rings(), FOOT_SHARE, FOOT_RIGHT, false)
 	_save_mesh("zombie_body_leg_right")
-	# Side 6 of the head's 12 is the middle of the face, so the right eye's
-	# socket is between sides 5 and 6 and the left eye's between 6 and 7.
-	_add_eye(5, EYE_RIGHT)
-	_add_eye(6, EYE_LEFT)
+	_add_eye(EYE_RIGHT_AT, EYE_RIGHT)
+	_add_eye(EYE_LEFT_AT, EYE_LEFT)
 	_save_mesh("zombie_body_eyes", false)
 
 
@@ -174,37 +209,41 @@ func _build_meshes() -> void:
 ##                part, top to bottom for a reaching one
 ##   shift      - moves its middle: backwards (+Z) for a standing part, up
 ##                for a reaching one
-##   bumps      - pushes single corners out or in: {6: 1.1} puts corner 6
-##                10% further from the middle. This is what gives the face
-##                a nose and sockets for its eyes.
-func _ring(row: float, at: float, half_width: float, half_depth: float, shift := 0.0, bumps := {}) -> Dictionary:
-	return {row = row, at = at, half_width = half_width, half_depth = half_depth, shift = shift, bumps = bumps}
+##   cut        - how much is cut off each of its four corners, measured
+##                along the sides. The less is cut off, the more the part
+##                looks like a plain box.
+func _ring(row: float, at: float, half_width: float, half_depth: float, shift := 0.0, cut := 0.02) -> Dictionary:
+	return {row = row, at = at, half_width = half_width, half_depth = half_depth, shift = shift, cut = cut}
 
 
 ## The head and neck, from the top of the skull down. Measured from the
 ## bottom of the neck, where the head turns.
 func _head_rings() -> Array[Dictionary]:
 	var rings: Array[Dictionary] = [
-		_ring(0.0, 0.292, 0.0, 0.0, 0.012),
-		_ring(2.0, 0.280, 0.062, 0.074, 0.012),
-		_ring(4.5, 0.252, 0.090, 0.104, 0.008),
-		# The brow sticks out over the eyes.
-		_ring(7.0, 0.215, 0.096, 0.108, 0.004, {5: 1.03, 6: 1.02, 7: 1.03}),
-		# The eye sockets: two flat panels either side of the nose's bridge.
-		_ring(SOCKET_TOP, 0.192, 0.096, 0.106, 0.002, {5: 0.95, 6: 0.93, 7: 0.95}),
-		_ring(SOCKET_BOTTOM, 0.160, 0.096, 0.105, 0.0, {5: 0.95, 6: 0.95, 7: 0.95}),
-		# The tip of the nose, and the cheekbones.
-		_ring(13.0, 0.135, 0.094, 0.103, -0.002, {4: 1.02, 6: 1.08, 8: 1.02}),
-		# Hollow cheeks, either side of the mouth.
-		_ring(15.0, 0.108, 0.089, 0.099, -0.004, {4: 0.95, 6: 0.97, 8: 0.95}),
-		_ring(17.0, 0.080, 0.083, 0.095, -0.008, {4: 0.94, 6: 0.98, 8: 0.94}),
+		# The flat top of the skull, and the bevel round its edge.
+		_ring(0.0, 0.305, 0.0, 0.0, 0.005),
+		_ring(3.0, 0.305, 0.098, 0.088, 0.005, 0.026),
+		_ring(4.5, 0.280, 0.122, 0.112, 0.005, 0.026),
+		# The brow sticks out over the eyes: between this ring and the next
+		# the face slopes back by a centimetre. (Less depth and more shift
+		# moves the front of a ring back and leaves the back of it alone.)
+		_ring(7.0, 0.226, 0.122, 0.112, 0.005, 0.026),
+		# The eye sockets: a band set back under the brow.
+		_ring(SOCKET_TOP, 0.202, 0.122, 0.106, 0.011, 0.026),
+		_ring(SOCKET_BOTTOM, 0.168, 0.122, 0.106, 0.011, 0.026),
+		# The cheekbones, and the tip of the nose, come forward again.
+		_ring(13.0, 0.142, 0.120, 0.110, 0.007, 0.026),
+		# The jaw narrows towards the chin.
+		_ring(17.0, 0.083, 0.108, 0.106, 0.007, 0.024),
 		# The chin. The back of this ring is pulled in to meet the neck.
-		_ring(19.5, 0.045, 0.066, 0.082, -0.014, {0: 0.75, 1: 0.85, 11: 0.85}),
-		_ring(21.0, 0.028, 0.048, 0.052, 0.008),
+		_ring(19.5, 0.045, 0.086, 0.090, -0.008, 0.022),
+		_ring(21.0, 0.030, 0.058, 0.058, 0.010, 0.017),
 		# The neck carries on down inside the collar, so that nothing shows
-		# between them when the head tilts.
-		_ring(23.0, -0.045, 0.046, 0.048, 0.010),
-		_ring(24.0, -0.050, 0.0, 0.0, 0.010),
+		# between them when the head tilts. It narrows as it goes: turned and
+		# tilted at once, the corner of a neck that stayed as wide would come
+		# out through the slope of the shoulder. Its flat end is the stump.
+		_ring(23.0, -0.045, 0.036, 0.036, 0.010, 0.012),
+		_ring(24.0, -0.045, 0.0, 0.0, 0.010),
 	]
 	return rings
 
@@ -215,100 +254,144 @@ func _torso_rings() -> Array[Dictionary]:
 	var rings: Array[Dictionary] = [
 		# The top is a flat patch under the neck, which shows (as a stump)
 		# only when the head has been shot off.
-		_ring(0.0, 0.570, 0.0, 0.0, 0.006),
-		_ring(1.0, 0.569, 0.036, 0.036, 0.006),
-		_ring(3.0, 0.557, 0.060, 0.056, 0.006),
-		_ring(6.0, 0.528, 0.105, 0.078, 0.008),
-		_ring(10.0, 0.497, 0.156, 0.095, 0.008),
-		# The shoulders at their widest: the arms' joints are at this height.
-		_ring(13.0, 0.458, 0.172, 0.105, 0.004),
-		_ring(20.0, 0.370, 0.168, 0.116, -0.004),
-		_ring(28.0, 0.260, 0.148, 0.105, 0.0),
-		# A thin waist with the belly sunk in.
-		_ring(34.0, 0.170, 0.135, 0.092, 0.004, {6: 0.94}),
-		_ring(40.0, 0.060, 0.150, 0.100, 0.004),
-		# Level with the legs' joints. From here down the torso is a bowl
-		# that the rounded tops of the legs turn inside.
-		_ring(43.0, 0.0, 0.160, 0.098, 0.004),
-		_ring(46.0, -0.062, 0.140, 0.082, 0.004),
-		_ring(47.5, -0.096, 0.075, 0.052, 0.004),
-		_ring(48.0, -0.105, 0.0, 0.0, 0.004),
+		_ring(0.0, 0.565, 0.0, 0.0, 0.008),
+		_ring(1.0, 0.565, 0.026, 0.026, 0.008, 0.010),
+		_ring(3.0, 0.553, 0.075, 0.062, 0.008, 0.020),
+		# The slope from the neck out to the shoulders.
+		_ring(7.0, 0.530, 0.168, 0.094, 0.006, 0.032),
+		# The shoulders at their widest. The arms' joints are half way
+		# between this ring and the next, and the sockets they leave are
+		# painted on the flat of the side between the two.
+		_ring(10.0, 0.497, 0.195, 0.105, 0.0, 0.040),
+		_ring(16.0, 0.425, 0.195, 0.108, 0.0, 0.040),
+		_ring(20.0, 0.370, 0.190, 0.115, -0.004, 0.040),
+		# From the chest it narrows in straight lines to a thin waist.
+		_ring(34.0, 0.170, 0.160, 0.098, 0.004, 0.036),
+		_ring(40.0, 0.060, 0.176, 0.104, 0.004, 0.038),
+		# Level with the legs' joints. From here down the torso is a box
+		# that the tops of the legs turn inside.
+		_ring(43.0, 0.0, 0.190, 0.106, 0.004, 0.038),
+		_ring(46.0, -0.065, 0.182, 0.098, 0.004, 0.036),
+		_ring(47.5, -0.098, 0.130, 0.064, 0.004, 0.030),
+		_ring(48.0, -0.098, 0.0, 0.0, 0.004),
 	]
 	return rings
 
 
 ## An arm held straight out in front, from behind the shoulder to the
-## fingertips. Measured from the shoulder joint. It starts as a ball centred
-## on the joint, so the shoulder looks the same however the arm is turned.
+## fingertips. Measured from the shoulder joint. It starts as a block
+## centred on the joint, as far behind it as above and below it, so that
+## the shoulder fills the same space however the arm is turned.
 func _arm_rings() -> Array[Dictionary]:
 	var rings: Array[Dictionary] = [
-		_ring(0.0, 0.063, 0.0, 0.0),
-		_ring(2.5, 0.044, 0.044, 0.044),
-		_ring(6.0, 0.0, 0.062, 0.062),
-		_ring(10.0, -0.060, 0.053, 0.055),
-		_ring(14.5, -0.140, 0.045, 0.048),
+		# The flat back of the shoulder, and the bevel round it.
+		_ring(0.0, 0.066, 0.0, 0.0),
+		_ring(1.5, 0.066, 0.046, 0.046, 0.0, 0.016),
+		_ring(3.0, 0.042, 0.066, 0.066, 0.0, 0.026),
+		# The joint itself. The raw end of the arm is painted on the inside
+		# of this ring.
+		_ring(6.0, 0.0, 0.066, 0.066, 0.0, 0.026),
+		_ring(10.0, -0.060, 0.062, 0.064, 0.0, 0.024),
+		_ring(14.5, -0.140, 0.056, 0.058, 0.0, 0.022),
 		# The elbow. Past it the arm rises a little, so that it is slightly
 		# bent: forwards when it hangs, upwards when it reaches.
-		_ring(23.0, -0.280, 0.039, 0.041, 0.004),
-		_ring(30.0, -0.390, 0.039, 0.037, 0.020),
-		_ring(37.0, -0.500, 0.029, 0.024, 0.045),
-		# The hand: wide and flat, palm down.
-		_ring(40.5, -0.555, 0.042, 0.016, 0.055),
-		_ring(46.0, -0.640, 0.037, 0.011, 0.062),
-		_ring(48.0, -0.675, 0.0, 0.0, 0.064),
+		_ring(23.0, -0.280, 0.051, 0.052, 0.004, 0.020),
+		_ring(30.0, -0.390, 0.049, 0.048, 0.020, 0.019),
+		_ring(37.0, -0.500, 0.040, 0.036, 0.045, 0.014),
+		# The hand: wide and flat, palm down. Its corners are cut by all of
+		# its depth, which leaves it with six sides instead of eight: a flat
+		# back and a flat palm, with a bevelled edge between them.
+		_ring(40.5, -0.555, 0.055, 0.021, 0.055, 0.021),
+		_ring(46.0, -0.650, 0.048, 0.015, 0.062, 0.015),
+		_ring(48.0, -0.665, 0.0, 0.0, 0.062),
 	]
 	return rings
 
 
-## A leg, from the ball at the top of the thigh down to the ankle. Measured
-## from the hip joint, 76 cm above the sole of the foot.
+## A leg, from the block at the top of the thigh down to the ankle. Measured
+## from the hip joint, 76 cm above the sole of the foot. Like the arm, it
+## starts as a block centred on its joint.
 func _leg_rings() -> Array[Dictionary]:
 	var rings: Array[Dictionary] = [
-		_ring(0.0, 0.073, 0.0, 0.0),
-		_ring(2.0, 0.053, 0.049, 0.049),
-		_ring(5.0, 0.0, 0.072, 0.072),
-		_ring(10.0, -0.090, 0.072, 0.080),
-		_ring(17.0, -0.210, 0.063, 0.071, -0.008),
+		_ring(0.0, 0.084, 0.0, 0.0),
+		_ring(2.0, 0.056, 0.054, 0.056, 0.0, 0.020),
+		_ring(5.0, 0.0, 0.078, 0.086, 0.0, 0.026),
+		_ring(10.0, -0.090, 0.078, 0.088, 0.0, 0.026),
 		# The knee, a little in front of the hip and the ankle.
-		_ring(23.0, -0.320, 0.053, 0.058, -0.016),
-		_ring(25.5, -0.360, 0.050, 0.054, -0.012),
+		_ring(23.0, -0.320, 0.066, 0.072, -0.014, 0.022),
+		_ring(25.5, -0.360, 0.062, 0.066, -0.010, 0.020),
 		# The calf, which bulges backwards.
-		_ring(31.0, -0.460, 0.050, 0.060, 0.004),
-		_ring(38.0, -0.590, 0.039, 0.044, 0.006),
-		_ring(43.0, -0.690, 0.034, 0.038, 0.006),
+		_ring(31.0, -0.460, 0.062, 0.072, 0.004, 0.020),
+		_ring(43.0, -0.690, 0.048, 0.052, 0.006, 0.016),
 		# The end is hidden inside the foot.
-		_ring(47.0, -0.738, 0.030, 0.034, 0.006),
-		_ring(48.0, -0.744, 0.0, 0.0, 0.006),
+		_ring(47.0, -0.740, 0.046, 0.050, 0.006, 0.016),
+		_ring(48.0, -0.745, 0.0, 0.0, 0.006),
 	]
 	return rings
 
 
 ## A foot, from the heel forwards to the toes. It is part of the leg's mesh,
 ## so it too is measured from the hip joint: every ring's lowest point is
-## 76 cm below it, which is the floor.
+## 76 cm below it, which is the floor. (A ring's lowest point is its shift
+## less its half depth.)
 func _foot_rings() -> Array[Dictionary]:
 	var rings: Array[Dictionary] = [
-		_ring(0.0, 0.066, 0.0, 0.0, -0.730),
-		_ring(1.5, 0.054, 0.030, 0.027, -0.733),
-		_ring(4.0, 0.012, 0.042, 0.040, -0.720),
-		_ring(7.0, -0.050, 0.046, 0.030, -0.730),
-		_ring(9.5, -0.108, 0.048, 0.022, -0.738),
-		_ring(11.0, -0.155, 0.040, 0.014, -0.746),
-		_ring(12.0, -0.174, 0.0, 0.0, -0.748),
+		# The flat back of the heel.
+		_ring(0.0, 0.074, 0.0, 0.0, -0.722),
+		_ring(1.5, 0.074, 0.042, 0.030, -0.725, 0.012),
+		_ring(3.0, 0.052, 0.054, 0.040, -0.720, 0.014),
+		_ring(5.0, 0.0, 0.056, 0.040, -0.720, 0.014),
+		# From the ankle the top slopes down to the toes.
+		_ring(8.0, -0.075, 0.060, 0.032, -0.728, 0.014),
+		_ring(10.5, -0.160, 0.058, 0.022, -0.738, 0.012),
+		# The toes end square.
+		_ring(11.5, -0.190, 0.050, 0.016, -0.744, 0.012),
+		_ring(12.0, -0.190, 0.0, 0.0, -0.744),
 	]
 	return rings
 
 
-## Where corner number "side" of a ring is. "standing" is true for a part
-## whose rings are stacked up and down (head, torso, leg) and false for one
-## whose rings are lined up from back to front (arm, foot).
-func _ring_point(ring: Dictionary, sides: int, side: int, standing: bool, roundness: float) -> Vector3:
-	# How far round the ring this corner is, as an angle. The last corner
-	# is in the same place as the first (see _add_loft()), hence the "%".
-	var turn := TAU * (side % sides) / sides
-	var bump: float = ring.bumps.get(side % sides, 1.0)
-	var across: float = _rounded(sin(turn), roundness) * ring.half_width * bump
-	var deep: float = _rounded(cos(turn), roundness) * ring.half_depth * bump
+## The corners of one ring, in the order they come going round it. Each is a
+## Vector3 used as three loose numbers:
+##   x - how far across the ring it is (to the zombie's right)
+##   y - how far towards the side the ring starts on: the back of a part
+##       that stands up, the underside of one that reaches out
+##   z - its column in the part's piece of the picture
+## "share" is one of the ..._SHARE numbers above and "columns" is how wide
+## the part's piece is.
+##
+## There are eleven: the middle of the side it starts on, the two ends of
+## each cut corner on the way round, the middle of the opposite side, and
+## the middle of the first side again. That last one is in the same place
+## as the first, but at the other edge of the picture: without it the last
+## face would show the whole picture squeezed in backwards.
+func _ring_outline(ring: Dictionary, share: Vector2, columns: int) -> Array[Vector3]:
+	var wide: float = ring.half_width
+	var deep: float = ring.half_depth
+	# No more can be cut off a corner than there is ring.
+	var cut: float = minf(ring.cut, minf(wide, deep))
+	var middle := columns / 2.0
+	var outline: Array[Vector3] = [
+		Vector3(0.0, deep, 0.0),
+		Vector3(wide - cut, deep, share.x),
+		Vector3(wide, deep - cut, share.y),
+		Vector3(wide, cut - deep, middle - share.y),
+		Vector3(wide - cut, -deep, middle - share.x),
+		Vector3(0.0, -deep, middle),
+	]
+	# The other half is the mirror image of that one, going back the way it
+	# came.
+	for index in range(4, -1, -1):
+		var twin := outline[index]
+		outline.append(Vector3(-twin.x, twin.y, columns - twin.z))
+	return outline
+
+
+## Where a point of a ring is in the part. "across" and "deep" are the first
+## two numbers of one of _ring_outline()'s corners. "standing" is true for a
+## part whose rings are stacked up and down (head, torso, leg) and false for
+## one whose rings are lined up from back to front (arm, foot).
+func _ring_place(ring: Dictionary, across: float, deep: float, standing: bool) -> Vector3:
 	if standing:
 		# Round the Y axis, starting at the back (+Z) and going by +X.
 		return Vector3(across, ring.at, ring.shift + deep)
@@ -316,40 +399,88 @@ func _ring_point(ring: Dictionary, sides: int, side: int, standing: bool, roundn
 	return Vector3(across, ring.shift - deep, ring.at)
 
 
-## Raises a number between -1 and 1 to a power, keeping whether it was
-## negative. With a power below 1 the numbers in the middle move outwards,
-## which turns an oval into something nearer a box with round corners.
-func _rounded(value: float, power: float) -> float:
-	return signf(value) * pow(absf(value), power)
+## Where on a ring a column of the part's piece lies: on the straight line
+## between the two corners it comes between.
+func _ring_point(ring: Dictionary, share: Vector2, columns: int, column: float, standing: bool) -> Vector3:
+	var outline := _ring_outline(ring, share, columns)
+	for index in outline.size() - 1:
+		var from := outline[index]
+		var to := outline[index + 1]
+		if column <= to.z:
+			# inverse_lerp says how far from one number to another a third
+			# one is, as a fraction. lerpf goes the other way: it gives the
+			# number that fraction of the way from one to another.
+			var along := inverse_lerp(from.z, to.z, column)
+			return _ring_place(ring, lerpf(from.x, to.x, along), lerpf(from.y, to.y, along), standing)
+	return _ring_place(ring, outline[0].x, outline[0].y, standing)
+
+
+## Where column "column" of row "row" of a piece is in the whole picture, as
+## the fractions of the picture's width and height that a mesh wants.
+func _picture_spot(piece: Rect2i, column: float, row: float) -> Vector2:
+	var x := lerpf(piece.position.x + EDGE, piece.end.x - EDGE, column / piece.size.x)
+	var y := clampf(piece.position.y + row, piece.position.y + EDGE, piece.end.y - EDGE)
+	return Vector2(x / LOOK_SIZE.x, y / LOOK_SIZE.y)
 
 
 ## Adds a part to the mesh being built: a ring of corners for every entry in
-## "rings", joined up into a skin. "piece" is the part's piece of the
-## picture.
-func _add_loft(rings: Array[Dictionary], sides: int, piece: Rect2i, standing: bool, roundness := 1.0) -> void:
-	var first := corners.size()
+## "rings", joined up with flat faces. "share" says how the columns of
+## "piece", the part's piece of the picture, are shared out round a ring.
+func _add_loft(rings: Array[Dictionary], share: Vector2, piece: Rect2i, standing: bool) -> void:
+	# Every ring's corners: where each one is, and its spot in the picture.
+	var places: Array[PackedVector3Array] = []
+	var spots: Array[PackedVector2Array] = []
 	for ring in rings:
-		# One corner more than the ring has sides: the last is in the same
-		# place as the first, but at the other edge of the picture. Without
-		# it the last strip of triangles would show the whole picture
-		# squeezed in backwards.
-		for side in sides + 1:
-			corners.append(_ring_point(ring, sides, side, standing, roundness))
-			var column := lerpf(piece.position.x + EDGE, piece.end.x - EDGE, float(side) / sides)
-			var row: float = clampf(piece.position.y + ring.row, piece.position.y + EDGE, piece.end.y - EDGE)
-			picture_spots.append(Vector2(column / LOOK_SIZE.x, row / LOOK_SIZE.y))
+		var ring_places := PackedVector3Array()
+		var ring_spots := PackedVector2Array()
+		for corner in _ring_outline(ring, share, piece.size.x):
+			ring_places.append(_ring_place(ring, corner.x, corner.y, standing))
+			ring_spots.append(_picture_spot(piece, corner.z, ring.row))
+		places.append(ring_places)
+		spots.append(ring_spots)
 
 	# Join each ring to the next. Between two neighbouring corners of one
-	# ring (a, b) and the two below them (c, d) there is a four-sided patch,
-	# which is drawn as two triangles.
+	# ring (a, b) and the two below them (c, d) there is a four-sided face.
 	for ring_number in rings.size() - 1:
-		for side in sides:
-			var a := first + ring_number * (sides + 1) + side
-			var b := a + 1
-			var c := a + sides + 1
-			var d := c + 1
-			_add_triangle(a, b, c)
-			_add_triangle(b, d, c)
+		var above := places[ring_number]
+		var below := places[ring_number + 1]
+		var above_spots := spots[ring_number]
+		var below_spots := spots[ring_number + 1]
+		for side in above.size() - 1:
+			_add_face(
+					[above[side], above[side + 1], below[side], below[side + 1]],
+					[above_spots[side], above_spots[side + 1], below_spots[side], below_spots[side + 1]])
+
+
+## Adds one flat face with four corners (a and b on one ring, c and d below
+## them on the next), drawn as two triangles.
+##
+## The face gets four corners of its own, even where the face next to it
+## has a corner in the very same place. That is what keeps the edges hard.
+## Every corner carries a "normal", and corners that were shared between
+## two faces would have to share one normal as well, which would shade the
+## edge between them as if it were round.
+func _add_face(places: Array[Vector3], spots: Array[Vector2]) -> void:
+	var a := places[0]
+	var b := places[1]
+	var c := places[2]
+	var d := places[3]
+	# Which way the face points. The cross product of two edges of a
+	# triangle is a line sticking straight out of it, and the bigger the
+	# triangle, the longer the line. Adding up the two triangles' lines
+	# gives one for the whole face.
+	var facing := (c - a).cross(b - a) + (c - b).cross(d - b)
+	# Where a ring is a single point, or the two ends of a cut corner are in
+	# the same place, a face can have no area at all. Leave those out.
+	if facing.length() < 0.000000001:
+		return
+	var first := corners.size()
+	for index in 4:
+		corners.append(places[index])
+		normals.append(facing.normalized())
+		picture_spots.append(spots[index])
+	_add_triangle(first, first + 1, first + 2)
+	_add_triangle(first + 1, first + 3, first + 2)
 
 
 ## Adds one triangle. The order of its corners matters: Godot only draws the
@@ -365,11 +496,11 @@ func _add_triangle(a: int, b: int, c: int) -> void:
 	triangles.append(c)
 
 
-## Adds one glowing eye: a flat panel just in front of an eye socket. The
-## socket is the flat patch of the head between the two socket rings and
-## between sides "side" and "side" + 1; the eye is a smaller copy of that
-## patch, lifted off it. "piece" is the eye's piece of the picture.
-func _add_eye(side: int, piece: Rect2i) -> void:
+## Adds one glowing eye: a flat panel just in front of the face, between
+## the two socket rings. "at" is the columns of the head's piece that it
+## covers (one of the EYE_..._AT numbers) and "piece" is the eye's own piece
+## of the picture.
+func _add_eye(at: Vector2, piece: Rect2i) -> void:
 	var top: Dictionary
 	var bottom: Dictionary
 	for ring in _head_rings():
@@ -377,29 +508,24 @@ func _add_eye(side: int, piece: Rect2i) -> void:
 			top = ring
 		elif ring.row == SOCKET_BOTTOM:
 			bottom = ring
-	# The socket's four corners, as you see them from in front.
-	var top_left := _ring_point(top, HEAD_SIDES, side, true, 1.0)
-	var top_right := _ring_point(top, HEAD_SIDES, side + 1, true, 1.0)
-	var bottom_left := _ring_point(bottom, HEAD_SIDES, side, true, 1.0)
-	var bottom_right := _ring_point(bottom, HEAD_SIDES, side + 1, true, 1.0)
-	# Which way the socket faces. (The cross product of two edges of a flat
-	# patch is a line sticking straight out of it.)
-	var facing := (bottom_left - top_left).cross(top_right - top_left).normalized()
 
-	# The nose is at the right-hand edge of the right eye's socket and at
-	# the left-hand edge of the left eye's.
-	var across := EYE_ACROSS
-	if side < HEAD_SIDES / 2.0:
-		across = Vector2(1.0 - EYE_ACROSS.y, 1.0 - EYE_ACROSS.x)
+	# The eye's four corners as you see them from in front: top left, top
+	# right, bottom left, bottom right.
+	var places: Array[Vector3] = []
+	for row: float in [EYE_ROWS.x, EYE_ROWS.y]:
+		# How far down from the top socket ring to the bottom one this row is.
+		var down := inverse_lerp(SOCKET_TOP, SOCKET_BOTTOM, row)
+		for column: float in [at.x, at.y]:
+			var on_top := _ring_point(top, HEAD_SHARE, HEAD.size.x, column, true)
+			var on_bottom := _ring_point(bottom, HEAD_SHARE, HEAD.size.x, column, true)
+			places.append(on_top.lerp(on_bottom, down))
+	# Which way the face points there (see _add_face()).
+	var facing := (places[2] - places[0]).cross(places[1] - places[0]).normalized()
 
 	var first := corners.size()
-	for down: float in [EYE_DOWN.x, EYE_DOWN.y]:
-		for along: float in [across.x, across.y]:
-			# lerp() finds the point part of the way from one place to
-			# another: first along the top and bottom edges, then between.
-			var on_top := top_left.lerp(top_right, along)
-			var on_bottom := bottom_left.lerp(bottom_right, along)
-			corners.append(on_top.lerp(on_bottom, down) + facing * EYE_LIFT)
+	for index in 4:
+		corners.append(places[index] + facing * EYE_LIFT)
+		normals.append(facing)
 	# The eye shows the whole of its piece of the picture.
 	for spot: Vector2 in [
 		Vector2(piece.position.x + EDGE, piece.position.y + EDGE),
@@ -416,29 +542,14 @@ func _add_eye(side: int, piece: Rect2i) -> void:
 ## and empties the lists for the next one. "closed" says whether the mesh
 ## is a shape with an inside (every part but the eyes, which are flat).
 func _save_mesh(mesh_name: String, closed := true) -> void:
-	# Each corner needs a "normal": the direction the surface faces there,
-	# which is what the lighting goes by. A triangle faces along the cross
-	# product of two of its edges. Giving every corner the sum of the
-	# triangles that meet at it (instead of each triangle its own) is what
-	# makes the surface look rounded instead of faceted.
-	var totals := {}
-	# The same sum also checks the triangles' order: added up over a closed
+	# A check on the order of the triangles' corners: added up over a closed
 	# shape whose triangles all face outwards, this comes out negative.
 	var inside_out := 0.0
 	for i in range(0, triangles.size(), 3):
 		var a := corners[triangles[i]]
 		var b := corners[triangles[i + 1]]
 		var c := corners[triangles[i + 2]]
-		var facing := (c - a).cross(b - a)
 		inside_out += a.dot(b.cross(c))
-		for corner: Vector3 in [a, b, c]:
-			totals[_place(corner)] = totals.get(_place(corner), Vector3.ZERO) + facing
-	var normals := PackedVector3Array()
-	for corner in corners:
-		# Corners in the same place share one normal, so that no seam shows
-		# where the two edges of the picture meet.
-		var total: Vector3 = totals.get(_place(corner), Vector3.UP)
-		normals.append(total.normalized())
 
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
@@ -459,14 +570,9 @@ func _save_mesh(mesh_name: String, closed := true) -> void:
 	if closed and inside_out > 0.0:
 		push_error("%s is inside out" % path)
 	corners = PackedVector3Array()
+	normals = PackedVector3Array()
 	picture_spots = PackedVector2Array()
 	triangles = PackedInt32Array()
-
-
-## A corner's position as whole numbers of hundredths of a millimetre, so
-## that two corners in the same place always count as the same.
-func _place(corner: Vector3) -> Vector3i:
-	return Vector3i((corner * 100000.0).round())
 
 
 # --- 2. The looks ------------------------------------------------------------
@@ -1395,22 +1501,23 @@ func _paint_stumps() -> void:
 	# The bottom of the neck, and the patch on the torso that it stands on.
 	_stump_rows(HEAD, 23, 24)
 	_stump_rows(TORSO, 0, 1)
-	# The top of the ball each leg ends in. Only the top: the leg swings,
-	# and the rest of the ball comes out from under the torso as it does.
+	# The top of the block each leg begins with. Only the top: the leg
+	# swings, and the rest of the block comes out from under the torso as it
+	# does.
 	for leg: Rect2i in [LEG_LEFT, LEG_RIGHT]:
 		_stump_rows(leg, 0, 2)
 		_band(leg, 2, 3, OLD_BLOOD, 0.15)
-	# The inside of each shoulder, where the arm's ball sits in the torso.
-	# These are centred on the line the arm turns about (column 6 or 18,
-	# row 6), so they stay inside the torso however the arm is turned.
+	# The inside of each shoulder, where the block the arm begins with sits
+	# in the torso. These are centred on the line the arm turns about (column
+	# 6 or 18, row 6), so they stay inside the torso however the arm is turned.
 	_stump_patch(ARM_LEFT, ARM_LEFT_INSIDE - 2, 4, 4, 4)
 	_stump_patch(ARM_RIGHT, ARM_RIGHT_INSIDE - 2, 4, 4, 4)
 	# The sockets the arms leave in the torso's sides, at the height of the
 	# shoulders.
 	_stump_patch(TORSO, TORSO_RIGHT - 2, 11, 4, 5)
 	_stump_patch(TORSO, TORSO_LEFT - 2, 11, 4, 5)
-	# (The legs leave no such socket. A leg's ball turns inside the bottom
-	# of the torso without touching it, and every bit of the torso's
+	# (The legs leave no such socket. The top of a leg turns inside the
+	# bottom of the torso without touching it, and every bit of the torso's
 	# underside comes into view as the leg swings.)
 
 
